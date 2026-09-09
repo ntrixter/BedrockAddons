@@ -442,6 +442,8 @@ def check_sentinels_in_addons() -> None:
     for addon_id in addon_dirs():
         for path in sorted((REPO_ROOT / addon_id).rglob("*.json")):
             rel = path.relative_to(REPO_ROOT).as_posix()
+            if path.name == "addon.json":
+                continue  # already reported by check_addon_json
             if SENTINEL_RE.search(path.read_text(encoding="utf-8")):
                 error(rel, None, "still contains a _template placeholder",
                       "replace every REPLACE_ME / all-zero UUID with a real value")

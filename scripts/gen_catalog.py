@@ -39,7 +39,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_VERSION = 1
-API_ROOT = "https://api.github.com"
+# GitHub Actions sets GITHUB_API_URL; honouring it keeps this working on
+# GitHub Enterprise Server as well as github.com.
+API_ROOT = os.environ.get("GITHUB_API_URL", "https://api.github.com").rstrip("/")
 
 # Tag shape: <addon-id>-v<semver>. The id is matched non-greedily so an add-on
 # whose own name contains "-v" still splits at the right place.

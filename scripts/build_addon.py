@@ -324,8 +324,21 @@ def extract_changelog_section(changelog_path: Path, version: str, addon_id: str)
 
 
 def world_pack_entry(pack: dict) -> str:
-    entry = [{"pack_id": pack["uuid"], "version": pack["version"]}]
-    return json.dumps(entry, indent=2)
+    """Render a world_*_packs.json entry the way a person would write it.
+
+    json.dumps(indent=...) would put each integer of the version on its own
+    line, which is unpleasant to paste into a file by hand -- and pasting this
+    by hand is exactly what these blocks are for.
+    """
+    version = ", ".join(str(number) for number in pack["version"])
+    return (
+        "[\n"
+        "  {\n"
+        f'    "pack_id": "{pack["uuid"]}",\n'
+        f'    "version": [{version}]\n'
+        "  }\n"
+        "]"
+    )
 
 
 def render_release_notes(summary: dict, changelog: str) -> str:
@@ -395,9 +408,9 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         "",
         "```sh",
         "mkdir -p packs/behavior_packs packs/resource_packs",
-        f"unzip -q {filename} -d extracted" if is_mcaddon else f"mkdir -p extracted/{packs[0]['folder']}",
     ]
     if is_mcaddon:
+        out.append(f"unzip -q {filename} -d extracted")
         if behavior:
             out.append(f"mv extracted/{behavior['folder']} packs/behavior_packs/")
         if resource:
