@@ -1,0 +1,108 @@
+name: validate
+
+# Nothing here publishes. A tag push is the only event that produces a
+# release; see .github/workflows/release.yml.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Repository-wide checks. These always run: UUID uniqueness, the catalog
+  # schema and the identity-leak scan are properties of the whole repo, so
+  # they cannot be narrowed to the add-on that changed.
+  repo-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # check_repo.py scans commit identity and messages across all history.
+          fetch-depth: 0
+
+      - name: Repository checks and identity-leak scan
+        run: python3 scripts/check_repo.py
+
+      - name: Validate catalog.json against the documented schema
+        run: python3 scripts/gen_catalog.py --validate catalog.json
+
+  # Works out which add-ons this change actually touches. This is the path
+  # filtering: a change to one add-on must not run checks for every other one.
+  # A workflow-level `paths:` filter cannot do this, because it decides whether
+  # the run happens at all rather than which add-ons it covers.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.changed.outputs.addons }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - id: changed
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          empty_sha=0000000000000000000000000000000000000000
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only "$BASE_SHA"...HEAD > changed.txt
+          elif [ -n "${BEFORE_SHA:-}" ] && [ "$BEFORE_SHA" != "$empty_sha" ] \
+               && git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git diff --name-only "$BEFORE_SHA" HEAD > changed.txt
+          else
+            # First push to a branch, or a force-push we cannot diff against.
+            git ls-files > changed.txt
+          fi
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, pathlib
+
+          changed = pathlib.Path("changed.txt").read_text().split()
+
+          def is_addon(name):
+              if name.startswith((".", "_")) or name == "scripts":
+                  return False
+              return any(
+                  pathlib.Path(name, source, "manifest.json").is_file()
+                  for source in ("behavior_pack", "resource_pack")
+              )
+
+          # A change to the build tooling or the workflows affects every
+          # add-on, so re-check them all rather than only the ones edited.
+          if any(p.startswith(("scripts/", ".github/workflows/")) for p in changed):
+              names = sorted(p.name for p in pathlib.Path().iterdir()
+                             if p.is_dir() and is_addon(p.name))
+          else:
+              names = sorted({p.split("/")[0] for p in changed
+                              if "/" in p and is_addon(p.split("/")[0])})
+
+          print("addons=" + json.dumps(names))
+          PY
+          cat "$GITHUB_OUTPUT"
+
+  # Skipped entirely when nothing add-on shaped changed, which is also the
+  # steady state of a repository with no add-ons in it yet. An empty matrix
+  # must pass, not error.
+  addon-checks:
+    needs: detect
+    if: needs.detect.outputs.addons != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        addon: ${{ fromJson(needs.detect.outputs.addons) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build dry-run
+        env:
+          ADDON_ID: ${{ matrix.addon }}
+        run: python3 scripts/build_addon.py "$ADDON_ID" --out-dir "$RUNNER_TEMP/build"

@@ -1,0 +1,154 @@
+name: release
+
+# A tag push is the only event that produces a release. Merging to main never
+# builds, publishes or notifies; unreleased work sitting on main is normal.
+#
+# workflow_dispatch regenerates catalog.json only. It builds nothing and
+# publishes nothing, and exists so that flipping "deprecated" in an addon.json
+# can reach consumers without cutting a release.
+on:
+  push:
+    tags: ['*-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Both trigger paths can commit catalog.json back to the default branch, so
+  # every run of this workflow serialises against every other. cancel-in-progress
+  # must stay false: tagging a second add-on must never kill an in-flight release.
+  group: release-catalog
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Parse the tag
+        id: tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # sleep-addon-v1.2.0-beta.1 -> id=sleep-addon version=1.2.0-beta.1
+          addon_id="${TAG%-v*}"
+          version="${TAG##*-v}"
+          if [ -z "$addon_id" ] || [ -z "$version" ]; then
+            echo "::error::tag '$TAG' is not of the form <addon-id>-v<semver>"
+            exit 1
+          fi
+          if [ ! -d "$addon_id" ]; then
+            echo "::error::tag '$TAG' names add-on '$addon_id', which does not exist"
+            exit 1
+          fi
+          echo "addon_id=$addon_id" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build the add-on and render its release notes
+        env:
+          ADDON_ID: ${{ steps.tag.outputs.addon_id }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        # --version fails the build unless the tag's numeric version matches
+        # header.version in that add-on's manifests.
+        run: |
+          python3 scripts/build_addon.py "$ADDON_ID" \
+            --version "$VERSION" \
+            --release-notes dist/release-notes.md
+
+      - name: Read the build output
+        id: build
+        env:
+          ADDON_ID: ${{ steps.tag.outputs.addon_id }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, pathlib
+
+          addon_id, version = os.environ["ADDON_ID"], os.environ["VERSION"]
+          summary = json.loads(
+              pathlib.Path(f"dist/{addon_id}-{version}.build.json").read_text()
+          )
+          print("filename=" + summary["artifact"]["filename"])
+          print("title=" + f"{summary['display_name']} {version}")
+          print("prerelease=" + ("true" if summary["prerelease"] else "false"))
+          PY
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          TITLE: ${{ steps.build.outputs.title }}
+          FILENAME: ${{ steps.build.outputs.filename }}
+          PRERELEASE: ${{ steps.build.outputs.prerelease }}
+        # One download plus its checksum. Nothing else is attached.
+        run: |
+          set -euo pipefail
+          flags=()
+          if [ "$PRERELEASE" = "true" ]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$TAG" \
+            --title "$TITLE" \
+            --notes-file dist/release-notes.md \
+            "${flags[@]}" \
+            "dist/$FILENAME" \
+            "dist/$FILENAME.sha256"
+
+  catalog:
+    needs: [release]
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Check out the branch itself: a tag push would otherwise leave us on
+          # a detached HEAD with nothing to commit back to.
+          ref: ${{ github.event.repository.default_branch }}
+          # gen_catalog.py reads manifests at each released tag via `git show`.
+          fetch-depth: 0
+
+      - name: Regenerate catalog.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/gen_catalog.py
+
+      - name: Commit catalog.json back to the default branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        # Authored as the Actions bot, never as a person, and with no
+        # Co-Authored-By trailer: this commit is not AI-authored. The identity
+        # is allowlisted in scripts/check_repo.py.
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- catalog.json; then
+            echo "catalog.json is already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalog.json
+          git commit -m "chore: regenerate catalog.json"
+
+          # The concurrency group serialises releases, but a person can still
+          # push to the default branch between our fetch and our push.
+          for attempt in 1 2 3; do
+            git pull --rebase origin "$DEFAULT_BRANCH"
+            if git push origin "HEAD:$DEFAULT_BRANCH"; then
+              exit 0
+            fi
+            echo "push attempt $attempt was rejected, retrying"
+            sleep $(( attempt * 5 ))
+          done
+          echo "::error::could not push catalog.json after 3 attempts"
+          exit 1

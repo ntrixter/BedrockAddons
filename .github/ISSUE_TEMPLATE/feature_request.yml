@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a change to an add-on, or a new add-on.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not include personal information in this issue — not in the
+        text, not in screenshots, and not in attached files.
+
+  - type: dropdown
+    id: addon
+    attributes:
+      label: Which add-on?
+      description: |
+        Add a new option to this list whenever an add-on is added to the
+        repository; see CONTRIBUTING.md.
+      options:
+        - A new add-on
+        - Repository tooling (build, CI, catalog)
+        - Other / not listed
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation you run into, not the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like it to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you have already tried?
+      description: Other add-ons, settings or workarounds, and why they fell short.

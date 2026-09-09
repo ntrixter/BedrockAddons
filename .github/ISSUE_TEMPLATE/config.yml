@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: How to add or change an add-on
+    url: https://github.com/ntrixter/BedrockAddons/blob/main/CONTRIBUTING.md
+    about: Conventions, versioning and the walkthrough for adding a new add-on.
+  - name: Downloads and install instructions
+    url: https://github.com/ntrixter/BedrockAddons/releases
+    about: Every add-on's release carries client and dedicated-server instructions.
