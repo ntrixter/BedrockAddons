@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "REPLACE_ME Add-on Name",
+    "description": "REPLACE_ME one short sentence about what this pack does.",
+    "uuid": "REPLACE_ME-run-uuidgen-for-a-fresh-uuid",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "description": "REPLACE_ME one short sentence about what this pack does.",
+      "uuid": "REPLACE_ME-a-different-uuid-from-the-header",
+      "version": [1, 0, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["ntrixter"],
+    "url": "https://github.com/ntrixter/BedrockAddons"
+  }
+}

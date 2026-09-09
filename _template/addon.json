@@ -1,0 +1,6 @@
+{
+  "_comment": "JSON has no comments, so the field meanings live in _template/README.md and in the 'Adding an add-on' walkthrough in CONTRIBUTING.md. Replace every REPLACE_ME value and delete this key.",
+  "display_name": "REPLACE_ME",
+  "description": "REPLACE_ME",
+  "deprecated": false
+}
