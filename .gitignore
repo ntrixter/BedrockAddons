@@ -1,0 +1,26 @@
+# Build output — artifacts are never committed.
+# Built packages exist only as GitHub Release assets.
+dist/
+build/
+*.mcaddon
+*.mcpack
+*.mcworld
+*.mctemplate
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editor and OS artifacts.
+# These embed absolute paths and machine names; see the Anonymity section of CLAUDE.md.
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+__MACOSX/
+Thumbs.db
+desktop.ini
