@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "No Witch Conversion",
+    "description": "Villagers no longer turn into witches when struck by lightning.",
+    "uuid": "d2af958c-b04d-41c4-8439-0066910c5599",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 26, 45]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "description": "Overrides the villager so lightning no longer triggers the witch transformation.",
+      "uuid": "2d2f854e-fe6a-43d9-9246-3744c6480e23",
+      "version": [1, 0, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["ntrixter"],
+    "url": "https://github.com/ntrixter/BedrockAddons"
+  }
+}

@@ -16,6 +16,7 @@ body:
         Add a new option to this list whenever an add-on is added to the
         repository; see CONTRIBUTING.md.
       options:
+        - no-witch-conversion
         - Repository tooling (build, CI, catalog)
         - Other / not listed
     validations:

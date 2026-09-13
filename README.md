@@ -5,15 +5,13 @@ versioned and released on its own schedule.
 
 ## Add-ons
 
-_No add-ons published yet._
-
 <!-- Add a row per add-on. The badge filter is what scopes it to that add-on's
      tags; without it the badge would show whichever add-on was released most
      recently. -->
 
 | Add-on | Latest release | What it does |
 | --- | --- | --- |
-| <!-- [sleep-addon](sleep-addon/) --> | <!-- ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=sleep-addon-v*&sort=semver&label=sleep-addon) --> | <!-- One player sleeping skips the night. --> |
+| [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 
 ## How this repository is laid out
 

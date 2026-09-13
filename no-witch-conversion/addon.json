@@ -1,0 +1,5 @@
+{
+  "display_name": "No Witch Conversion",
+  "description": "Villagers no longer turn into witches when struck by lightning.",
+  "deprecated": false
+}

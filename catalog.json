@@ -1,6 +1,14 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-09T15:29:46Z",
+  "generated_at": "2026-09-13T23:27:40Z",
   "repository": "ntrixter/BedrockAddons",
-  "addons": {}
+  "addons": {
+    "no-witch-conversion": {
+      "display_name": "No Witch Conversion",
+      "description": "Villagers no longer turn into witches when struck by lightning.",
+      "deprecated": false,
+      "latest_stable": null,
+      "latest_prerelease": null
+    }
+  }
 }
