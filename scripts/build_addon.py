@@ -349,6 +349,9 @@ def render_release_notes(summary: dict, changelog: str) -> str:
     is_mcaddon = summary["artifact"]["kind"] == "mcaddon"
     behavior = next((p for p in packs if p["type"] == "data"), None)
     resource = next((p for p in packs if p["type"] == "resources"), None)
+    # An add-on with one pack should not be described in the plural, and should
+    # not carry advice about a resource pack it does not ship.
+    them = "the packs" if len(packs) > 1 else "the pack"
 
     out = [changelog, ""]
     out += [
@@ -360,8 +363,9 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         "## Install on a client",
         "",
         f"1. Download `{filename}`.",
-        "2. Open the file. Minecraft imports the packs automatically.",
-        "3. Enable the packs on the world you want them in, under its settings.",
+        f"2. Open the file. Minecraft imports {them} automatically.",
+        f"3. Enable {them} on the world you want {'them' if len(packs) > 1 else 'it'} in, "
+        "under its settings.",
         "",
         "## Install on a dedicated server",
         "",
@@ -385,19 +389,28 @@ def render_release_notes(summary: dict, changelog: str) -> str:
             f"`{target}/` directory and put the extracted files (including `manifest.json`) "
             "directly inside it.",
         ]
-    out += [
-        "3. Register the packs in the world's JSON files (below).",
-        "4. Restart the server.",
-        "",
-        "Three things that quietly break a server install:",
-        "",
+    gotchas = [
         "- `level-name` in `server.properties` must match the world's folder name under "
         "`worlds/` **exactly**, spaces included. A mismatch is the most common reason a pack "
         "appears to be ignored.",
-        "- A resource pack is not forced on connecting players unless "
-        "`texturepack-required=true` is set in `server.properties`.",
+    ]
+    if resource:
+        gotchas.append(
+            "- A resource pack is not forced on connecting players unless "
+            "`texturepack-required=true` is set in `server.properties`."
+        )
+    gotchas.append(
         "- Do not hand-edit `valid_known_packs.json`. Older guides still say to; the server "
-        "maintains it by scanning the pack directories.",
+        "maintains it by scanning the pack directories."
+    )
+
+    out += [
+        f"3. Register {them} in the world's JSON file{'s' if len(packs) > 1 else ''} (below).",
+        "4. Restart the server.",
+        "",
+        f"{'Three' if resource else 'Two'} things that quietly break a server install:",
+        "",
+        *gotchas,
         "",
         "## Install with the itzg Docker image",
         "",
@@ -407,7 +420,11 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         "layout, so wrap it once:",
         "",
         "```sh",
-        "mkdir -p packs/behavior_packs packs/resource_packs",
+        "mkdir -p " + " ".join(
+            f"packs/{d}"
+            for d, present in (("behavior_packs", behavior), ("resource_packs", resource))
+            if present
+        ),
     ]
     if is_mcaddon:
         out.append(f"unzip -q {filename} -d extracted")
@@ -422,18 +439,24 @@ def render_release_notes(summary: dict, changelog: str) -> str:
             f"unzip -q {filename} -d extracted/{only['folder']}",
             f"mv extracted/{only['folder']} packs/{target}/",
         ]
+    mount = (
+        "Mount `packs/` into the container and point `MC_PACK` at its in-container path. The "
+        f"image installs the pack folder{'s' if len(packs) > 1 else ''} but does not register "
+        f"{'them' if len(packs) > 1 else 'it'}, so the step below still applies."
+    )
+    if resource:
+        mount += " `TEXTUREPACK_REQUIRED=true` is that image's equivalent of `texturepack-required`."
+
     out += [
         "```",
         "",
-        "Mount `packs/` into the container and point `MC_PACK` at its in-container path. The "
-        "image installs the pack folders but does not register them, so the step below still "
-        "applies. `TEXTUREPACK_REQUIRED=true` is that image's equivalent of "
-        "`texturepack-required`.",
+        mount,
         "",
-        "## Register the packs in the world",
+        f"## Register {them} in the world",
         "",
-        "These files live in `worlds/<world name>/`. If they already exist, **merge** these "
-        "entries into the existing array rather than overwriting the file.",
+        f"{'These files live' if len(packs) > 1 else 'This file lives'} in "
+        f"`worlds/<world name>/`. If {'they already exist' if len(packs) > 1 else 'it already exists'}"
+        ", **merge** the entries into the existing array rather than overwriting the file.",
         "",
     ]
     if behavior:
