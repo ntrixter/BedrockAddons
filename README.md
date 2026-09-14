@@ -11,6 +11,7 @@ versioned and released on its own schedule.
 
 | Add-on | Latest release | What it does |
 | --- | --- | --- |
+| [creeper-drop-all](creeper-drop-all/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=creeper-drop-all-v*&sort=semver&label=creeper-drop-all) | Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you. |
 | [nightshare](nightshare/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=nightshare-v*&sort=semver&label=nightshare) | Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice. |
 | [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 

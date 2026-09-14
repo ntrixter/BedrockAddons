@@ -1,0 +1,5 @@
+{
+  "display_name": "Creeper Drop All",
+  "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
+  "deprecated": false
+}

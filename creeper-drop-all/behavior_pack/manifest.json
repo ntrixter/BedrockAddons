@@ -1,0 +1,121 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Creeper Drop All",
+    "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
+    "uuid": "c60c1a0f-5864-4695-a2b5-07999da64790",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "98b00579-1d36-44ef-adb8-50ed45476b35",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "§l§aCreeper Drop All§r - explosions drop §l100%§r of the blocks they destroy."
+    },
+    {
+      "type": "label",
+      "text": "§7Changes here take effect the next time the world loads.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Creepers",
+      "name": "creeperdropall:creepers",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Ghast fireballs",
+      "name": "creeperdropall:ghasts",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Wither skulls",
+      "name": "creeperdropall:withers",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "End crystals",
+      "name": "creeperdropall:end_crystals",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "TNT",
+      "name": "creeperdropall:tnt",
+      "default": false
+    },
+    {
+      "type": "label",
+      "text": "§7TNT is off because Bedrock already drops every block a TNT blast destroys - the §otntExplosionDropDecay§r§7 game rule defaults to false. Mob explosions are the ones that lose blocks, and Bedrock has no game rule for those.§r"
+    },
+    {
+      "type": "label",
+      "text": "§7Protection§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Protect containers from explosions",
+      "name": "creeperdropall:protect_containers",
+      "default": false
+    },
+    {
+      "type": "label",
+      "text": "§7Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them. Off by default, because blast-proofing storage is a bigger change than handing your blocks back.§r"
+    },
+    {
+      "type": "label",
+      "text": "§7Advanced§r"
+    },
+    {
+      "type": "slider",
+      "text": "Merge drops within (blocks)",
+      "name": "creeperdropall:merge_grid",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "label",
+      "text": "§7Groups nearby drops into fewer item entities. §o1§r§7 spawns a pile at every single block - most faithful, hardest on the game. Raise it if a big blast makes things stutter.§r"
+    },
+    {
+      "type": "slider",
+      "text": "Max blocks per explosion",
+      "name": "creeperdropall:max_blocks",
+      "min": 512,
+      "max": 8192,
+      "step": 512,
+      "default": 4096
+    },
+    {
+      "type": "label",
+      "text": "§7A safety limit. An explosion bigger than this is handed back to Minecraft untouched rather than half-processed, so the worst case is ordinary vanilla behaviour.§r"
+    }
+  ]
+}
