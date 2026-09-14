@@ -51,6 +51,12 @@ LOCALISATION_KEY_RE = re.compile(r"^[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+$")
 
 PACK_SOURCES = (("behavior_pack", "data", "BP"), ("resource_pack", "resources", "RP"))
 
+# What modules[0].type may say, per pack folder. A behaviour pack holding only
+# scripts declares "script" rather than "data" -- both are behaviour packs, and
+# the folder is what decides the pack kind. The catalog and the archive layout
+# stay in the canonical data/resources vocabulary regardless.
+ALLOWED_MODULE_TYPES = {"data": {"data", "script"}, "resources": {"resources"}}
+
 
 class CatalogError(Exception):
     """A problem the user has to fix. Reported without a traceback."""
@@ -170,7 +176,7 @@ def packs_at_tag(tag: str, addon_id: str) -> tuple:
         packs.append(
             {
                 "uuid": header.get("uuid"),
-                "type": modules[0].get("type", module_type),
+                "type": module_type,
                 "version": normalise_version(header.get("version")),
                 "folder": f"{addon_id}_{suffix}",
             }

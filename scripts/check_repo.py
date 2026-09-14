@@ -377,9 +377,11 @@ def check_addons() -> None:
             if header is None:
                 continue
             declared = modules[0].get("type") if modules and isinstance(modules[0], dict) else None
-            if declared != module_type:
+            allowed = gen_catalog.ALLOWED_MODULE_TYPES[module_type]
+            if declared not in allowed:
+                expected = " or ".join(repr(t) for t in sorted(allowed))
                 error(rel, None, f"modules[0].type is {declared!r} but the pack lives in {source}/",
-                      f"set modules[0].type to {module_type!r}")
+                      f"set modules[0].type to {expected}")
             versions[source] = gen_catalog.normalise_version(header.get("version"))
 
         if len(set(map(tuple, (v for v in versions.values() if v)))) > 1:
