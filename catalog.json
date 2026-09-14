@@ -1,20 +1,68 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-14T21:30:41Z",
+  "generated_at": "2026-09-14T21:32:57Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "nightshare": {
       "display_name": "Nightshare",
       "description": "Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice.",
       "deprecated": false,
-      "latest_stable": null,
+      "latest_stable": {
+        "version": "1.2.0",
+        "tag": "nightshare-v1.2.0",
+        "filename": "nightshare-1.2.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/nightshare-v1.2.0/nightshare-1.2.0.mcpack",
+        "sha256": "455a94fd733b0363ff7df727294661cffc574988aaa41245186d0fa442724386",
+        "published_at": "2026-09-14T21:32:40Z",
+        "min_engine_version": [
+          1,
+          26,
+          30
+        ],
+        "packs": [
+          {
+            "uuid": "18921d46-612a-4224-8b3d-da5cc3de7053",
+            "type": "data",
+            "version": [
+              1,
+              2,
+              0
+            ],
+            "folder": "nightshare_BP"
+          }
+        ]
+      },
       "latest_prerelease": null
     },
     "no-witch-conversion": {
       "display_name": "No Witch Conversion",
       "description": "Villagers no longer turn into witches when struck by lightning.",
       "deprecated": false,
-      "latest_stable": null,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "no-witch-conversion-v1.0.0",
+        "filename": "no-witch-conversion-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/no-witch-conversion-v1.0.0/no-witch-conversion-1.0.0.mcpack",
+        "sha256": "ae3ad8a54cad54196714f8cd22a8702350ac29ec96b353bc32c87887ca0744dc",
+        "published_at": "2026-09-14T13:54:14Z",
+        "min_engine_version": [
+          1,
+          26,
+          40
+        ],
+        "packs": [
+          {
+            "uuid": "d2af958c-b04d-41c4-8439-0066910c5599",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "no-witch-conversion_BP"
+          }
+        ]
+      },
       "latest_prerelease": null
     }
   }
