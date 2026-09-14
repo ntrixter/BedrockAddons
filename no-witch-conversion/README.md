@@ -11,6 +11,7 @@ conversion never dealt damage in the first place).
 - **Add-on ID:** `no-witch-conversion`
 - **Minimum Minecraft version:** 1.26.40 (Bedrock 26.40)
 - **Packs:** behaviour pack only
+- **Author:** ntrixter
 
 ## Download
 

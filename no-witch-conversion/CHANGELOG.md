@@ -27,5 +27,7 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-13`.
   group are left intact but unreachable, so the transformation can still be
   invoked deliberately with `/event entity <target> become_witch`.
 
+  Includes a pack icon, and the in-game pack description credits ntrixter.
+
   Built against the Minecraft Bedrock 1.26.40 villager definition
   (`format_version` 1.26.20), taken from Mojang's bedrock-samples.
