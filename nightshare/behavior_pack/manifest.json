@@ -1,0 +1,102 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Nightshare",
+    "description": "Every player owns an equal share of the night. Sleeping spends yours and fast-forwards the night by that slice - cumulative, and nobody has to sleep at the same time.",
+    "uuid": "18921d46-612a-4224-8b3d-da5cc3de7053",
+    "version": "1.2.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "4465e395-9152-4549-96ab-08fe5b14f1fa",
+      "version": "1.2.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "\u00a7lNightshare\u00a7r - every player online at nightfall owns an equal share of the night. Getting into bed spends yours and fast-forwards the night by that slice. Shares add up over the night, and nobody has to sleep at the same time."
+    },
+    {
+      "type": "label",
+      "text": "\u00a77Changes here take effect the next time the world loads.\u00a7r"
+    },
+    {
+      "type": "dropdown",
+      "text": "Minecraft's own night skip",
+      "name": "nightshare:vanilla_guard",
+      "options": [
+        {
+          "name": "off",
+          "text": "Let it happen"
+        },
+        {
+          "name": "auto",
+          "text": "Hold it back while someone is away"
+        },
+        {
+          "name": "always",
+          "text": "Always hold it back"
+        }
+      ],
+      "default": "off"
+    },
+    {
+      "type": "label",
+      "text": "\u00a77Minecraft ends the night by itself once everyone in the Overworld is asleep. Players in the Nether or End cannot sleep at all, so that really means \u00a7oeveryone who could sleep did\u00a7r\u00a77.\u00a7r"
+    },
+    {
+      "type": "label",
+      "text": "\u00a77\u00a7lLet it happen\u00a7r\u00a77 accepts that. If a friend is off in the Nether and the rest of you turn in, morning comes even though their share was never spent.\u00a7r"
+    },
+    {
+      "type": "label",
+      "text": "\u00a77\u00a7lHold it back while someone is away\u00a7r\u00a77 makes the night run exactly as long as the unspent shares say. The cost: while somebody is away, anyone getting into bed sees Minecraft claim night skipping is switched off. It is not - Nightshare is holding it.\u00a7r"
+    },
+    {
+      "type": "label",
+      "text": "\u00a77\u00a7lAlways hold it back\u00a7r\u00a77 shows that same message every time anyone sleeps, on every night.\u00a7r"
+    },
+    {
+      "type": "slider",
+      "text": "Fast-forward length (seconds)",
+      "name": "nightshare:skip_seconds",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "label",
+      "text": "\u00a77How long the sky takes to sweep forward when a share is spent. Every skip takes this long whatever its size, so one player skipping a whole night and one of ten skipping a tenth feel the same. Raise it if the sky looks jumpy.\u00a7r"
+    },
+    {
+      "type": "toggle",
+      "text": "Announce in chat",
+      "name": "nightshare:announce",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "\u00a77Post a line when someone turns in, showing how much of the night they gave and how many shares are in so far.\u00a7r"
+    }
+  ]
+}
