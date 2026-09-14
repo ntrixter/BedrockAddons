@@ -90,18 +90,46 @@ jobs:
           FILENAME: ${{ steps.build.outputs.filename }}
           PRERELEASE: ${{ steps.build.outputs.prerelease }}
         # One download plus its checksum. Nothing else is attached.
+        #
+        # Idempotent on purpose. A tag can reach this workflow two ways: pushed
+        # with git, or created by publishing a release in the web UI -- which is
+        # the only way to make a tag without a git client, and which creates the
+        # release first. Creating a release that already exists would fail and
+        # leave a published release with no artifact attached, so an existing
+        # one is brought up to the generated state instead.
         run: |
           set -euo pipefail
-          flags=()
+
           if [ "$PRERELEASE" = "true" ]; then
-            flags+=(--prerelease)
+            prerelease_flag="--prerelease"
+          else
+            prerelease_flag="--prerelease=false"
           fi
-          gh release create "$TAG" \
-            --title "$TITLE" \
-            --notes-file dist/release-notes.md \
-            "${flags[@]}" \
-            "dist/$FILENAME" \
-            "dist/$FILENAME.sha256"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists; updating it in place"
+            gh release edit "$TAG" \
+              --title "$TITLE" \
+              --notes-file dist/release-notes.md \
+              --draft=false \
+              "$prerelease_flag"
+            # --clobber so a re-run replaces assets rather than erroring.
+            gh release upload "$TAG" \
+              "dist/$FILENAME" \
+              "dist/$FILENAME.sha256" \
+              --clobber
+          else
+            create_flags=()
+            if [ "$PRERELEASE" = "true" ]; then
+              create_flags+=(--prerelease)
+            fi
+            gh release create "$TAG" \
+              --title "$TITLE" \
+              --notes-file dist/release-notes.md \
+              "${create_flags[@]}" \
+              "dist/$FILENAME" \
+              "dist/$FILENAME.sha256"
+          fi
 
   catalog:
     needs: [release]

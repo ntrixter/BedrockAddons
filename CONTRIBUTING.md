@@ -230,12 +230,27 @@ Commit and push to `main`. Nothing is published yet.
 
 ### 8. Cut the first release
 
+A `<addon-id>-v<semver>` tag is the only thing that publishes. Either route
+works and both end in the same place — the workflow builds the artifact,
+generates the notes and attaches them whichever way the tag arrived.
+
+**With git:**
+
 ```sh
 git tag sleep-addon-v1.2.0
 git push origin sleep-addon-v1.2.0
 ```
 
-That tag push is the only manual step. The release workflow builds the add-on,
+**Without git, in the web UI:** Releases → **Draft a new release** → in
+**Choose a tag**, type `sleep-addon-v1.2.0` and pick **Create new tag on
+publish** → target `main` → **Publish release**. Leave the title and body
+empty; the workflow overwrites both with generated content, so anything typed
+there is discarded.
+
+GitHub has no standalone "create tag" button, so this route necessarily creates
+the release first and the workflow finds it already there. That is handled: the
+release step updates an existing release in place rather than failing, which it
+would otherwise do, leaving a published release with no artifact attached. The release workflow builds the add-on,
 verifies the tag version against the manifests, attaches the artifact and its
 SHA256, generates the release notes from the build output, marks it a
 prerelease if the version carries a suffix, and regenerates `catalog.json`.

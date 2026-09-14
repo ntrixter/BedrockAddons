@@ -185,7 +185,9 @@ When it fires, refresh the shipped copy:
    `python3 scripts/build_addon.py no-witch-conversion`. A botched edit fails
    immediately as invalid JSON, so the mistake is loud rather than silent.
 
-7. Tag `no-witch-conversion-v<new-version>` to release.
+7. Release by creating a `no-witch-conversion-v<new-version>` tag — either
+   `git push origin <tag>`, or Releases → Draft a new release → Create new tag
+   on publish. Both routes end up identical; see CONTRIBUTING.md.
 
 ## Changelog
 
