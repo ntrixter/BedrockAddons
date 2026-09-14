@@ -1,37 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-14T13:54:30Z",
+  "generated_at": "2026-09-14T18:23:43Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
+    "nightshare": {
+      "display_name": "Nightshare",
+      "description": "Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice.",
+      "deprecated": false,
+      "latest_stable": null,
+      "latest_prerelease": null
+    },
     "no-witch-conversion": {
       "display_name": "No Witch Conversion",
       "description": "Villagers no longer turn into witches when struck by lightning.",
       "deprecated": false,
-      "latest_stable": {
-        "version": "1.0.0",
-        "tag": "no-witch-conversion-v1.0.0",
-        "filename": "no-witch-conversion-1.0.0.mcpack",
-        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/no-witch-conversion-v1.0.0/no-witch-conversion-1.0.0.mcpack",
-        "sha256": "ae3ad8a54cad54196714f8cd22a8702350ac29ec96b353bc32c87887ca0744dc",
-        "published_at": "2026-09-14T13:54:14Z",
-        "min_engine_version": [
-          1,
-          26,
-          40
-        ],
-        "packs": [
-          {
-            "uuid": "d2af958c-b04d-41c4-8439-0066910c5599",
-            "type": "data",
-            "version": [
-              1,
-              0,
-              0
-            ],
-            "folder": "no-witch-conversion_BP"
-          }
-        ]
-      },
+      "latest_stable": null,
       "latest_prerelease": null
     }
   }

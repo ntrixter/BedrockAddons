@@ -110,7 +110,10 @@ to scrub once pushed. Check:
 
 - `metadata.authors` and every other manifest field — the handle `ntrixter`
   only, no email, and no URL pointing anywhere except this repository;
-- author headers or comments in script files;
+- author headers, `@author` tags and licence blocks in script files;
+- `package.json`, if the add-on has one — `author`, `contributors`,
+  `repository`, `homepage` and `bugs` routinely carry a real name, an email
+  and a local path between them;
 - any JSON field carrying a name or a filesystem path;
 - stray editor directories such as `.vscode/` or `.idea/`, which embed absolute
   paths — delete them;
@@ -161,7 +164,7 @@ In each `manifest.json`:
 | `header.uuid` | A fresh UUID (or the published one). |
 | `header.version` | `[1, 0, 0]`, or the version being migrated. |
 | `header.min_engine_version` | The lowest Minecraft version you have actually tested. |
-| `modules[0].type` | `data` in `behavior_pack/`, `resources` in `resource_pack/`. |
+| `modules[0].type` | `resources` in `resource_pack/`. In `behavior_pack/`: `data` for a content pack, or `script` for a pack that ships scripts — a script module is not a `data` module and changing it to satisfy a validator stops the pack working. |
 | `modules[0].uuid` | A different fresh UUID. |
 | `modules[0].version` | Same as `header.version`. |
 | `metadata.authors` | `["ntrixter"]` — the handle only, never a real name or an email. |
@@ -226,7 +229,10 @@ result if you want to be sure:
 unzip -l dist/sleep-addon-1.2.0.mcaddon
 ```
 
-Commit and push to `main`. Nothing is published yet.
+Then commit. Pushing straight to `main` is fine for a small change; for
+anything substantial — a new add-on especially — push a branch and open a pull
+request instead, because `validate.yml` runs on pull requests and will check the
+add-on before it lands. Either way nothing is published yet.
 
 ### 8. Cut the first release
 
@@ -268,6 +274,17 @@ carries a suffix, and regenerates `catalog.json`.
 
 To cut a prerelease, tag `sleep-addon-v1.5.0-beta.1` while the manifests say
 `[1, 5, 0]`. Add a matching `## [1.5.0-beta.1]` changelog section.
+
+## Add-ons with tests
+
+A script pack can be unit-tested without Minecraft by mocking
+`@minecraft/server`; see `BEDROCK-NOTES.md`. Tests live in `<addon-id>/tests/`,
+outside `behavior_pack/` so `build_addon.py` never packages them — it only ever
+zips the pack folders.
+
+CI does not run them. The repository's own tooling is Python standard library
+only, and adding a Node setup step to `validate.yml` is a change to its shape
+rather than something to slip in alongside an add-on. Run them by hand.
 
 ## Add-ons that override a vanilla file
 
