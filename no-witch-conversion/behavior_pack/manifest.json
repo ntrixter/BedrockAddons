@@ -5,7 +5,7 @@
     "description": "Villagers no longer turn into witches when struck by lightning.",
     "uuid": "d2af958c-b04d-41c4-8439-0066910c5599",
     "version": [1, 0, 0],
-    "min_engine_version": [1, 26, 45]
+    "min_engine_version": [1, 26, 40]
   },
   "modules": [
     {

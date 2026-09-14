@@ -9,7 +9,7 @@ transformation, and no damage either, which is what vanilla already does (the
 conversion never dealt damage in the first place).
 
 - **Add-on ID:** `no-witch-conversion`
-- **Minimum Minecraft version:** 1.26.45 (Bedrock 26.45)
+- **Minimum Minecraft version:** 1.26.40 (Bedrock 26.40)
 - **Packs:** behaviour pack only
 
 ## Download
@@ -91,15 +91,15 @@ Vanilla handles the conversion entirely in data, in three pieces inside
 
 1. `minecraft:damage_sensor` has a trigger filtering on `is_family: lightning`
    and `is_difficulty != peaceful`, which fires the `become_witch` event and
-   carries `"deals_damage": false`.
+   carries `"deals_damage": "no"`.
 2. The `become_witch` event adds the `become_witch` component group.
 3. That group is a `minecraft:transformation` into `minecraft:witch`, delayed
    half a second.
 
 This pack ships a copy of that file with **one line removed** — the
-`"event": "become_witch"` line in step 1 (and the comma the removal orphans).
-The filters and `"deals_damage": false` stay, so lightning still matches the
-villager and still deals no damage; it just no longer triggers anything.
+`"event": "become_witch",` line in step 1. The filters and
+`"deals_damage": "no"` stay, so lightning still matches the villager and still
+deals no damage; it just no longer triggers anything.
 
 Steps 2 and 3 are deliberately left in place. They are unreachable through
 normal play, they keep this file as close to vanilla as possible for re-syncing,
@@ -134,33 +134,57 @@ unchanged.
 
 ## Re-syncing after a Minecraft update
 
-When Mojang updates villagers, refresh the shipped copy:
+The monthly `vanilla-drift` workflow tells you when this is needed — it watches
+upstream and opens an issue when Mojang changes the file. You should not have to
+remember to check.
 
-1. Fetch the current vanilla `villager_v2.json` from the official reference:
-   `learn.microsoft.com/minecraft/creator/reference/source/vanillabehaviorpack_snippets/entities/villager_v2`
-2. Strip its `//` comments. The vanilla file is not strict JSON — it has around
-   25 comment lines, two of them trailing a value on the same line — and this
-   repository's tooling parses with a strict JSON reader. Blank lines are left
-   in place of comment-only lines so line numbers still match vanilla, which
-   keeps the diff below readable.
-3. Apply the same one-line edit:
+When it fires, refresh the shipped copy:
 
-   ```diff
-                    }
-   -              ],
-   -              "event": "become_witch"
-   +              ]
-                  },
-                  "deals_damage": false
+1. Fetch the current vanilla file from **Mojang's `bedrock-samples` repository**,
+   which is the source of truth:
+
+   ```sh
+   curl -sSL -o villager_v2.json \
+     https://raw.githubusercontent.com/Mojang/bedrock-samples/main/behavior_pack/entities/villager_v2.json
    ```
 
-4. Update `min_engine_version` in `behavior_pack/manifest.json` to the version
-   you synced from, bump `header.version` in the manifest, and add a
-   `CHANGELOG.md` section.
-5. Run `python3 scripts/check_repo.py` and
-   `python3 scripts/build_addon.py no-witch-conversion`. A missed comma fails
-   immediately as invalid JSON, so this mistake is loud rather than silent.
-6. Tag `no-witch-conversion-v<new-version>` to release.
+   Do **not** use the Microsoft Learn `vanillabehaviorpack_snippets` pages. They
+   are served under a "stable" URL but lag badly — at the time of writing they
+   offered a 2,514-line `villager_v2.json` with `format_version` 1.19.0 while
+   the real file was 4,345 lines at 1.26.20. That mistake is how this add-on
+   first shipped a stale villager.
+
+2. Strip its `//` comments. The vanilla file is not strict JSON and this
+   repository's tooling uses a strict reader. Split each line at `//` and keep
+   the left-hand side; blank lines are left where comment-only lines were, so
+   line numbers stay aligned with upstream and the diff below stays readable.
+
+3. Apply the one-line edit — delete the `event` line from the lightning trigger:
+
+   ```diff
+              {
+                "deals_damage": "no",
+                "on_damage": {
+   -              "event": "become_witch",
+                  "filters": [
+   ```
+
+   No comma repair is needed: `filters` follows, so the trailing comma goes with
+   the deleted line.
+
+4. Update `min_engine_version` in `behavior_pack/manifest.json` to match the
+   `min_engine_version` in `bedrock-samples`' own `behavior_pack/manifest.json`,
+   bump `header.version`, and add a `CHANGELOG.md` section.
+
+5. Refresh `upstream_sha256` in `addon.json` to the SHA256 of the new
+   comment-stripped upstream file, or the drift workflow keeps reporting.
+   `python3 scripts/check_vanilla_drift.py --print-hash` prints it.
+
+6. Run `python3 scripts/check_repo.py` and
+   `python3 scripts/build_addon.py no-witch-conversion`. A botched edit fails
+   immediately as invalid JSON, so the mistake is loud rather than silent.
+
+7. Tag `no-witch-conversion-v<new-version>` to release.
 
 ## Changelog
 

@@ -1,5 +1,11 @@
 {
   "display_name": "No Witch Conversion",
   "description": "Villagers no longer turn into witches when struck by lightning.",
-  "deprecated": false
+  "deprecated": false,
+  "vanilla_overrides": [
+    {
+      "path": "behavior_pack/entities/villager_v2.json",
+      "upstream_sha256": "9c1c3d267bcce2f73db28dadc8b832b33526d773f558a502ac3ce5673c50161a"
+    }
+  ]
 }
