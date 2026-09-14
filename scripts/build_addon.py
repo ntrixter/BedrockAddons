@@ -39,6 +39,11 @@ PACK_KINDS = {
     "resource_pack": ("resources", "RP"),
 }
 
+# What modules[0].type may say, per pack folder. A script-only behaviour pack
+# declares "script"; it is still a behaviour pack, and everything downstream
+# routes on the canonical kind below rather than on the module flavour.
+ALLOWED_MODULE_TYPES = {"data": {"data", "script"}, "resources": {"resources"}}
+
 REQUIRED_HEADER_FIELDS = ("name", "uuid", "version", "min_engine_version")
 
 # Excluded before zipping. Editor and OS artifacts embed absolute paths and
@@ -173,10 +178,12 @@ def discover_packs(addon_dir: Path, addon_id: str) -> list:
         manifest = load_manifest(pack_dir / "manifest.json", rel)
         header = manifest["header"]
         declared = manifest["modules"][0].get("type")
-        if declared != module_type:
+        allowed = ALLOWED_MODULE_TYPES[module_type]
+        if declared not in allowed:
             fail(
                 f"{rel}/manifest.json declares modules[0].type={declared!r} "
-                f"but lives in {source}/, which must declare {module_type!r}"
+                f"but lives in {source}/, which must declare "
+                + " or ".join(repr(t) for t in sorted(allowed))
             )
         packs.append(
             {

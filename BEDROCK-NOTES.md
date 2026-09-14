@@ -174,6 +174,34 @@ Full manual removal is all three of:
 
 ---
 
+## A script pack's module type is `script`, not `data`
+
+A behaviour pack that ships only scripts declares:
+
+```json
+"modules": [
+  {
+    "type": "script",
+    "language": "javascript",
+    "uuid": "...",
+    "version": "1.2.0",
+    "entry": "scripts/main.js"
+  }
+]
+```
+
+`type` is `"script"` and there is no `data` module alongside it. A behaviour pack
+does not need one. Changing it to `"data"` to satisfy a validator stops it being
+a script module and the pack silently does nothing.
+
+The pack **folder** is what decides whether something is a behaviour or a
+resource pack; the module type describes what is inside it. This repository's
+tooling originally conflated the two and rejected the first script pack outright
+— see the `ALLOWED_MODULE_TYPES` tables in `scripts/check_repo.py`,
+`scripts/build_addon.py` and `scripts/gen_catalog.py`.
+
+---
+
 ## Script API versioning
 
 - Declaring an **older** stable module version still works on newer engines —

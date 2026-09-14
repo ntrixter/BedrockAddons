@@ -16,6 +16,7 @@ body:
         Add a new option to this list whenever an add-on is added to the
         repository; see CONTRIBUTING.md.
       options:
+        - nightshare
         - no-witch-conversion
         - A new add-on
         - Repository tooling (build, CI, catalog)

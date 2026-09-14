@@ -11,6 +11,7 @@ versioned and released on its own schedule.
 
 | Add-on | Latest release | What it does |
 | --- | --- | --- |
+| [nightshare](nightshare/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=nightshare-v*&sort=semver&label=nightshare) | Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice. |
 | [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 
 ## How this repository is laid out
