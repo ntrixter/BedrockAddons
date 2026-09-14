@@ -58,9 +58,9 @@ Every add-on's release notes cover this in full, but in short:
   `world_resource_packs.json`, which live in `worlds/<world name>/`.
 
 Two things that quietly break a server install: `level-name` in
-`server.properties` must match the world's folder name exactly, spaces
-included; and a resource pack is not forced on connecting players unless
-`texturepack-required=true`.
+`server.properties` must match the world's folder name exactly, including
+spaces and letter case; and a resource pack is not forced on connecting
+players unless `texturepack-required=true`.
 
 ## For a consumer
 

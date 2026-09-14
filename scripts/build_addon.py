@@ -367,6 +367,22 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         f"3. Enable {them} on the world you want {'them' if len(packs) > 1 else 'it'} in, "
         "under its settings.",
         "",
+        "## Updating from an earlier version",
+        "",
+        "Applying a behaviour pack **copies it into the world**, so a world that already "
+        f"has an older copy keeps running that copy — importing this file does not update "
+        "it. Minecraft's Storage screen manages only the global pack library, not a "
+        "world's embedded copy, so the old version can look impossible to remove.",
+        "",
+        "On a world you already play: turn the pack off under Edit World, then on again, "
+        f"and check the version shown. If the old one persists, the world's own copy has "
+        "to go — delete `<world>/behavior_packs/<pack folder>/` and remove its entries "
+        "from `world_behavior_pack_history.json` and "
+        "`world_behavior_pack_settings.json` beside it. Deleting the folder alone leaves "
+        'a ghost row reading "This pack is missing!".',
+        "",
+        "On a server, replace the folder under `behavior_packs/` and restart.",
+        "",
         "## Install on a dedicated server",
         "",
         f"1. Rename `{filename}` to `.zip` and extract it.",
@@ -391,7 +407,7 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         ]
     gotchas = [
         "- `level-name` in `server.properties` must match the world's folder name under "
-        "`worlds/` **exactly**, spaces included. A mismatch is the most common reason a pack "
+        "`worlds/` **exactly**, including spaces and letter case. A mismatch is the most common reason a pack "
         "appears to be ignored.",
     ]
     if resource:

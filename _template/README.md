@@ -35,8 +35,8 @@ Releases in this repository are shared across every add-on, so filter by the
 Three things that quietly break a server install:
 
 - `level-name` in `server.properties` must match the world's folder name under
-  `worlds/` **exactly**, spaces included. A mismatch is the single most common
-  reason a pack appears to be ignored.
+  `worlds/` **exactly**, including spaces and letter case. A mismatch is the
+  single most common reason a pack appears to be ignored.
 - A resource pack is not forced on connecting players unless
   `texturepack-required=true` is set in `server.properties`.
 - Do not hand-edit `valid_known_packs.json`. Older guides still say to; the
@@ -90,6 +90,31 @@ these entries into the existing array rather than overwriting the file.
 
 Every release's notes carry these same blocks with the real UUIDs already
 filled in, so there is never a need to open a manifest by hand.
+
+## Updating or removing this add-on
+
+Applying a behaviour pack **copies it into the world**, at
+`<world>/behavior_packs/<pack folder>/`, independent of the global pack library.
+That has three consequences that all present as confusing bugs:
+
+- A world keeps running its embedded copy, so importing a newer `.mcpack` does
+  **not** update a world that already has an older one.
+- Minecraft's **Settings → Storage → Behaviour Packs** manages only the global
+  library, so a world-local leftover cannot be removed there at all. It still
+  appears under **Edit World → Behaviour Packs**.
+- `<world>/world_behavior_pack_history.json` lists every pack ever applied.
+  Delete the folder without clearing that entry and you get a ghost row reading
+  "This pack is missing!".
+
+To update a world you already play, turn the pack off under Edit World and on
+again, then check the version. If the old version persists, remove the world's
+own copy — all three of:
+
+1. delete `<world>/behavior_packs/<pack folder>/`
+2. remove the entry from `<world>/world_behavior_pack_history.json`
+3. remove the entry from `<world>/world_behavior_pack_settings.json`
+
+On a dedicated server, replace the folder under `behavior_packs/` and restart.
 
 ## Changelog
 
