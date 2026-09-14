@@ -241,19 +241,30 @@ git tag sleep-addon-v1.2.0
 git push origin sleep-addon-v1.2.0
 ```
 
-**Without git, in the web UI:** Releases → **Draft a new release** → in
-**Choose a tag**, type `sleep-addon-v1.2.0` and pick **Create new tag on
-publish** → target `main` → **Publish release**. Leave the title and body
-empty; the workflow overwrites both with generated content, so anything typed
-there is discarded.
+**Without git, in the web UI:** the release form pre-fills from the URL, so the
+whole thing is one link and one click. Substitute the tag:
+
+```
+https://github.com/ntrixter/BedrockAddons/releases/new?tag=sleep-addon-v1.2.0&target=main
+```
+
+Open it and press **Publish release**. Leave the title and description empty —
+the workflow overwrites both with generated content, so anything typed there is
+discarded.
+
+Without the pre-filled link it is Releases → **Draft a new release** → in
+**Choose a tag** type the tag and pick **Create new tag on publish** → target
+`main` → **Publish release**. Same result, more typing.
 
 GitHub has no standalone "create tag" button, so this route necessarily creates
-the release first and the workflow finds it already there. That is handled: the
-release step updates an existing release in place rather than failing, which it
-would otherwise do, leaving a published release with no artifact attached. The release workflow builds the add-on,
-verifies the tag version against the manifests, attaches the artifact and its
-SHA256, generates the release notes from the build output, marks it a
-prerelease if the version carries a suffix, and regenerates `catalog.json`.
+the release before the workflow sees the tag. That is handled: the release step
+updates an existing release in place rather than failing, which it would
+otherwise do, leaving a published release with no artifact attached.
+
+Either way the release workflow then builds the add-on, verifies the tag
+version against the manifests, attaches the artifact and its SHA256, generates
+the release notes from the build output, marks it a prerelease if the version
+carries a suffix, and regenerates `catalog.json`.
 
 To cut a prerelease, tag `sleep-addon-v1.5.0-beta.1` while the manifests say
 `[1, 5, 0]`. Add a matching `## [1.5.0-beta.1]` changelog section.
