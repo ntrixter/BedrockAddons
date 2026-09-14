@@ -1,0 +1,109 @@
+name: vanilla-drift
+
+# Watches the vanilla files that add-ons override, and opens an issue when
+# Mojang changes one.
+#
+# An add-on that disables a vanilla mechanic has to ship a whole copy of the
+# vanilla file, because Bedrock replaces entity files wholesale. That pins the
+# vanilla behaviour until the copy is re-synced. The re-sync is a one-line edit;
+# the hard part is remembering to check. This does the remembering.
+#
+# Publishes nothing and touches no code.
+on:
+  schedule:
+    # Monthly, 06:00 UTC on the 1st. GitHub disables scheduled workflows in a
+    # repository with no activity for 60 days, so if this ever goes quiet for a
+    # long stretch, check that it is still enabled.
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vanilla-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check for vanilla drift
+        id: drift
+        # Exit codes: 0 no drift, 1 drift, 2 could not check. Only 1 is a
+        # reportable finding; 2 must fail the run rather than pass quietly.
+        run: |
+          set +e
+          python3 scripts/check_vanilla_drift.py > drift.txt 2>&1
+          status=$?
+          set -e
+          cat drift.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 2 ]; then
+            echo "::error::could not check upstream; see the log above"
+            exit 1
+          fi
+
+      - name: Open an issue when upstream has changed
+        if: steps.drift.outputs.status == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          # One issue per drifting add-on, titled deterministically so a repeat
+          # run finds the open one instead of filing a duplicate every month.
+          python3 - <<'PY' > titles.txt
+          import re, pathlib
+          for line in pathlib.Path("drift.txt").read_text().splitlines():
+              m = re.match(r"^DRIFT (\S+)\s+(\S+)$", line)
+              if m:
+                  print(f"{m.group(1)}\t{m.group(2)}")
+          PY
+
+          while IFS=$'\t' read -r addon path; do
+            [ -n "$addon" ] || continue
+            title="Vanilla drift: $addon ($(basename "$path"))"
+
+            existing=$(gh issue list --repo "$REPO" --state open \
+              --search "$title in:title" --json title,number \
+              --jq ".[] | select(.title == \"$title\") | .number" | head -n1)
+
+            if [ -n "$existing" ]; then
+              echo "issue #$existing already open for $addon; not filing a duplicate"
+              continue
+            fi
+
+            {
+              echo "Mojang has changed the vanilla file that \`$addon\` overrides, so the copy"
+              echo "shipped by this add-on is now behind upstream."
+              echo
+              echo "The add-on keeps working — villagers simply stay on the older definition"
+              echo "until it is re-synced. Nothing is broken and nothing is urgent."
+              echo
+              echo "Re-sync steps are in \`$addon/README.md\`, under \"Re-syncing after a"
+              echo "Minecraft update\". Remember to refresh \`upstream_sha256\` in"
+              echo "\`$addon/addon.json\` afterwards, or this will keep reporting."
+              echo
+              echo "[Full detection log and diff]($RUN_URL)"
+              echo
+              echo '```'
+              sed -n "/^DRIFT $addon/,/^\(ok\|DRIFT\) /p" drift.txt | head -n 120
+              echo '```'
+            } > body.md
+
+            gh issue create --repo "$REPO" \
+              --title "$title" \
+              --body-file body.md \
+              --label "$addon" || \
+            gh issue create --repo "$REPO" \
+              --title "$title" \
+              --body-file body.md
+          done < titles.txt

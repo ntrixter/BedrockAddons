@@ -243,6 +243,40 @@ prerelease if the version carries a suffix, and regenerates `catalog.json`.
 To cut a prerelease, tag `sleep-addon-v1.5.0-beta.1` while the manifests say
 `[1, 5, 0]`. Add a matching `## [1.5.0-beta.1]` changelog section.
 
+## Add-ons that override a vanilla file
+
+Some add-ons work by replacing a vanilla file — disabling a built-in mechanic
+generally requires it, because Bedrock swaps entity files wholesale rather than
+merging them. If yours does:
+
+- Take the vanilla file from **Mojang's `bedrock-samples`**, never from the
+  Microsoft Learn snippet pages, which lag by a long way despite their "stable"
+  URL. `CLAUDE.md` explains what that mistake cost the first time.
+- Take `min_engine_version` from `bedrock-samples`' own
+  `behavior_pack/manifest.json`.
+- Strip the `//` comments; vanilla JSON is not strict JSON and this repo's
+  tooling uses a strict reader.
+- Declare the override in `addon.json` so the monthly `vanilla-drift` workflow
+  watches it for you:
+
+  ```json
+  "vanilla_overrides": [
+    {
+      "path": "behavior_pack/entities/villager_v2.json",
+      "upstream_sha256": "9c1c3d26…"
+    }
+  ]
+  ```
+
+  `path` is relative to the add-on folder and is also the path inside
+  `bedrock-samples`. Get the hash from
+  `python3 scripts/check_vanilla_drift.py --print-hash`, and refresh it after
+  every re-sync or the workflow keeps reporting the same drift.
+
+- Document the re-sync procedure in the add-on's own README, with the exact diff
+  to re-apply. Keep the diff from vanilla as small as you can — a one-line
+  change makes a re-sync mechanical instead of a research exercise.
+
 ## Labels
 
 One label per add-on, plus the usual three. A new label is created whenever a

@@ -418,10 +418,44 @@ def check_addon_json(addon_id: str) -> None:
             error(rel, None, f"missing required field '{field}'", f"add {field}: {hint}")
         elif not isinstance(data[field], kind):
             error(rel, None, f"'{field}' must be {kind.__name__}", f"{field}: {hint}")
+    check_vanilla_overrides(rel, data)
     text = (REPO_ROOT / rel).read_text(encoding="utf-8")
     if SENTINEL_RE.search(text):
         error(rel, None, "still contains a _template placeholder",
               "replace every REPLACE_ME value with the real one")
+
+
+def check_vanilla_overrides(rel: str, data: dict) -> None:
+    """Validate the optional vanilla_overrides declaration.
+
+    Absent is fine -- most add-ons override nothing. Present but malformed is
+    not: scripts/check_vanilla_drift.py would silently skip it, and a drift
+    check that quietly stops checking is worse than no check at all.
+    """
+    overrides = data.get("vanilla_overrides")
+    if overrides is None:
+        return
+    if not isinstance(overrides, list):
+        error(rel, None, "'vanilla_overrides' must be an array",
+              "use [] or a list of {path, upstream_sha256} objects")
+        return
+    addon_id = rel.split("/")[0]
+    for index, entry in enumerate(overrides):
+        where = f"vanilla_overrides[{index}]"
+        if not isinstance(entry, dict):
+            error(rel, None, f"{where} must be an object", "use {path, upstream_sha256}")
+            continue
+        path = entry.get("path")
+        if not isinstance(path, str) or not path:
+            error(rel, None, f"{where}.path must be a non-empty string",
+                  "e.g. behavior_pack/entities/villager_v2.json")
+        elif not (REPO_ROOT / addon_id / path).is_file():
+            error(rel, None, f"{where}.path does not exist: {addon_id}/{path}",
+                  "point it at the vanilla file this add-on actually ships")
+        digest = entry.get("upstream_sha256")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            error(rel, None, f"{where}.upstream_sha256 must be 64 lowercase hex characters",
+                  "python3 scripts/check_vanilla_drift.py --print-hash")
 
 
 def check_changelog(addon_id: str, version: list | None) -> None:

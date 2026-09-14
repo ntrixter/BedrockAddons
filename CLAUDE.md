@@ -141,4 +141,47 @@ probably needs a simpler design instead.
 | `python3 scripts/check_repo.py` | All repository checks plus the identity-leak scan. Run before every push. |
 | `python3 scripts/build_addon.py <addon-id>` | Package one add-on into `dist/`. |
 | `python3 scripts/gen_catalog.py` | Regenerate `catalog.json`. `--offline` skips the API. |
+| `python3 scripts/check_vanilla_drift.py` | Check whether Mojang has changed a vanilla file an add-on overrides. |
 | `python3 scripts/strip_image_metadata.py <path>` | Remove EXIF/XMP from a PNG or JPEG. |
+
+## Overriding a vanilla file
+
+Bedrock replaces vanilla entity files wholesale — there is no way to patch a
+single component — so an add-on that disables a vanilla mechanic must ship the
+complete file. That is the documented approach, not a workaround.
+
+**Mojang's `bedrock-samples` repository is the only source of truth:**
+
+```
+https://raw.githubusercontent.com/Mojang/bedrock-samples/main/<path>
+```
+
+**Do not take vanilla files from the Microsoft Learn
+`vanillabehaviorpack_snippets` reference pages.** They are served under a
+`view=minecraft-bedrock-stable` URL that implies currency but lag badly. This
+repository has already been burned once: the Learn page offered a 2,514-line
+`villager_v2.json` at `format_version` 1.19.0 while the real file was 4,345
+lines at 1.26.20. Shipping the Learn copy would have overridden current
+villagers with a definition missing roughly 1,800 lines of behaviour.
+
+Take `min_engine_version` from `bedrock-samples`' own
+`behavior_pack/manifest.json` rather than guessing from the marketing version
+number. The release names moved to a calendar style (26.40, 26.45) while the
+engine version kept its `1.` prefix (`1.26.40`).
+
+Vanilla JSON is **not strict JSON** — it carries `//` comments, some trailing a
+value on the same line. Strip them on the way in by splitting each line at `//`
+and keeping the left side, leaving the blank line behind so line numbers stay
+aligned with upstream. This repository's tooling uses a strict JSON reader.
+
+Every add-on that overrides a vanilla file declares it in `addon.json` so the
+monthly `vanilla-drift` workflow can watch it:
+
+```json
+"vanilla_overrides": [
+  { "path": "behavior_pack/entities/villager_v2.json", "upstream_sha256": "…" }
+]
+```
+
+Refresh `upstream_sha256` after every re-sync
+(`check_vanilla_drift.py --print-hash`), or the workflow keeps reporting.
