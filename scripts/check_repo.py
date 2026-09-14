@@ -52,6 +52,13 @@ ALLOWED_COMMIT_IDENTITIES = {
     # Actions bot. Without this entry the history scan fails on the first
     # validate run after the first release.
     "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+    # On a pull_request event actions/checkout checks out refs/pull/N/merge --
+    # a merge commit GitHub creates on the fly, committed as this identity.
+    # It is ephemeral and never lands on the default branch, but the scan walks
+    # whatever is checked out, so without this entry repo-checks fails on every
+    # pull request no matter what it contains. It carries no real name either
+    # way, so allowing it costs nothing.
+    "GitHub <noreply@github.com>",
 }
 
 # Addresses that may appear in files and commit messages.
@@ -60,6 +67,9 @@ ALLOWED_EMAILS = {
     "41898282+github-actions[bot]@users.noreply.github.com",
     # The one permitted AI-attribution trailer.
     "noreply@anthropic.com",
+    # The committer address on GitHub's synthetic pull-request merge commit,
+    # allowed as an identity just below and therefore quoted in this file.
+    "noreply@github.com",
 }
 
 # The only attribution trailer allowed anywhere in the repo.
