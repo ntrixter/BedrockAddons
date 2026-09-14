@@ -6,6 +6,11 @@ Follow them; they are not a description of how the repo was set up.
 This is a monorepo of Minecraft Bedrock add-ons. One folder per add-on, each
 versioned and released independently. `main` is the only branch.
 
+`BEDROCK-NOTES.md` holds field-verified Bedrock facts that were expensive to
+establish, several of which contradict the official documentation. Read it
+before trusting `learn.microsoft.com` on anything, and add to it when you learn
+something the hard way.
+
 ## Anonymity
 
 These rules are absolute and apply from the first line of any change.
@@ -163,6 +168,12 @@ repository has already been burned once: the Learn page offered a 2,514-line
 `villager_v2.json` at `format_version` 1.19.0 while the real file was 4,345
 lines at 1.26.20. Shipping the Learn copy would have overridden current
 villagers with a definition missing roughly 1,800 lines of behaviour.
+
+Those pages are not the only stale ones — the manifest reference still calls
+pack settings experimental, and the custom-settings article still calls
+`getPackSettings()` beta, when both have been stable since Bedrock 1.26.30.
+**Check `BEDROCK-NOTES.md` before trusting a Microsoft Learn page**, and add to
+it whenever you establish a fact the hard way.
 
 Take `min_engine_version` from `bedrock-samples`' own
 `behavior_pack/manifest.json` rather than guessing from the marketing version
