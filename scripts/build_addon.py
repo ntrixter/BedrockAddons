@@ -193,6 +193,7 @@ def discover_packs(addon_dir: Path, addon_id: str) -> list:
                 "uuid": header["uuid"],
                 "type": module_type,
                 "name": header["name"],
+                "format_version": manifest.get("format_version"),
                 "version": list(parse_version_field(header["version"], f"{rel} header.version")),
                 "min_engine_version": list(
                     parse_version_field(
@@ -330,19 +331,22 @@ def extract_changelog_section(changelog_path: Path, version: str, addon_id: str)
     return body.strip()
 
 
-def world_pack_entry(pack: dict) -> str:
+def world_pack_entry(pack: dict, as_string: bool = False) -> str:
     """Render a world_*_packs.json entry the way a person would write it.
 
     json.dumps(indent=...) would put each integer of the version on its own
     line, which is unpleasant to paste into a file by hand -- and pasting this
     by hand is exactly what these blocks are for.
     """
-    version = ", ".join(str(number) for number in pack["version"])
+    if as_string:
+        version = '"' + ".".join(str(number) for number in pack["version"]) + '"'
+    else:
+        version = "[" + ", ".join(str(number) for number in pack["version"]) + "]"
     return (
         "[\n"
         "  {\n"
         f'    "pack_id": "{pack["uuid"]}",\n'
-        f'    "version": [{version}]\n'
+        f'    "version": {version}\n'
         "  }\n"
         "]"
     )
@@ -482,10 +486,25 @@ def render_release_notes(summary: dict, changelog: str) -> str:
         ", **merge** the entries into the existing array rather than overwriting the file.",
         "",
     ]
-    if behavior:
-        out += ["`world_behavior_packs.json`", "", "```json", world_pack_entry(behavior), "```", ""]
-    if resource:
-        out += ["`world_resource_packs.json`", "", "```json", world_pack_entry(resource), "```", ""]
+    for pack, world_file in ((behavior, "world_behavior_packs.json"),
+                             (resource, "world_resource_packs.json")):
+        if pack:
+            out += [f"`{world_file}`", "", "```json", world_pack_entry(pack), "```", ""]
+            # A format_version 3 manifest writes every version as a SemVer
+            # string. Whether world_*_packs.json has to match has not been
+            # confirmed on a real server, and guessing wrong fails silently --
+            # the pack simply never loads -- so offer both rather than pick one.
+            if (pack.get("manifest_format_version") or 2) >= 3:
+                out += [
+                    "This pack uses a `format_version` 3 manifest, where versions are "
+                    "written as strings. If the entry above does not work, the file may "
+                    "need the version to match that form — try this instead:",
+                    "",
+                    "```json",
+                    world_pack_entry(pack, as_string=True),
+                    "```",
+                    "",
+                ]
     out += [
         "## Checksum",
         "",
@@ -562,6 +581,7 @@ def build(addon_id: str, out_dir: Path, version_override: str | None) -> dict:
                 "type": p["type"],
                 "version": p["version"],
                 "folder": p["folder"],
+                "manifest_format_version": p["format_version"],
             }
             for p in packs
         ],

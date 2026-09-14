@@ -118,7 +118,7 @@ release you are actually about to install.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `uuid` | string | The pack's **header** UUID. This is the `pack_id` that goes in `world_behavior_packs.json` / `world_resource_packs.json`. |
-| `type` | string | `data` for a behaviour pack, `resources` for a resource pack. Read from `modules[].type` in the manifest. |
+| `type` | string | `data` for a behaviour pack, `resources` for a resource pack. Always one of those two — it is the **kind of pack**, not a copy of `modules[].type`, which says `script` for a pack that ships scripts. |
 | `version` | array | Three integers, the pack version, in the array form the world JSON files expect. |
 | `folder` | string | The recommended directory name on a server, e.g. `sleep-addon_BP`. |
 
@@ -127,6 +127,15 @@ pack UUID and version against this array, not against release tags.** A
 consumer also needs `type` to decide which server directory a pack belongs in
 (`behavior_packs/` or `resource_packs/`) and which world JSON file to register
 it in.
+
+**One open question for a consumer that writes `world_*_packs.json` itself.**
+A pack whose manifest is `format_version` 3 writes every version as a SemVer
+string. It has not been confirmed on a real server whether the world
+registration file has to match that form rather than the `version` array above.
+Released packs carry both forms in their release notes; a consumer should try
+the array first and fall back to the string if the pack does not load. See the
+UNVERIFIED note in `BEDROCK-NOTES.md`, and expect this paragraph to disappear
+once it is settled.
 
 `folder` is a recommendation, not a promise about the archive. In a `.mcaddon`
 it matches the folder inside the archive. A single-pack `.mcpack` extracts
