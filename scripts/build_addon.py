@@ -244,6 +244,13 @@ def write_archive(destination: Path, entries: list) -> None:
             ) as archive:
                 for arcname, path, is_dir in entries:
                     info = zipfile.ZipInfo(arcname, date_time=ZIP_TIMESTAMP)
+                    # zipfile stamps the creating platform into every entry: 0
+                    # on Windows, 3 elsewhere. Left implicit, the same commit
+                    # built on Windows and on Linux produces entries of equal
+                    # size but different bytes, so the SHA256 differs. Pinning
+                    # it to 3 is a no-op on Linux -- where every published
+                    # artifact was built -- and makes a Windows build match.
+                    info.create_system = 3
                     if is_dir:
                         info.external_attr = (0o40755 << 16) | 0x10
                         archive.writestr(info, b"")

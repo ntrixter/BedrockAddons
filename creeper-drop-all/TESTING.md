@@ -1,5 +1,12 @@
 # Creeper Drop All — test matrix
 
+> **Status at v1.0.0:** four checks passed before release — the settings screen,
+> explosion damage surviving `setImpactedBlocks([])`, the double-chest case, and
+> a client import of the released artifact. **Everything else below is unrun.**
+> An unticked box means untested, not failing. The highest-value gap is leaves:
+> if the tool ladder were wrong, every forest explosion would drop leaf blocks
+> instead of saplings.
+
 Run each test **twice**: once with the pack disabled (baseline) and once enabled. Differences
 that aren't the intended behavior are bugs.
 

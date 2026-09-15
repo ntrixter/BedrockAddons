@@ -1,0 +1,14 @@
+# Normalise to LF in the repository and on checkout, on every platform.
+#
+# Without this, a Windows checkout with core.autocrlf=true rewrites text files
+# to CRLF, which changes their bytes and therefore the SHA256 of any archive
+# built from them. Builds are meant to be reproducible from a given commit on
+# any machine, so line endings cannot be allowed to vary by platform.
+* text=auto eol=lf
+
+# Never touch binary content.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.tga binary

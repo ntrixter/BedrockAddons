@@ -141,6 +141,9 @@ Python 3, standard library only. No `pip install` step in CI, no
 `requirements.txt`. Keep it that way: if a change needs a dependency, it
 probably needs a simpler design instead.
 
+On Windows, invoke these as `py -3`. A bare `python3` there resolves to the
+Microsoft Store stub and fails.
+
 | Command | What it does |
 | --- | --- |
 | `python3 scripts/check_repo.py` | All repository checks plus the identity-leak scan. Run before every push. |

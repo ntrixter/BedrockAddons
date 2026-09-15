@@ -10,9 +10,8 @@ otherwise. Items marked **UNVERIFIED** are informed guesses that have not been
 tested; treat them as leads, not facts, and update this file once they are
 settled either way.
 
-Most of it concerns script packs, which this repository does not contain yet.
-It is written down because the cost of rediscovering it is high and the cost of
-storing it is a file.
+Much of it concerns script packs. The repository has two, and both were built
+against these notes rather than against the documentation.
 
 ---
 
@@ -73,6 +72,9 @@ Two facts settle the no-experiment question:
 **Caveat:** there is no stable change event yet — `PackSettingChangeAfterEvent`
 is 2.12.0-beta — so read settings once at load. Edits apply on the next world
 load.
+
+Confirmed twice, by two independently built packs: the gear icon appears on
+latest stable with no experiment enabled, and achievements stay enabled.
 
 ---
 
@@ -199,6 +201,39 @@ resource pack; the module type describes what is inside it. This repository's
 tooling originally conflated the two and rejected the first script pack outright
 — see the `ALLOWED_MODULE_TYPES` tables in `scripts/check_repo.py`,
 `scripts/build_addon.py` and `scripts/gen_catalog.py`.
+
+---
+
+## Explosions (`@minecraft/server`)
+
+- **`setImpactedBlocks([])` suppresses block destruction without cancelling the
+  explosion.** Damage, knockback, sound and particles all survive; only the
+  blocks and their partial drops go. `cancel` is a genuinely separate property,
+  so emptying the list is the way to keep an explosion that harms entities but
+  leaves the terrain alone.
+- **Bedrock has no `mobExplosionDropDecay` game rule.** It is Java-only, so mob
+  explosions are the only blasts that still lose a fraction of their blocks.
+  `tntExplosionDropDecay` exists and already defaults to `false`, which is why
+  TNT needs no help.
+- **Every before-event in a tick fires before any `system.run` callback.** Two
+  explosions in the same tick each snapshot the shared region while it is still
+  intact, so anything derived from the blocks has to track ownership across the
+  whole tick rather than per explosion, or overlapping blasts duplicate it.
+
+---
+
+## Block drops and containers
+
+- **`generateLootFromBlockPermutation` distinguishes `undefined` from `[]`, and
+  the difference matters.** `undefined` means the tool was insufficient; `[]`
+  means the tool was fine and the table rolled nothing. Bare-handed leaves
+  legitimately return `[]` about 95% of the time. Code that escalates through a
+  tool ladder must escalate only on `undefined` — treating `[]` as "try a better
+  tool" walks past pickaxe and shovel to shears, which returns the leaf *block*
+  instead of a sapling.
+- **A double chest reports the same merged 54-slot container from both halves.**
+  Reading the inventory once per half duplicates the contents; read it once per
+  chest, not once per block.
 
 ---
 

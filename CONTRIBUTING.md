@@ -135,15 +135,23 @@ cp -r _template sleep-addon
 Use the kebab-case add-on ID as the folder name. Delete `behavior_pack/` or
 `resource_pack/` if the add-on has only one.
 
+**The template is a `format_version` 2 content pack.** If you are bringing in a
+pack that ships scripts, it is the wrong starting shape — copy the manifest from
+an existing script pack (`nightshare/` or `creeper-drop-all/`) instead and see
+"Script packs" below.
+
 ### 2. Generate fresh UUIDs
 
 Every pack needs a header UUID and a module UUID, and **they must be
 different**:
 
 ```sh
-uuidgen   # header.uuid
-uuidgen   # modules[0].uuid
+py -3 -c "import uuid; print(uuid.uuid4())"   # header.uuid
+py -3 -c "import uuid; print(uuid.uuid4())"   # modules[0].uuid
 ```
+
+`uuidgen` does the same on Linux and macOS, but does not exist on Windows. The
+Python form works everywhere and needs nothing installed.
 
 Repeat for each pack. Every `REPLACE_ME` UUID placeholder must be replaced; CI
 fails if one survives.
@@ -168,6 +176,21 @@ In each `manifest.json`:
 | `modules[0].uuid` | A different fresh UUID. |
 | `modules[0].version` | Same as `header.version`. |
 | `metadata.authors` | `["ntrixter"]` — the handle only, never a real name or an email. |
+
+#### Script packs
+
+A pack that ships scripts differs from the template in four ways, and getting
+any of them wrong fails quietly rather than loudly:
+
+- `"format_version": 3`, not 2.
+- Every version becomes a SemVer **string** — `"1.2.0"`, not `[1, 2, 0]` — in
+  the header, in each module, and in `min_engine_version`.
+- `metadata.authors` is required.
+- `modules[0].type` is `"script"` with `"language": "javascript"` and an
+  `"entry"`, and there is **no** `data` module alongside it.
+
+A `format_version` 3 manifest is also what enables the in-game settings screen.
+See "Pack settings need no experimental toggle" in `BEDROCK-NOTES.md`.
 
 ### 4. Fill in `addon.json`
 
