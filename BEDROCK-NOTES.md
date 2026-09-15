@@ -230,7 +230,11 @@ tooling originally conflated the two and rejected the first script pack outright
   legitimately return `[]` about 95% of the time. Code that escalates through a
   tool ladder must escalate only on `undefined` — treating `[]` as "try a better
   tool" walks past pickaxe and shovel to shears, which returns the leaf *block*
-  instead of a sapling.
+  instead of a sapling. The same fact is useful on purpose: passing shears
+  to `generateLootFromBlockPermutation` is how you get a leaf back as a placeable
+  block rather than a sapling roll, which is what `creeper-drop-all`'s
+  "Drop leaf blocks" setting does — as a short-circuit for leaves alone, never as
+  a rung in a ladder.
 - **A double chest reports the same merged 54-slot container from both halves.**
   Reading the inventory once per half duplicates the contents; read it once per
   chest, not once per block.

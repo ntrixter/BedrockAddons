@@ -18,7 +18,12 @@ const NS = "creeperdropall";
  * These are used whenever the engine cannot supply pack settings, and they are
  * what a Bedrock Dedicated Server effectively runs on: BDS has no gear icon,
  * and Bedrock scripts have no filesystem access, so on a server the manifest
- * defaults ARE the config file. Keep the two lists in sync - build.ps1 checks.
+ * defaults ARE the config file.
+ *
+ * Keeping the two lists in sync is a hand-checked invariant - nothing enforces
+ * it. A key here with no matching control in the manifest is unreachable, and a
+ * control there with no key here is read and then discarded by the type check
+ * below. Either way the setting silently does nothing, so add to both.
  */
 export const DEFAULTS = {
   creepers: true,
@@ -26,6 +31,7 @@ export const DEFAULTS = {
   withers: true,
   end_crystals: true,
   tnt: false,
+  leaf_blocks: true,
   protect_containers: false,
   merge_grid: 4,
   max_blocks: 4096,

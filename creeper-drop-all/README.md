@@ -30,7 +30,9 @@ blocks, and they are what this add-on is for.
 | TNT and TNT minecarts | **off** | Already 100% in vanilla; the toggle exists only for completeness |
 
 Drops come from the **real loot tables**, so stone gives cobblestone, coal ore
-gives coal, and a chest gives its contents — not the blocks' own items.
+gives coal, and a chest gives its contents — not the blocks' own items. Leaves
+are the one deliberate exception: by default they hand back the leaf block, so a
+blasted canopy can be rebuilt. See [Settings](#settings) to turn that off.
 
 ## Download
 
@@ -106,7 +108,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "c60c1a0f-5864-4695-a2b5-07999da64790",
-    "version": [1, 0, 0]
+    "version": [1, 1, 0]
   }
 ]
 ```
@@ -118,7 +120,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form — see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
 
 ## Settings
 
@@ -130,6 +132,7 @@ stay enabled.
 | --- | --- | --- |
 | Creepers / Ghast fireballs / Wither skulls / End crystals | on | Which explosions hand their blocks back |
 | TNT | off | Redundant in vanilla; see above |
+| Drop leaf blocks | on | Exploded leaves drop the leaf block itself, so the canopy can be put back. Off: saplings, sticks and apples at vanilla rates, which is nothing at all most of the time |
 | Protect containers from explosions | off | Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them |
 | Merge drops within (blocks) | 4 | Groups nearby drops into fewer item entities. `1` spawns a pile at every block — most faithful, hardest on the game |
 | Max blocks per explosion | 4096 | Safety limit. A bigger explosion is handed back to Minecraft untouched rather than half-processed |

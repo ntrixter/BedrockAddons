@@ -1,11 +1,10 @@
 # Creeper Drop All — test matrix
 
-> **Status at v1.0.0:** four checks passed before release — the settings screen,
+> **Status at v1.1.0:** four checks passed at v1.0.0 — the settings screen,
 > explosion damage surviving `setImpactedBlocks([])`, the double-chest case, and
 > a client import of the released artifact. **Everything else below is unrun.**
-> An unticked box means untested, not failing. The highest-value gap is leaves:
-> if the tool ladder were wrong, every forest explosion would drop leaf blocks
-> instead of saplings.
+> An unticked box means untested, not failing. The highest-value gap is T5,
+> which is now also the acceptance test for the feature 1.1.0 adds.
 
 Run each test **twice**: once with the pack disabled (baseline) and once enabled. Differences
 that aren't the intended behavior are bugs.
@@ -155,17 +154,34 @@ same source, restoring damage, knockback, sound and particles together.
 **If damage survived but sound/particles didn't:** set `FORCE_SOUND` / `FORCE_PARTICLES` to `true`
 instead. Cheaper, and it keeps damage on the engine's own code path.
 
-### ☐ T5 — Leaves (tool-ladder regression)
+### ☐ T5 — Leaves, in both settings
 
-Blast ~64 leaf blocks.
+**Drop leaf blocks** decides this one, so it runs twice. Settings apply on the next world load —
+reload between the halves, or the second run is just the first again.
+
+**T5a — setting ON (the default).** Blast ~64 leaf blocks.
+
+- [ ] Leaf blocks drop, one per leaf destroyed (arriving merged into stacks)
+- [ ] Each is its **own** kind — birch from a birch, cherry from a cherry, azalea from an azalea
+- [ ] The dropped blocks place back onto the tree
+
+The per-kind check is the one worth being fussy about: it is what separates the shears route, which
+reads the permutation, from the fallback that builds an item from the block id. Both give *a* leaf,
+but only one gives the right leaf on the legacy `minecraft:leaves` id.
+
+**T5b — setting OFF.** Turn *Drop leaf blocks* off, reload, blast ~64 more.
 
 - [ ] Drops are saplings / sticks / apples at roughly vanilla rates
 - [ ] **No leaf-block items appear at all**
 
-A leaf *block* dropping means the tool ladder escalated on an empty array and reached shears.
-See the long comment above `generateLoot()` in `main.js` — and do not "fix" it by adding shears.
+T5b is the tool-ladder regression test, and it is the half that matters whenever the loot code is
+touched. A leaf *block* dropping **with the setting off** means the ladder escalated on an empty
+array and reached shears. See the long comment above `generateLoot()` in `main.js` — and do not
+"fix" that by adding shears to the ladder. The shears call behind the setting is a separate
+short-circuit that nothing but a leaf can reach.
 
-Also spot-check: grass and tall grass (seeds only, never grass blocks), vines.
+Also spot-check, in either position: grass and tall grass (seeds only, never grass blocks), vines.
+Neither is a leaf, so neither should differ between T5a and T5b.
 
 ### ☑ T4b — Double chest (duplication regression) — PASSED 2026-09-14
 
@@ -304,7 +320,7 @@ event fires, in which case the guard needs the real id.
        and the failure mode is the script never loading with no error at all
 2. [ ] Unzip the pack contents into `behavior_packs/CreeperDropAll/`
 3. [ ] Add the header UUID to `world_behavior_packs.json`; confirm whether it accepts
-       `"version": "1.0.0"` (string, matching manifest v3) or needs `[1, 0, 0]`
+       `"version": "1.1.0"` (string, matching manifest v3) or needs `[1, 1, 0]`
        — record which: `________________`
 4. [ ] **`[CreeperDropAll] loaded. …` appears in stdout.** If not, stop and revisit step 1
 5. [ ] Re-run T2, T3, T4b, T7, T12

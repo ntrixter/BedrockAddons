@@ -4,7 +4,7 @@
     "name": "Creeper Drop All",
     "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
     "uuid": "c60c1a0f-5864-4695-a2b5-07999da64790",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "min_engine_version": "1.26.30"
   },
   "modules": [
@@ -12,7 +12,7 @@
       "type": "script",
       "language": "javascript",
       "uuid": "98b00579-1d36-44ef-adb8-50ed45476b35",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "entry": "scripts/main.js"
     }
   ],
@@ -72,6 +72,20 @@
     {
       "type": "label",
       "text": "§7TNT is off because Bedrock already drops every block a TNT blast destroys - the §otntExplosionDropDecay§r§7 game rule defaults to false. Mob explosions are the ones that lose blocks, and Bedrock has no game rule for those.§r"
+    },
+    {
+      "type": "label",
+      "text": "§7Drops§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Drop leaf blocks",
+      "name": "creeperdropall:leaf_blocks",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7On: exploded leaves drop the leaf block itself, so you can put the canopy back the way it was. Off: leaves roll for saplings, sticks and apples at the ordinary vanilla rates, which means most of them drop nothing at all.§r"
     },
     {
       "type": "label",

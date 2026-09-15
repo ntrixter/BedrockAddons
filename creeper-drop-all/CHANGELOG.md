@@ -11,6 +11,21 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-15
+
+### Added
+
+- **Drop leaf blocks**, a new setting, **on by default**. Exploded leaves now
+  drop the leaf block itself, so a canopy a creeper took out can be put back the
+  way it was instead of leaving a permanent hole.
+
+### Changed
+
+- Leaves dropping saplings, sticks and apples at vanilla rates is now the *off*
+  position of that setting rather than the only behaviour. A world updating from
+  1.0.0 that wants what it had should turn the new setting off; the setting
+  applies on the next world load, as all of them do.
+
 ## [1.0.0] - 2026-09-14
 
 First release. Developed outside this repository and migrated here at 1.0.0,

@@ -85,6 +85,15 @@ const MAX_QUEUED_BLOCKS = 20000;
 const LADDER_TOOL_IDS = ["minecraft:netherite_pickaxe", "minecraft:netherite_shovel"];
 
 /**
+ * Shears are kept OUT of the ladder above and built separately, because the
+ * one thing they are good for here is also the thing that makes them poison in
+ * a ladder: on leaves they return the leaf BLOCK rather than a sapling roll.
+ * The "Drop leaf blocks" setting asks for exactly that, on leaves and nothing
+ * else. See generateLoot() and leafBlockLoot().
+ */
+const SHEARS_ID = "minecraft:shears";
+
+/**
  * Containers whose own loot table already carries their contents as item data.
  * Snapshotting these would DUPLICATE the contents.
  */
@@ -105,6 +114,7 @@ let settings;
 let handledTypes;
 let lootManager;
 let toolLadder;
+let shears;
 let AIR;
 
 /** Shared FIFO of pending loot work, drained by ONE job. */
@@ -169,7 +179,8 @@ function init() {
   console.warn(
     "[CreeperDropAll] loaded. sources=[" +
       Array.from(handledTypes).join(", ") +
-      "] protectContainers=" + settings.protect_containers +
+      "] leafBlocks=" + settings.leaf_blocks +
+      " protectContainers=" + settings.protect_containers +
       " mergeGrid=" + settings.merge_grid +
       " maxBlocks=" + settings.max_blocks +
       " mode=" + EXPLOSION_MODE
@@ -198,6 +209,9 @@ function ensureRuntime() {
     for (const id of LADDER_TOOL_IDS) {
       try { toolLadder.push(new ItemStack(id, 1)); } catch (e) { warn("tool " + id + ": " + e); }
     }
+  }
+  if (!shears) {
+    try { shears = new ItemStack(SHEARS_ID, 1); } catch (e) { warn("shears: " + e); }
   }
 }
 
@@ -508,10 +522,20 @@ function* lootDrainJob() {
  * Nothing in vanilla is axe-gated or shears-gated at the `undefined` level -
  * only pickaxe-gated (stone, ores, obsidian) and shovel-gated (snow).
  *
- * DO NOT "fix" this by adding shears. See TESTING.md T5.
+ * DO NOT "fix" this by adding shears. See TESTING.md T5. The "Drop leaf blocks"
+ * setting does use shears, but as a deliberate short-circuit for leaves alone,
+ * never as a rung - grass, vines and cobweb still take the ladder above.
  */
 function generateLoot(perm) {
   if (!lootManager || !toolLadder) return [];
+
+  if (settings.leaf_blocks && isLeafBlock(perm.type.id)) {
+    const leaf = leafBlockLoot(perm);
+    if (leaf) return leaf;
+    // Both routes came up empty: fall through, so the worst case is a vanilla
+    // sapling roll rather than a leaf that drops nothing at all.
+  }
+
   for (let i = 0; i < toolLadder.length; i++) {
     let out;
     try {
@@ -523,6 +547,51 @@ function generateLoot(perm) {
     if (out !== undefined) return out; // includes the legitimate empty case
   }
   return [];
+}
+
+/**
+ * Bedrock flattened leaves to one id per wood type (minecraft:oak_leaves,
+ * minecraft:cherry_leaves, ...); before that, minecraft:leaves and
+ * minecraft:leaves2 carried the wood type in a block state instead. Matching on
+ * the substring covers both shapes and the odd one out,
+ * minecraft:azalea_leaves_flowered, and needs no list to revisit when Mojang
+ * adds a tree. minecraft:leaf_litter is spelled "leaf" and is correctly missed:
+ * it is ground cover, not canopy.
+ */
+function isLeafBlock(typeId) {
+  return typeId.indexOf("leaves") !== -1;
+}
+
+/**
+ * "Drop leaf blocks" ON: hand the leaf itself back, placeable on a tree again,
+ * instead of the sapling-or-nothing roll vanilla gives.
+ *
+ * Shears first, because the loot table knows which leaf a permutation is. That
+ * matters for the legacy minecraft:leaves id, where the wood type lives in a
+ * block state that a bare id lookup cannot see.
+ *
+ * Building the item from the block id is the fallback. It is exact for the
+ * flattened ids 1.26 actually ships, and it covers a shears probe that comes
+ * back empty - this setting being the whole point of the feature, failing it
+ * quietly would read to a player as "the pack ate my leaves".
+ *
+ * Returns undefined only if neither route produced anything.
+ */
+function leafBlockLoot(perm) {
+  if (shears) {
+    try {
+      const out = lootManager.generateLootFromBlockPermutation(perm, shears);
+      if (out && out.length) return out;
+    } catch (err) {
+      warn("shears loot threw: " + err);
+    }
+  }
+  try {
+    return [new ItemStack(perm.type.id, 1)];
+  } catch (err) {
+    warn("leaf item " + perm.type.id + ": " + err);
+    return undefined;
+  }
 }
 
 /**
