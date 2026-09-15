@@ -77,7 +77,14 @@ runs in CI. Stripping is always a deliberate command.
 ## When you add or migrate an add-on
 
 Follow the walkthrough in `CONTRIBUTING.md` — it is written to be followed
-cold, without this file's context. The scrub that applies to incoming files
+cold, without this file's context.
+
+**It ends at a review gate, and the gate is not optional.** Open the pull
+request, let CI pass, then stop and report: do not merge and do not push a tag.
+Every migration so far has changed shared tooling, and those same scripts build
+the add-ons that are already published — so a change that looks local can move
+the SHA256 of an artifact people have installed. A reviewer's first check is
+that every released add-on still builds to the hash in `catalog.json`. The scrub that applies to incoming files
 matters most there: a migrated add-on is exactly where a real name or an
 image's EXIF is most likely to be hiding. Check `metadata.authors` and other
 manifest fields, author headers or comments in script files, JSON fields

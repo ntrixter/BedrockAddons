@@ -1,27 +1,69 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-15T12:53:21Z",
+  "generated_at": "2026-09-15T12:57:32Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "creeper-drop-all": {
       "display_name": "Creeper Drop All",
       "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
       "deprecated": false,
-      "latest_stable": null,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "creeper-drop-all-v1.0.0",
+        "filename": "creeper-drop-all-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/creeper-drop-all-v1.0.0/creeper-drop-all-1.0.0.mcpack",
+        "sha256": "84fd5b08610c1177586e0f585db52238f58f59418553e973f8f5872eeccaf2d5",
+        "published_at": "2026-09-15T12:37:43Z",
+        "min_engine_version": null,
+        "packs": []
+      },
       "latest_prerelease": null
     },
     "nightshare": {
       "display_name": "Nightshare",
       "description": "Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice.",
       "deprecated": false,
-      "latest_stable": null,
+      "latest_stable": {
+        "version": "1.2.0",
+        "tag": "nightshare-v1.2.0",
+        "filename": "nightshare-1.2.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/nightshare-v1.2.0/nightshare-1.2.0.mcpack",
+        "sha256": "455a94fd733b0363ff7df727294661cffc574988aaa41245186d0fa442724386",
+        "published_at": "2026-09-14T21:32:40Z",
+        "min_engine_version": null,
+        "packs": []
+      },
       "latest_prerelease": null
     },
     "no-witch-conversion": {
       "display_name": "No Witch Conversion",
       "description": "Villagers no longer turn into witches when struck by lightning.",
       "deprecated": false,
-      "latest_stable": null,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "no-witch-conversion-v1.0.0",
+        "filename": "no-witch-conversion-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/no-witch-conversion-v1.0.0/no-witch-conversion-1.0.0.mcpack",
+        "sha256": "ae3ad8a54cad54196714f8cd22a8702350ac29ec96b353bc32c87887ca0744dc",
+        "published_at": "2026-09-14T13:54:14Z",
+        "min_engine_version": [
+          1,
+          26,
+          40
+        ],
+        "packs": [
+          {
+            "uuid": "d2af958c-b04d-41c4-8439-0066910c5599",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "no-witch-conversion_BP"
+          }
+        ]
+      },
       "latest_prerelease": null
     }
   }

@@ -257,7 +257,32 @@ anything substantial — a new add-on especially — push a branch and open a pu
 request instead, because `validate.yml` runs on pull requests and will check the
 add-on before it lands. Either way nothing is published yet.
 
-### 8. Cut the first release
+### 8. Stop for review before merging or releasing
+
+**Open the pull request, let CI go green, and stop there. Do not merge it and
+do not push a tag.** Report what you did and wait.
+
+This is not ceremony. Every migration so far has ended up changing shared
+tooling — `build_addon.py`, `check_repo.py`, `gen_catalog.py` — because a new
+add-on is the first thing to exercise some assumption those scripts were built
+on. Those scripts also build the add-ons that are **already published**, so a
+change that looks local can alter an artifact someone has installed.
+
+The concrete thing a reviewer checks, and the reason the gate exists:
+
+```sh
+python3 scripts/build_addon.py <each released add-on>
+```
+
+Every add-on that already has a release must still build to the exact SHA256
+that release published. `catalog.json` records it. If a hash moves, the tooling
+change broke reproducibility for a shipped artifact, and that is far cheaper to
+catch before the merge than after.
+
+Say plainly in your report which shared files you touched and why, so the
+review knows where to look.
+
+### 9. Cut the release
 
 A `<addon-id>-v<semver>` tag is the only thing that publishes. Either route
 works and both end in the same place — the workflow builds the artifact,
@@ -297,6 +322,36 @@ carries a suffix, and regenerates `catalog.json`.
 
 To cut a prerelease, tag `sleep-addon-v1.5.0-beta.1` while the manifests say
 `[1, 5, 0]`. Add a matching `## [1.5.0-beta.1]` changelog section.
+
+## Handing a migration to another session
+
+A migration is usually done by a Claude Code session that has the add-on locally
+and none of this repository's context. That session should be pointed at this
+file rather than handed a restatement of it — this walkthrough is written to be
+followed cold, and a prompt that duplicates it goes stale the moment this file
+changes.
+
+A workable prompt is short:
+
+> Move this add-on into `https://github.com/ntrixter/BedrockAddons` as
+> `<addon-id>` — permanent, it is the folder name, tag prefix, issue label and
+> artifact filename. Clone the repo and follow `CONTRIBUTING.md` →
+> "Adding an add-on". Read `CLAUDE.md` for the standing rules, especially
+> Anonymity, and `BEDROCK-NOTES.md` for Bedrock facts that contradict the
+> official docs. Work on a branch and open a pull request.
+>
+> **Stop at step 8. Open the PR, let CI pass, then report back — do not merge
+> and do not tag.**
+>
+> Then add only what this repository cannot know: whether the add-on has been
+> published before (if so its UUIDs are kept, not regenerated), whether it
+> overrides any vanilla file, whether it has a build step, and anything about it
+> that would surprise a reader.
+
+Ask that session to report anything in this file that was wrong, unclear or
+missing. Two migrations have done so and both found real defects — a field table
+that would have broken a script pack, and a reproducibility claim that only held
+on Linux.
 
 ## Add-ons with tests
 

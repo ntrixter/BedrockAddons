@@ -501,6 +501,46 @@ def check_catalog() -> None:
               "regenerate it: python3 scripts/gen_catalog.py")
 
 
+def check_catalog_covers_released_tags() -> None:
+    """A tag exists but the catalog says the add-on has no release.
+
+    catalog.json legitimately carries null release fields -- an add-on can exist
+    before it is ever released -- so validate_catalog() cannot tell a genuine
+    null from a catalog someone regenerated with --offline and committed over
+    the real one. Git tags can: if <addon>-v<version> exists and is not a
+    prerelease, that add-on has been released and its entry must say so.
+    """
+    released: dict = {}
+    for tag in git("tag", "-l", "*-v*").splitlines():
+        match = gen_catalog.TAG_RE.match(tag.strip())
+        if match and not gen_catalog.PRERELEASE_RE.match(match.group("version")):
+            released.setdefault(match.group("id"), []).append(match.group("version"))
+    if not released:
+        return
+
+    catalog_path = REPO_ROOT / "catalog.json"
+    if not catalog_path.is_file():
+        return
+    try:
+        addons = json.loads(catalog_path.read_text(encoding="utf-8")).get("addons", {})
+    except json.JSONDecodeError:
+        return  # already reported by check_catalog
+
+    for addon_id, versions in sorted(released.items()):
+        entry = addons.get(addon_id)
+        if entry is None:
+            error("catalog.json", None,
+                  f"{addon_id} has released tags ({', '.join(sorted(versions))}) "
+                  "but no catalog entry",
+                  "regenerate it: python3 scripts/gen_catalog.py")
+        elif entry.get("latest_stable") is None:
+            error("catalog.json", None,
+                  f"{addon_id} has released tags ({', '.join(sorted(versions))}) "
+                  "but latest_stable is null",
+                  "the catalog was probably regenerated with --offline and committed "
+                  "over the real one; rerun python3 scripts/gen_catalog.py with network access")
+
+
 def check_gitignore_hygiene() -> None:
     ignored = git("ls-files", "--cached", "--ignored", "--exclude-standard").splitlines()
     for path in ignored:
@@ -515,6 +555,7 @@ def main() -> int:
     check_addons()
     check_sentinels_in_addons()
     check_catalog()
+    check_catalog_covers_released_tags()
     check_gitignore_hygiene()
 
     errors = [f for f in findings if f["level"] == "error"]

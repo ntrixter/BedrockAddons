@@ -414,6 +414,18 @@ def main(argv: list) -> int:
         print(f"{args.validate} is valid (schema_version {SCHEMA_VERSION})")
         return 0
 
+    # --offline produces a catalog with every release field null. That is a
+    # valid shape, so nothing downstream can tell it from a genuine one -- which
+    # makes overwriting the committed catalog with it a silent way to publish an
+    # empty index. Writing somewhere else has to be deliberate.
+    if args.offline and args.out == parser.get_default("out"):
+        print(
+            f"error: --offline would overwrite {args.out} with null release fields.\n"
+            f"       Pass --out to write elsewhere, or drop --offline to use the API.",
+            file=sys.stderr,
+        )
+        return 2
+
     try:
         override = None
         if args.releases_json:
