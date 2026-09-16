@@ -3,6 +3,16 @@ import * as cfg from "./config.js";
 import * as settings from "./settings.js";
 
 /**
+ * Sole owner of playersSleepingPercentage.
+ *
+ * Two callers want that gamerule for opposite reasons - this module holds
+ * vanilla's night skip OFF mid-night, and handoff.js invites it ON at dawn - and
+ * both of them have to give the world its own value back afterwards. If each
+ * borrowed independently they would record each other's temporary values as the
+ * original, and the world would be left permanently skippable or permanently
+ * not. So every write to that gamerule goes through here, against one stored
+ * original.
+ *
  * Keeps vanilla's own night skip from firing on top of ours, without leaving
  * the world permanently flagged as "night skipping is off".
  *
@@ -32,20 +42,46 @@ function write(value) {
   }
 }
 
-/** True once we have raised the gamerule and still owe the world its value back. */
-function engaged() {
+/** True once we have taken the gamerule and still owe the world its value back. */
+function borrowed() {
   return typeof world.getDynamicProperty(cfg.ORIGINAL_PCT_KEY) === "number";
 }
 
-function engage() {
-  if (engaged()) return;
+/**
+ * Record the world's own value, once, before the first write of a stint.
+ * @returns {boolean} false when there is nothing safe to take
+ */
+function borrow() {
+  if (borrowed()) return true;
   const current = read();
-  if (current === undefined || current > 100) return; // already unskippable
+  // undefined: the engine would not say, so there would be nothing to restore.
+  // Above 100: the world was deliberately made unskippable and that is not ours
+  // to override, in either direction.
+  if (current === undefined || current > 100) return false;
   world.setDynamicProperty(cfg.ORIGINAL_PCT_KEY, current);
+  return true;
+}
+
+/** Hold vanilla's night skip off. */
+function engage() {
+  if (!borrow()) return;
   write(cfg.GUARD_PERCENTAGE);
 }
 
-function release() {
+/**
+ * Invite vanilla to skip: drop the threshold low enough that one sleeper meets
+ * it. Used by handoff.js at dawn, so the sleeper gets a real vanilla sleep and
+ * their phantom timer clears the only way Minecraft allows.
+ * @returns {boolean} whether the invitation was actually issued
+ */
+export function invite() {
+  if (!borrow()) return false;
+  write(cfg.INVITE_PERCENTAGE);
+  return true;
+}
+
+/** Hand the world its own value back. Safe to call when nothing was taken. */
+export function release() {
   // Only ever hand back a value we took. If the gamerule is above 100 because
   // the player chose that themselves, leave it alone.
   const original = world.getDynamicProperty(cfg.ORIGINAL_PCT_KEY);
@@ -63,7 +99,7 @@ export function migrate() {
   world.setDynamicProperty(cfg.MIGRATED_KEY, true);
 
   const current = read();
-  if (current !== undefined && current > 100 && !engaged()) write(100);
+  if (current !== undefined && current > 100 && !borrowed()) write(100);
 }
 
 /**

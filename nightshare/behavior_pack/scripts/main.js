@@ -4,6 +4,7 @@ import * as ledger from "./ledger.js";
 import { burn } from "./burner.js";
 import * as ui from "./ui.js";
 import * as guard from "./guard.js";
+import * as handoff from "./handoff.js";
 import * as settings from "./settings.js";
 
 /**
@@ -67,15 +68,26 @@ system.runInterval(() => {
     bootstrapped = true;
   }
 
-  // Every tick - it is arithmetic plus a single setter, and a coarser interval
-  // would make the fast-forward visibly steppy.
-  if (burn(ledger.get())) ledger.markDirty();
+  tickCount++;
 
-  if (++tickCount % cfg.SCAN_INTERVAL !== 0) return;
+  // Checked every tick, not every scan: a large share can carry the clock over
+  // the handoff threshold in a single step, and a scan running every tenth tick
+  // would step straight past it.
+  handoff.sync(tickCount);
+
+  // Every tick - it is arithmetic plus a single setter, and a coarser interval
+  // would make the fast-forward visibly steppy. Paused while the handoff is
+  // armed, so we are not racing Minecraft to the same sunrise.
+  if (!handoff.armed() && burn(ledger.get())) ledger.markDirty();
+
+  if (tickCount % cfg.SCAN_INTERVAL !== 0) return;
 
   ledger.syncNight();
   scanSleepers();
-  guard.sync(ledger.isNight() && ledger.rosterMemberAway());
+  // guard owns the gamerule that the handoff is currently holding, so leave it
+  // alone until the handoff stands down - otherwise its release() would undo
+  // the invitation on the very next scan.
+  if (!handoff.armed()) guard.sync(ledger.isNight() && ledger.rosterMemberAway());
   ledger.flush();
 }, 1);
 
@@ -86,6 +98,7 @@ world.afterEvents.playerLeave.subscribe((ev) => {
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
   if (ev.id === "nightshare:reset") {
     ledger.reset();
+    handoff.clear();
     dozing.clear();
     ui.broadcast("\u00a7cState cleared.\u00a7r A fresh roster is taken at the next nightfall.");
     return;
@@ -132,7 +145,8 @@ system.afterEvents.scriptEventReceive.subscribe((ev) => {
   ui.broadcast(
     `\u00a77${eff}\u00a7r\n` +
       `\u00a77time=\u00a7r${world.getTimeOfDay()} \u00a77day=\u00a7r${world.getDay()} ` +
-      `\u00a77night=\u00a7r${ledger.isNight()} \u00a77sleepPct=\u00a7r${world.gameRules.playersSleepingPercentage}\n` +
+      `\u00a77night=\u00a7r${ledger.isNight()} \u00a77sleepPct=\u00a7r${world.gameRules.playersSleepingPercentage} ` +
+      `\u00a77handoff=\u00a7r${handoff.armed() ? "armed" : "idle"}\n` +
       `\u00a77share=\u00a7r${Math.round(ledger.shareTicks())} ticks  ` +
       `\u00a77pending=\u00a7r${Math.round(state.pendingTicks)} ticks\n` +
       `\u00a77roster(${state.roster.length}):\u00a7r ${state.roster.map(label).join(", ") || "\u00a78none\u00a7r"}`

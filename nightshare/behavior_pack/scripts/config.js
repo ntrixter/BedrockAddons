@@ -90,6 +90,44 @@ export const VANILLA_GUARD = "off";
 /** Any value above 100 means "the night cannot be skipped". */
 export const GUARD_PERCENTAGE = 101;
 
+/**
+ * Low enough that a single sleeper satisfies vanilla's threshold. 1 rather than
+ * 0, because 0 risks meaning "nobody need sleep at all" and skipping the night
+ * unprompted.
+ */
+export const INVITE_PERCENTAGE = 1;
+
+/**
+ * Whether to let vanilla finish the last stretch of the night when somebody is
+ * in bed for it.
+ *
+ * This is what clears phantoms. Nightshare moves the clock with setTimeOfDay,
+ * and only a real vanilla sleep clears Minecraft's per-player "time since rest"
+ * - the value phantoms watch. No script can reset that counter: the whole API
+ * surface on the subject is Entity.isSleeping, GameRules.doInsomnia and
+ * playersSleepingPercentage. So rather than fight it, stop just short of dawn,
+ * drop the sleep threshold, and let Minecraft perform the skip itself.
+ *
+ * Whoever is in bed at that moment gets a genuine sleep and their own counter
+ * clears, exactly as in vanilla. A player plagued by phantoms fixes it the
+ * obvious way: stay in bed until morning.
+ */
+export const DAWN_HANDOFF = true;
+
+/**
+ * How far short of dawn to stop and hand over. Far enough that Minecraft still
+ * has a night to skip, close enough that nothing is lost if the handoff never
+ * fires and the burner finishes the job.
+ */
+export const HANDOFF_TICKS = 300;
+
+/**
+ * Real ticks to wait for vanilla before taking the night back. Covers the
+ * sleeper getting out of bed between the invitation and the skip - without it,
+ * a night could sit one step short of dawn indefinitely.
+ */
+export const HANDOFF_TIMEOUT_TICKS = 60;
+
 /** Remembers the world's own setting so the guard can hand it back. */
 export const ORIGINAL_PCT_KEY = "nightshare:originalSleepPct";
 

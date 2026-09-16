@@ -93,7 +93,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "18921d46-612a-4224-8b3d-da5cc3de7053",
-    "version": [1, 2, 0]
+    "version": [1, 3, 0]
   }
 ]
 ```
@@ -105,20 +105,21 @@ Every release's notes carry this same block with the version already filled in.
 > manifest is `format_version` 3, where versions are SemVer strings, and it is
 > not yet settled whether `world_behavior_packs.json` must match that form —
 > see the UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the
-> array above is rejected, use `"version": "1.2.0"` instead. The two files have
+> array above is rejected, use `"version": "1.3.0"` instead. The two files have
 > to agree.
 
 ## Settings
 
-Three settings have an in-game screen, reached from the **gear icon** beside
+Four settings have an in-game screen, reached from the **gear icon** beside
 Nightshare in the world's Behaviour Packs list. No experimental toggle is
 needed.
 
-| Control | What it does |
-| --- | --- |
-| Minecraft's own night skip | `Let it happen` / `Hold it back while someone is away` / `Always hold it back`. Every option is explained on the screen itself |
-| Fast-forward length | 1–10 seconds. How long the sky takes to sweep forward when a share is spent |
-| Announce in chat | Whether to post a line when someone turns in |
+| Control | Default | What it does |
+| --- | --- | --- |
+| Minecraft's own night skip | `Let it happen` | Also `Hold it back while someone is away` / `Always hold it back`. Every option is explained on the screen itself |
+| Fast-forward length | 5s | 1–10 seconds. How long the sky takes to sweep forward when a share is spent |
+| Announce in chat | on | Whether to post a line when someone turns in |
+| Let Minecraft end the night when someone is in bed | on | Clears phantoms for whoever is still in bed at sunrise — see below |
 
 Settings are per world, editable by the world or server owner, and read when the
 world loads — a change applies on the next load.
@@ -161,6 +162,42 @@ time a setting is changed, so on a server you may have to create it.
 
 Precedence, highest first: a command override, then the settings screen or the
 manifest defaults, then the constants in `behavior_pack/scripts/config.js`.
+
+### Phantoms: stay in bed
+
+**Short version: if phantoms are bothering you, stay in bed until morning.**
+
+Nightshare moves the clock with `setTimeOfDay`. That is not a sleep, and
+Minecraft only clears your phantom timer — the per-player "time since rest"
+phantoms watch — for a *real* one. Nothing in the scripting API can clear it
+either: the whole surface on the subject is `Entity.isSleeping`,
+`GameRules.doInsomnia` and `GameRules.playersSleepingPercentage`. There is no
+per-player rest value to write, and no sleep-completed event to hook.
+
+So rather than imitate a sleep, Nightshare arranges a real one. It stops just
+short of sunrise, briefly lowers the sleep threshold so a single sleeper
+satisfies it, and lets **Minecraft** perform the night skip itself. Everyone
+still in bed at that moment is woken by the game through the game's own path,
+and their timer clears exactly as in an unmodded world.
+
+Two consequences worth knowing:
+
+- **It is per player**, like vanilla. Stay in bed to morning and your phantoms
+  reset. Get up in the dark, or never turn in, and your timer keeps running —
+  which is what vanilla would have done to you anyway.
+- **A night that never reaches sunrise cannot do it.** One player of four turns
+  in, a quarter of the night burns, they get up while it is still dark: there is
+  no sleep to complete. Staying in bed until morning actually arrives is what
+  makes it work.
+
+The gamerule is borrowed, not seized. `guard.js` is the single owner of
+`playersSleepingPercentage` — it holds vanilla's skip *off* mid-night and
+invites it *on* at dawn, against one stored original — so the world always gets
+its own value back. A world deliberately made unskippable is left alone in both
+directions, and if the sleeper gets up between the invitation and the skip, the
+gamerule comes back and Nightshare finishes the night itself.
+
+`scriptevent nightshare:debug` reports `handoff=armed|idle`.
 
 ### Why Minecraft's own night skip is left alone by default
 

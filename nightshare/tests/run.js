@@ -43,6 +43,9 @@ function reset(players, atTick = cfg.NIGHT_START) {
   state.messages.length = 0;
   state.actionBars.length = 0;
   state.gameRules.playersSleepingPercentage = 100;   // a stock world's setting
+  state.vanillaSkipEnabled = false;                  // opt in per scenario
+  state.rested.length = 0;
+  state.vanillaSkips = 0;
   state.packSettings = {};                           // gear screen untouched
   state.packSettingsSupported = true;
   settings.init();
@@ -267,6 +270,13 @@ console.log("11b. A skip takes the same wall-clock time whatever its size");
   // duration is what keeps these two numbers together.
   /** Ticks spent actually burning, measured from the moment the share banks. */
   const drainTicks = (p) => {
+    // Burner pacing only. The dawn handoff is off here on purpose: it stops the
+    // burn just short of sunrise and lets Minecraft finish, so with it on a solo
+    // player never completes a full sweep and there is no sweep left to time.
+    // Set inside the helper because reset() clears packSettings each time.
+    state.packSettings["nightshare:dawn_handoff"] = false;
+    settings.init();
+
     p.isSleeping = true;
     for (let i = 0; i < 200 && ledger.get().pendingTicks === 0; i++) run(1);
     const start = ticksRun;
@@ -289,6 +299,8 @@ console.log("11b. A skip takes the same wall-clock time whatever its size");
   // Two people turning in together should share one sweep, not queue up.
   const pair = ["Pair1", "Pair2"].map((n) => makePlayer(n));
   reset(pair);
+  state.packSettings["nightshare:dawn_handoff"] = false;   // pacing only, as above
+  settings.init();
   pair[0].isSleeping = true;
   pair[1].isSleeping = true;
   for (let i = 0; i < 200 && ledger.get().spent.length < 2; i++) run(1);
@@ -446,7 +458,7 @@ console.log("16. The nightshare:config command, as an admin would type it");
   reset([makePlayer("A1")]);
 
   const listing = cfgCmd("");
-  check("bare command lists every key", ["guard", "skip", "announce"].every((k) => listing.includes(k)), true);
+  check("bare command lists every key", ["guard", "skip", "announce", "handoff"].every((k) => listing.includes(k)), true);
   check("and shows where each came from", listing.includes("config.js"), true);
   check("and hints at valid values", listing.includes("off | auto | always"), true);
 
@@ -467,6 +479,85 @@ console.log("16. The nightshare:config command, as an admin would type it");
   cfgCmd("reset");
   check("reset drops the overrides", settings.resolve("guard").source, "config.js");
   check("clearing the stored property", state.props.get(cfg.OVERRIDE_KEY), undefined);
+}
+
+console.log("");
+console.log("17. The dawn handoff: staying in bed gets you a real sleep");
+{
+  // The point of the handoff. Nightshare moves the clock with setTimeOfDay,
+  // which never clears Minecraft's per-player "time since rest" - the value
+  // phantoms watch - and no script can clear it either. So instead of imitating
+  // a sleep, stop short of sunrise and let Minecraft perform its own skip.
+  // Whoever is in bed for it is woken by the game and their counter clears.
+  const abed = makePlayer("Abed"), up = makePlayer("Up");
+
+  reset([abed, up], cfg.NIGHT_END - 500);
+  state.vanillaSkipEnabled = true;
+  const day0 = world.getDay();
+
+  abed.isSleeping = true;
+  run(400);
+
+  check("Minecraft performed the skip, not us", state.vanillaSkips, 1);
+  check("so the sleeper got a REAL sleep", state.rested.includes("Abed"), true);
+  check("per player: the one who stayed up did not", state.rested.includes("Up"), false);
+  check("morning arrived", world.getTimeOfDay() < cfg.NIGHT_START, true);
+  check("on the next day", world.getDay(), day0 + 1);
+  check("and the gamerule was handed back", sleepPct(), 100);
+  check("with nothing still owed", state.props.get(cfg.ORIGINAL_PCT_KEY), undefined);
+}
+
+console.log("");
+console.log("18. The handoff never leaves the night stuck");
+{
+  // Armed, then the sleeper gets out of bed, so Minecraft never answers. The
+  // gamerule has to come back and the burner has to finish the job - a night
+  // parked one step short of sunrise would be far worse than a missed reset.
+  const abed = makePlayer("Abed"), other = makePlayer("Other");
+
+  reset([abed, other], cfg.NIGHT_END - 500);
+  state.vanillaSkipEnabled = false;            // the invitation goes unanswered
+
+  abed.isSleeping = true;
+  run(40);
+  check("invitation issued", sleepPct(), cfg.INVITE_PERCENTAGE);
+
+  abed.isSleeping = false;
+  run(cfg.HANDOFF_TIMEOUT_TICKS + 40);
+  check("taken back after the timeout", sleepPct(), 100);
+  check("nothing still owed", state.props.get(cfg.ORIGINAL_PCT_KEY), undefined);
+  check("nobody got a free reset", state.rested.length, 0);
+
+  run(400);
+  check("and the night ended anyway", world.getTimeOfDay() < cfg.NIGHT_START, true);
+}
+
+console.log("");
+console.log("19. The handoff respects the world, and the setting");
+{
+  const abed = makePlayer("Abed"), other = makePlayer("Other");
+
+  // A world its owner deliberately made unskippable is not ours to override,
+  // in either direction - the same rule the vanilla guard already follows.
+  reset([abed, other], cfg.NIGHT_END - 500);
+  state.vanillaSkipEnabled = true;
+  state.gameRules.playersSleepingPercentage = 101;
+  abed.isSleeping = true;
+  run(400);
+  check("an unskippable world is left unskippable", sleepPct(), 101);
+  check("and no skip is provoked", state.vanillaSkips, 0);
+  abed.isSleeping = false;
+
+  // Turned off, the gamerule is never touched at all.
+  reset([abed, other], cfg.NIGHT_END - 500);
+  state.vanillaSkipEnabled = true;
+  state.packSettings["nightshare:dawn_handoff"] = false;
+  settings.init();
+  abed.isSleeping = true;
+  run(400);
+  check("with the setting off the gamerule is untouched", sleepPct(), 100);
+  check("and Minecraft is never invited", state.vanillaSkips, 0);
+  check("the burner still finishes the night", world.getTimeOfDay() < cfg.NIGHT_START, true);
 }
 
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : `${failures} CHECK(S) FAILED`}`);

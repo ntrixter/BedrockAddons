@@ -314,6 +314,56 @@ string.
 
 ---
 
+## Phantoms: a script cannot reset the counter, so provoke a real sleep
+
+Phantoms watch a **per-player "time since rest"** that only a completed vanilla
+sleep clears. Moving the clock with `setTimeOfDay` clears nothing, so any pack
+that ends the night itself leaves its players as hunted as if they had never
+gone to bed — and it looks broken in exactly the case it was written for.
+
+**The whole scripting surface on the subject is three things**, checked against
+Mojang's `metadata/script_modules` at 1.26.50:
+
+| | |
+| --- | --- |
+| `Entity.isSleeping` | read-only: in a bed right now? |
+| `GameRules.doInsomnia` | world-wide switch on phantom **spawning** |
+| `GameRules.playersSleepingPercentage` | the sleep threshold vanilla tests against |
+
+No per-player rest value to read or write, no sleep-completed event, and
+nothing stat-shaped anywhere else in the API (`Player.resetLevel` is XP,
+`Entity.resetProperty` is custom entity properties).
+
+**So do not imitate a sleep — arrange one.** Stop the clock just short of dawn,
+drop `playersSleepingPercentage` low enough that a single sleeper satisfies it,
+and let the engine perform its own night skip. Everyone in bed is woken through
+the game's own path and their counter clears exactly as in an unmodded world.
+It is per player, needs no gamerule left flipped, and gives players an obvious
+remedy: stay in bed until morning.
+
+Practicalities, all learned building `nightshare/behavior_pack/scripts/handoff.js`:
+
+- **Use 1, not 0.** 0 risks meaning "nobody need sleep" and skipping unprompted.
+- **Arm on `>=`, not a window.** A large time skip can carry the clock across a
+  narrow band in one tick and step straight over it.
+- **Time out and take the night back.** If the sleeper gets up between the
+  invitation and the skip, nothing fires; a night parked one tick short of dawn
+  forever is far worse than a missed reset.
+- **Pause your own fast-forward while armed**, or you race the engine to the
+  same sunrise.
+- **One owner per gamerule.** Holding vanilla's skip *off* mid-night and
+  inviting it *on* at dawn are the same gamerule. Two borrowers each recording
+  "the original" would record each other's temporary values and leave the world
+  permanently skippable, or permanently not.
+
+`doInsomnia` is the tempting alternative and a poor one: it suppresses spawning
+rather than resetting anything, it is world-wide with no per-player form, and
+the real counter keeps climbing underneath — so releasing it at dawn brings the
+phantoms straight back for anyone who sleeps every few nights rather than
+nightly.
+
+---
+
 ## Patterns that worked
 
 - Persist state in **one** world dynamic property holding a JSON blob. Keep an

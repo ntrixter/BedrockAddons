@@ -2,7 +2,7 @@ import { world } from "@minecraft/server";
 import * as cfg from "./config.js";
 
 /**
- * Resolves Nightshare's three tunable settings from, in order of precedence:
+ * Resolves Nightshare's four tunable settings from, in order of precedence:
  *
  *   1. a runtime override set with `scriptevent nightshare:config`, stored in
  *      the world so it survives a restart
@@ -21,6 +21,15 @@ import * as cfg from "./config.js";
  */
 
 const GUARDS = ["off", "auto", "always"];
+
+/** Shared by every on/off setting, so they all accept the same words. */
+function parseBool(raw) {
+  if (typeof raw === "boolean") return raw;
+  const s = String(raw).toLowerCase();
+  if (s === "true" || s === "on" || s === "yes") return true;
+  if (s === "false" || s === "off" || s === "no") return false;
+  return undefined;
+}
 
 /**
  * One entry per admin-facing key. `pack` is the manifest setting name, `parse`
@@ -48,13 +57,14 @@ const SETTINGS = {
   announce: {
     pack: "nightshare:announce",
     fallback: () => cfg.ANNOUNCE,
-    parse: (raw) => {
-      if (typeof raw === "boolean") return raw;
-      const s = String(raw).toLowerCase();
-      if (s === "true" || s === "on" || s === "yes") return true;
-      if (s === "false" || s === "off" || s === "no") return false;
-      return undefined;
-    },
+    parse: parseBool,
+    show: (v) => String(v),
+    hint: "true | false",
+  },
+  handoff: {
+    pack: "nightshare:dawn_handoff",
+    fallback: () => cfg.DAWN_HANDOFF,
+    parse: parseBool,
     show: (v) => String(v),
     hint: "true | false",
   },
@@ -118,6 +128,10 @@ export function burnDurationTicks() {
 
 export function announce() {
   return resolve("announce").value;
+}
+
+export function dawnHandoff() {
+  return resolve("handoff").value;
 }
 
 /**
