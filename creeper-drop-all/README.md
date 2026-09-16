@@ -32,7 +32,13 @@ blocks, and they are what this add-on is for.
 Drops come from the **real loot tables**, so stone gives cobblestone, coal ore
 gives coal, and a chest gives its contents — not the blocks' own items. Leaves
 are the one deliberate exception: by default they hand back the leaf block, so a
-blasted canopy can be rebuilt. See [Settings](#settings) to turn that off.
+blasted canopy can be rebuilt. Every leaf type counts, poplar and pale oak
+included, and each drops its own kind. See [Settings](#settings) to turn that
+off.
+
+Verified against the Minecraft **1.26.50** block palette (the 26.51 release).
+`min_engine_version` stays at 1.26.30 on purpose — nothing here needs a newer
+engine, and raising the floor would only shut out players who are behind.
 
 ## Download
 

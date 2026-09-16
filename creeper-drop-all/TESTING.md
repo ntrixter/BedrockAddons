@@ -163,6 +163,7 @@ reload between the halves, or the second run is just the first again.
 
 - [ ] Leaf blocks drop, one per leaf destroyed (arriving merged into stacks)
 - [ ] Each is its **own** kind — birch from a birch, cherry from a cherry, azalea from an azalea
+- [ ] A **poplar** (1.26.40's tree, in three autumn colours) drops its own colour, not oak
 - [ ] The dropped blocks place back onto the tree
 
 The per-kind check is the one worth being fussy about: it is what separates the shears route, which

@@ -33,8 +33,26 @@ https://raw.githubusercontent.com/Mojang/bedrock-samples/main/<path>
 
 Take `min_engine_version` from that repo's own `behavior_pack/manifest.json`
 rather than inferring it from the marketing version. Release names moved to a
-calendar style (26.40, 26.45) while the engine version kept its `1.` prefix
-(`1.26.40`).
+calendar style (26.40, 26.45) while the engine version kept its `1.` prefix,
+and **the two numbers do not track each other** — the marketing number is a
+drop number, the engine number rounds down to a ten:
+
+| Marketing name | Engine | `bedrock-samples` tag |
+| --- | --- | --- |
+| 26.45 | `1.26.40` | `v1.26.40.05` |
+| 26.51 | `1.26.50` | `v1.26.50.4` |
+
+So never guess the engine version from the name on the launcher. Two traps in
+that table: the patch field is **zero-padded in some tags and not others**
+(`v1.26.40.05` but `v1.26.50.4`), so a constructed tag URL can 404 on a release
+that exists; and `version.json` at the repo root gives `latest` directly, which
+is the reliable way in.
+
+**Raising `min_engine_version` to match the newest release is almost always
+wrong.** It is a floor, not a statement of currency: raising it drops every
+player still on an older build and buys nothing. Raise it only when the add-on
+actually uses something that release introduced. The same reasoning as pinning
+the lowest script module version that works.
 
 Vanilla JSON is **not strict JSON** — it carries `//` comments, some trailing a
 value on the same line — so strip comments before parsing with a strict reader.
@@ -238,6 +256,14 @@ tooling originally conflated the two and rejected the first script pack outright
 - **A double chest reports the same merged 54-slot container from both halves.**
   Reading the inventory once per half duplicates the contents; read it once per
   chest, not once per block.
+- **Mojang adds leaf block ids in ordinary minor releases, so match the
+  substring `leaves`, never a hardcoded list.** 1.26.30 had 11; 1.26.40 added
+  three poplars (`orange_`, `red_`, `yellow_poplar_leaves`) for 14; 1.26.50
+  added none. Checked against the full 1,463-block palette in
+  `metadata/vanilladata_modules/mojang-blocks.json`, `leaves` matches all 14 and
+  nothing else. Note the near-misses it correctly skips: `leaf_litter`,
+  `big_dripleaf` and `small_dripleaf_block` are spelled `leaf`, and none of them
+  is canopy.
 
 ---
 
@@ -254,6 +280,7 @@ tooling originally conflated the two and rejected the first script pack outright
 | 2.0.0 | 1.21.90 |
 | 2.8.0 | 1.26.30 |
 | 2.9.0 | 1.26.40 |
+| 2.10.0 | 1.26.50 |
 
 ---
 

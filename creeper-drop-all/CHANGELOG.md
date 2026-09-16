@@ -18,6 +18,10 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 - **Drop leaf blocks**, a new setting, **on by default**. Exploded leaves now
   drop the leaf block itself, so a canopy a creeper took out can be put back the
   way it was instead of leaving a permanent hole.
+- Every leaf type is covered, poplar and pale oak included, and each drops its
+  own kind rather than plain oak. Leaves are matched by name rather than from a
+  list, so a tree Mojang adds in a future release is covered the day it ships
+  without an update here.
 
 ### Changed
 

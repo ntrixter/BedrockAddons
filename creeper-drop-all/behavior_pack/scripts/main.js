@@ -554,9 +554,15 @@ function generateLoot(perm) {
  * minecraft:cherry_leaves, ...); before that, minecraft:leaves and
  * minecraft:leaves2 carried the wood type in a block state instead. Matching on
  * the substring covers both shapes and the odd one out,
- * minecraft:azalea_leaves_flowered, and needs no list to revisit when Mojang
- * adds a tree. minecraft:leaf_litter is spelled "leaf" and is correctly missed:
- * it is ground cover, not canopy.
+ * minecraft:azalea_leaves_flowered.
+ *
+ * It also covers trees Mojang has not shipped yet, which is the point: 1.26.40
+ * added three poplars without warning, and a hardcoded list would have silently
+ * skipped them. Checked against the whole 1,463-block palette at 1.26.50, this
+ * matches all 14 leaf ids and nothing else. The near-misses it correctly skips
+ * are spelled "leaf" rather than "leaves" - minecraft:leaf_litter,
+ * minecraft:big_dripleaf, minecraft:small_dripleaf_block - and none of them is
+ * canopy.
  */
 function isLeafBlock(typeId) {
   return typeId.indexOf("leaves") !== -1;
