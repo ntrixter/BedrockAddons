@@ -2,9 +2,14 @@
 
 > **Status at v1.1.0:** four checks passed at v1.0.0 — the settings screen,
 > explosion damage surviving `setImpactedBlocks([])`, the double-chest case, and
-> a client import of the released artifact. **Everything else below is unrun.**
-> An unticked box means untested, not failing. The highest-value gap is T5,
-> which is now also the acceptance test for the feature 1.1.0 adds.
+> a client import of the released artifact. Two more were partly verified on
+> 2026-09-16 against Minecraft 26.51 (engine 1.26.50): T5a, the new leaf-block
+> setting, and the chest half of T4d. **Everything else below is unrun.** An
+> unticked box means untested, not failing.
+>
+> The highest-value gap is now **T5b** — the setting turned *off*. It is the
+> regression test that catches the tool ladder escalating into shears, and
+> nothing else in the matrix covers it.
 
 Run each test **twice**: once with the pack disabled (baseline) and once enabled. Differences
 that aren't the intended behavior are bugs.
@@ -154,17 +159,29 @@ same source, restoring damage, knockback, sound and particles together.
 **If damage survived but sound/particles didn't:** set `FORCE_SOUND` / `FORCE_PARTICLES` to `true`
 instead. Cheaper, and it keeps damage on the engine's own code path.
 
-### ☐ T5 — Leaves, in both settings
+### ◑ T5 — Leaves, in both settings — T5a PASSED 2026-09-16, T5b unrun
 
 **Drop leaf blocks** decides this one, so it runs twice. Settings apply on the next world load —
 reload between the halves, or the second run is just the first again.
 
 **T5a — setting ON (the default).** Blast ~64 leaf blocks.
 
-- [ ] Leaf blocks drop, one per leaf destroyed (arriving merged into stacks)
+- [x] Leaf blocks drop, one per leaf destroyed (arriving merged into stacks)
+- [x] A **poplar** (1.26.40's tree, in three autumn colours) drops its own colour, not oak
 - [ ] Each is its **own** kind — birch from a birch, cherry from a cherry, azalea from an azalea
-- [ ] A **poplar** (1.26.40's tree, in three autumn colours) drops its own colour, not oak
 - [ ] The dropped blocks place back onto the tree
+
+**Result (2026-09-16, Minecraft 26.51 / engine 1.26.50):** poplar leaves drop as leaf blocks.
+The other variants and the place-it-back check are still unticked because they were not part of
+that run, not because they failed.
+
+**Also verified in the same run: `minecraft:shelf_mushroom`**, the bracket fungus that grows on
+poplars, drops correctly. It is worth calling out because it is not a leaf and does not go near the
+shears short-circuit — it takes the ordinary ladder and lands on the very first rung, since its
+loot table carries no tool condition. It also has a `growth` block state with a **different loot
+table per stage** (growth 0 gives one mushroom, growth 1 gives two), which only comes out right
+because P1 snapshots `block.permutation` rather than the type id. Storing the id and re-resolving
+later would quietly drop one mushroom from every grown one.
 
 The per-kind check is the one worth being fussy about: it is what separates the shears route, which
 reads the permutation, from the fallback that builds an item from the block id. Both give *a* leaf,
@@ -228,14 +245,20 @@ distinct code path from the one verified here.
 - [ ] Barrel (27 slots, no pairing)
 - [ ] Furnace mid-smelt (input + fuel + output all drop)
 
-### ☐ T4d — Containers, protection ON
+### ◑ T4d — Containers, protection ON — chest PASSED 2026-09-16, sweep incomplete
 Turn on *Protect containers from explosions*, reload the world, then detonate point-blank against
 each of: chest, double chest, barrel, furnace mid-smelt, hopper, ender chest.
 
-- [ ] Every container **survives intact**, contents unmoved
+- [x] Chest **survives intact**, contents unmoved
+- [ ] The other five container types (double chest, barrel, furnace mid-smelt, hopper, ender chest)
 - [ ] The surrounding crater still forms normally
 - [ ] Nothing duplicates
 - [ ] Toggle back off, reload, confirm T4a–c behavior returns
+
+**Result (2026-09-16):** chest protection confirmed working. The remaining container types are
+unrun. The ender chest is the one most worth doing next: it has no `minecraft:inventory` component
+and is protected only because `PROTECT_EXTRA` names it explicitly, so it is the entry that a
+refactor would break without any other test noticing.
 
 ### ☐ T6 — Ores
 Exposed coal, iron, gold, redstone, lapis, diamond, plus deepslate variants, obsidian, and

@@ -253,6 +253,12 @@ tooling originally conflated the two and rejected the first script pack outright
   block rather than a sapling roll, which is what `creeper-drop-all`'s
   "Drop leaf blocks" setting does — as a short-circuit for leaves alone, never as
   a rung in a ladder.
+- **A block's loot table can depend on a block state, so snapshot the
+  permutation and not the type id.** `minecraft:shelf_mushroom` (1.26.40, the
+  bracket fungus on poplars) carries a `growth` state and points at a different
+  table per stage: `shelf_mushroom_growth_0` drops one, `growth_1` drops two.
+  Code that stores `perm.type.id` and re-resolves a permutation later silently
+  loses the second mushroom on every grown one. Verified in game 2026-09-16.
 - **A double chest reports the same merged 54-slot container from both halves.**
   Reading the inventory once per half duplicates the contents; read it once per
   chest, not once per block.
