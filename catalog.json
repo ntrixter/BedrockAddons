@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-16T21:02:24Z",
+  "generated_at": "2026-09-17T13:49:54Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "creeper-drop-all": {
@@ -39,12 +39,12 @@
       "description": "Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice.",
       "deprecated": false,
       "latest_stable": {
-        "version": "1.2.0",
-        "tag": "nightshare-v1.2.0",
-        "filename": "nightshare-1.2.0.mcpack",
-        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/nightshare-v1.2.0/nightshare-1.2.0.mcpack",
-        "sha256": "455a94fd733b0363ff7df727294661cffc574988aaa41245186d0fa442724386",
-        "published_at": "2026-09-14T21:32:40Z",
+        "version": "1.3.0",
+        "tag": "nightshare-v1.3.0",
+        "filename": "nightshare-1.3.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/nightshare-v1.3.0/nightshare-1.3.0.mcpack",
+        "sha256": "1f2a9bd7f969b4a0d9c6460df9891a55bd83255e71b7d36c1dd977c5772bf5d2",
+        "published_at": "2026-09-17T13:49:35Z",
         "min_engine_version": [
           1,
           26,
@@ -56,7 +56,7 @@
             "type": "data",
             "version": [
               1,
-              2,
+              3,
               0
             ],
             "folder": "nightshare_BP"
