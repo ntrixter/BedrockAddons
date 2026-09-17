@@ -70,10 +70,21 @@ Requirements:
 - `"format_version": 3` in the manifest. In v3 **every** version field becomes a
   SemVer *string* (`"1.2.0"`, not `[1, 2, 0]`), and `metadata.authors` is
   required.
-- A top-level `"settings": [...]` array. Control types: `label` (read-only text,
-  supports `§` formatting codes — use these to explain a setting), `toggle`,
-  `slider` (`min`/`max`/`step`), `dropdown` (options as `{name, text}`). Every
-  control needs a namespaced `"name"` such as `"mypack:thing"` and a `"default"`.
+- A top-level `"settings": [...]` array, **1 to 50 controls** (`minItems`/
+  `maxItems` in the schema). There are exactly **five** types, per `SettingType`
+  in Mojang's `metadata/json_schemas/client_server/packaging/3.0.0`:
+
+  | Type | Value shape |
+  | --- | --- |
+  | `label` | read-only text; supports `§` codes — use these to explain a setting |
+  | `toggle` | `default` is a **boolean** |
+  | `slider` | `default`, `min`, `max`, `step` are **floats** |
+  | `dropdown` | `default` is a **string**; `options` are `{name, text}` |
+  | `multiselect` | **`defaults`** — plural, an **array**, not `default` |
+
+  Every control but `label` needs a namespaced `"name"` such as `"mypack:thing"`.
+  `multiselect` taking `defaults` rather than `default` is the easy one to get
+  wrong, and a schema-valid manifest is the only thing that gets a gear icon.
 - `min_engine_version` `"1.26.30"` and `@minecraft/server` `"2.8.0"`.
 
 Read them with `world.getPackSettings()`, which returns a plain object keyed by
@@ -87,9 +98,10 @@ Two facts settle the no-experiment question:
 2. `world.getPackSettings()` was promoted from beta to **stable** in
    `@minecraft/server` 2.8.0, shipped with Bedrock 1.26.30.
 
-**Caveat:** there is no stable change event yet — `PackSettingChangeAfterEvent`
-is 2.12.0-beta — so read settings once at load. Edits apply on the next world
-load.
+**Caveat:** there is no stable change event yet. `PackSettingChangeAfterEvent`
+appears only in `@minecraft/server-bindings` **2.11.0-beta**, and is absent from
+stable 2.8.0 and 2.10.0 — so read settings once at load. Edits apply on the next
+world load.
 
 Confirmed twice, by two independently built packs: the gear icon appears on
 latest stable with no experiment enabled, and achievements stay enabled.
@@ -307,10 +319,11 @@ string.
 
 > This one has a live consequence here. `build_addon.py` normalises every
 > version to an array, so the ready-to-paste block in generated release notes
-> says `[1, 2, 0]` even for a v3 pack. No add-on in this repository is v3 yet, so
-> nothing is wrong today — but the first v3 pack must settle this before release,
-> and if the string form is required the notes renderer needs to emit whichever
-> form the manifest uses.
+> says `[1, 2, 0]` even for a v3 pack. **Two v3 add-ons are now published**
+> (`nightshare` and `creeper-drop-all`), so the hedge is live in real release
+> notes: they offer the array first and the string as a fallback. Settling this
+> lets the renderer emit whichever form the manifest actually uses and drops the
+> second block.
 
 ---
 
