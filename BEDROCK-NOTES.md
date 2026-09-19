@@ -285,6 +285,63 @@ tooling originally conflated the two and rejected the first script pack outright
 
 ---
 
+## Difficulty does not seem to scale mob melee damage
+
+**UNVERIFIED**, but on documentary evidence rather than a hunch, and with a
+falsifiable prediction below. The claim: in Bedrock, a mob's melee damage is the
+same on Easy, Normal and Hard. What difficulty changes is status effects,
+attack behaviour and spawning — not damage per hit.
+
+Three things point at it, weakest first:
+
+1. **`minecraft:attack` has no difficulty field.** Its entire surface, per
+   `metadata/doc_modules/entities.json`, is `damage`, `effect_name`,
+   `effect_amplifier`, `effect_duration`. There is nothing difficulty-shaped to
+   set.
+2. **No hostile mob varies its damage.** Twenty checked at 1.26.50; every one
+   declares a single `damage`. Slime and magma cube declare three, but those are
+   the small/medium/large size variants, not difficulty.
+3. **The cave spider is the clincher.** It is the one vanilla mob that branches
+   all three ways, and it swaps a component group per difficulty — so Mojang had
+   exactly the mechanism needed to vary damage, and did not use it:
+
+   | Component group | `damage` | `effect_duration` (poison) |
+   | --- | --- | --- |
+   | `minecraft:spider_poison_easy` | **2** | 0s |
+   | `minecraft:spider_poison_normal` | **2** | 7s |
+   | `minecraft:spider_poison_hard` | **2** | 15s |
+
+   Three hand-written groups, damage identical in all of them. That is not what
+   you write if damage scales.
+
+**What difficulty does change, from the same files:**
+
+- **Status effect durations** — the cave spider poison above is the clearest case.
+- **Attack behaviour** — `skeleton.json` filters on `is_difficulty` to swap in a
+  faster `minecraft:behavior.ranged_attack` group on Hard. Hard is harder through
+  rate of fire, not damage per arrow.
+- Hostile spawning (Peaceful), and hunger/starvation thresholds.
+
+**Melee damage at 1.26.50**, for anyone tuning against it: zombie 3, husk 3,
+drowned 3, creeper 3, spider 2, cave spider 2, pillager 3, bogged 3, stray 3,
+wither skeleton 4, magma cube 3/4/6, piglin 5, blaze 6, enderman 7, vindicator 8,
+hoglin 3–9, ravager 12, warden 30.
+
+**The test that settles it.** Unarmoured, take one zombie hit on Easy, then one
+on Hard. **The prediction is the same number both times.** A specific prediction
+rather than "measure the ratio", so it either confirms or refutes cleanly.
+
+**Two gaps this does not cover.** An engine-side multiplier applied on top of the
+data value cannot be ruled out from files alone — only the test above can do
+that. And this is melee only: **explosion** damage may be handled separately, and
+creeper blasts were not checked.
+
+> The practical consequence: an add-on offering a per-player "Easy" mode cannot
+> reproduce vanilla Easy by scaling damage, because vanilla Easy does not appear
+> to scale it. Expose a plain percentage instead, and name it for what it does.
+
+---
+
 ## Script API versioning
 
 - Declaring an **older** stable module version still works on newer engines —
