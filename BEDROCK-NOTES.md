@@ -271,6 +271,20 @@ tooling originally conflated the two and rejected the first script pack outright
   table per stage: `shelf_mushroom_growth_0` drops one, `growth_1` drops two.
   Code that stores `perm.type.id` and re-resolves a permutation later silently
   loses the second mushroom on every grown one. Verified in game 2026-09-16.
+- **Some blocks keep their identity in BLOCK ENTITY data, where a permutation
+  cannot reach it.** `minecraft:bed` is one id whose only states are `direction`,
+  `head_piece_bit` and `occupied_bit` — the colour is not a block state at all.
+  So `generateLootFromBlockPermutation` is colour-blind for beds, and every bed
+  comes back the same colour. Banners (colour and patterns) and decorated pots
+  (sherds) are the same shape; wool and shulker boxes flattened to one id per
+  colour and are fine. The escape hatch is **`Block.getItemStack(amount, true)`**
+  — `withData` carries it across, and the call is legal in
+  **restricted execution**, so it works inside a before-event where the block
+  still exists. Use it only for blocks that genuinely drop themselves:
+  getItemStack returns the block AS AN ITEM, so stone gives stone rather than
+  cobblestone. Note also that Bedrock keeps **one** `minecraft:bed` item id, so
+  the colour never appears in `typeId` — compare with `isStackableWith`, or two
+  colours will merge into one stack.
 - **A double chest reports the same merged 54-slot container from both halves.**
   Reading the inventory once per half duplicates the contents; read it once per
   chest, not once per block.

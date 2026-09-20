@@ -292,6 +292,31 @@ Doors, beds, tall grass, large ferns, sunflowers, a sign with text, a monster sp
 - [ ] Spawner drops nothing (correct)
 - [ ] Sign drops the sign item; **text is lost** — expected, matches vanilla
 
+### ☐ T9c — Colour survives the blast (regression, fixed in 1.1.1)
+
+Blow up several **different-coloured beds** in one blast, and a patterned banner.
+
+- [ ] Each bed drops its **own** colour — blue stays blue, not red
+- [ ] Beds of different colours do **not** merge into one stack
+- [ ] A banner keeps its colour **and its pattern**
+
+Until 1.1.1 every bed came back red whatever you destroyed. `minecraft:bed` is a
+single block id whose states are only `direction`, `head_piece_bit` and
+`occupied_bit`, so the colour was never in the permutation handed to the loot
+table. The fix snapshots `block.getItemStack(1, true)` for these blocks instead.
+
+**Open question — `minecraft:decorated_pot`.** It has the same block-entity
+problem and is deliberately *not* fixed. Vanilla drops a pot's sherds rather than
+the pot unless mined with silk touch, and this pack mines unenchanted, so reading
+the pot's own item could turn a wrong drop into a differently wrong one. None of
+these blocks has a data-driven loot table to check against.
+
+- [ ] Blow up a decorated pot and **record what it gives**: `________________`
+- [ ] Break one by hand for comparison: `________________`
+
+If hand-breaking gives sherds, leave the pot alone. If it gives the pot with its
+sherds intact, add `minecraft:decorated_pot` to `ITEM_DATA_BLOCKS`.
+
 ### ☐ T9b — Falling-block ordering (visual QA, non-blocking)
 P2 clears blocks in snapshot-array order, not necessarily bottom-to-top the way the engine would.
 
