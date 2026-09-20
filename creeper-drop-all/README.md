@@ -36,6 +36,11 @@ blasted canopy can be rebuilt. Every leaf type counts, poplar and pale oak
 included, and each drops its own kind. See [Settings](#settings) to turn that
 off.
 
+Beds and banners are a second exception, for a different reason. Their colour
+lives in block entity data rather than in the block itself, so the loot tables
+cannot see it — the pack reads the block's own item instead, and a blue bed
+drops a blue bed.
+
 Verified against the Minecraft **1.26.50** block palette (the 26.51 release).
 `min_engine_version` stays at 1.26.30 on purpose — nothing here needs a newer
 engine, and raising the floor would only shut out players who are behind.
@@ -114,7 +119,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "c60c1a0f-5864-4695-a2b5-07999da64790",
-    "version": [1, 1, 0]
+    "version": [1, 1, 1]
   }
 ]
 ```
@@ -126,7 +131,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form — see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.1"` instead. The two files have to agree.
 
 ## Settings
 

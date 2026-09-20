@@ -106,6 +106,41 @@ const SELF_CONTAINED = ["shulker_box"];
  */
 const PROTECT_EXTRA = ["minecraft:ender_chest"];
 
+/**
+ * Blocks whose identity lives in BLOCK ENTITY data rather than in their block
+ * states, so a permutation alone cannot describe them.
+ *
+ * A bed is one id, minecraft:bed, whose only states are direction,
+ * head_piece_bit and occupied_bit - the colour is not among them. Feed that
+ * permutation to generateLootFromBlockPermutation and the colour was never in
+ * the input, so every bed came back the same colour whatever you blew up. Wool
+ * and shulker boxes flattened to one id per colour and are unaffected; beds,
+ * banners and decorated pots did not.
+ *
+ * For these, snapshot block.getItemStack(1, true) instead - withData is what
+ * carries the colour, the banner patterns and the pot sherds across. It is
+ * legal in restricted execution, so it can be read in P1 beside the
+ * permutation, which is the only moment the block still exists.
+ *
+ * Deliberately a LIST, not "any block that drops itself". getItemStack returns
+ * the block AS AN ITEM, which for stone is stone rather than cobblestone and
+ * for ores is the ore rather than its raw material - using it broadly would gut
+ * the point of this pack. A block belongs here only when its own item carries
+ * data the permutation cannot AND the block genuinely drops itself.
+ *
+ * minecraft:decorated_pot has the same block entity problem and is deliberately
+ * NOT here. Vanilla drops a pot's sherds rather than the pot unless it is mined
+ * with silk touch, and this pack mines unenchanted on purpose. None of these
+ * blocks has a data-driven loot table to check that against, so listing the pot
+ * risks turning a wrong drop into a differently wrong one. Left alone until
+ * somebody confirms in game what an exploded pot should give - see TESTING.md.
+ */
+const ITEM_DATA_BLOCKS = [
+  "minecraft:bed",
+  "minecraft:standing_banner",
+  "minecraft:wall_banner",
+];
+
 /* ------------------------------------------------------------------ *
  * Module state
  * ------------------------------------------------------------------ */
@@ -294,8 +329,12 @@ function onExplosionBefore(ev) {
         }
       }
 
+      // Read now or never: after this tick the block is air and its block
+      // entity is gone with it.
+      const dataItem = ITEM_DATA_BLOCKS.indexOf(typeId) !== -1 ? getItemWithData(block) : undefined;
+
       takenBlocks.add(key);
-      snapshot.push({ x: x, y: y, z: z, perm: perm, items: items });
+      snapshot.push({ x: x, y: y, z: z, perm: perm, items: items, dataItem: dataItem });
     } catch (e) {
       // Unloaded chunk or invalid block reference. Skip this one block - never
       // let a single bad block abort the whole explosion.
@@ -321,6 +360,19 @@ function isSelfContained(typeId) {
     if (typeId.indexOf(suffix) !== -1) return true;
   }
   return false;
+}
+
+/**
+ * The block's own item, carrying its block entity data. Restricted-execution
+ * safe, so this is callable from the snapshot phase.
+ */
+function getItemWithData(block) {
+  try {
+    return block.getItemStack(1, true);
+  } catch (e) {
+    warn("getItemStack: " + e);
+    return undefined;
+  }
 }
 
 function getContainer(block) {
@@ -463,7 +515,10 @@ function* lootDrainJob() {
     while (task.i < entries.length) {
       const e = entries[task.i++];
       try {
-        const loot = generateLoot(e.perm);
+        // A snapshotted item wins outright: it is this exact block with its own
+        // data, where the loot table only ever saw a permutation that does not
+        // carry the colour.
+        const loot = e.dataItem ? [e.dataItem] : generateLoot(e.perm);
         if ((loot && loot.length) || e.items) {
           const key = bucketKey(e.x, e.y, e.z);
           let b = buckets.get(key);
