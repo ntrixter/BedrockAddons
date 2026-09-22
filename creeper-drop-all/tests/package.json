@@ -1,0 +1,8 @@
+{
+  "name": "creeper-drop-all-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import ./register.js run.js"
+  }
+}

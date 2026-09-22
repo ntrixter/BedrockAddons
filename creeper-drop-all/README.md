@@ -214,13 +214,34 @@ drops.
 
 ## Tests
 
-There is no automated suite. [TESTING.md](TESTING.md) is the manual matrix, with
-an in-game rig (the gamerules and effects that stop a test producing a false
-result) and a record of what has actually been verified.
+The drop rules can be exercised without launching Minecraft:
 
-Verified in game so far: the settings screen, that suppressing block destruction
-still leaves explosion damage intact, creeper drops, and that a double chest
-drops its contents once rather than twice. The rest of the matrix is unrun.
+```sh
+cd creeper-drop-all/tests && node --import ./register.js run.js
+```
+
+A Node ESM loader hook redirects the bare `@minecraft/server` import to a mock,
+so the **shipping** scripts under `behavior_pack/scripts/` run unmodified
+against a simulated explosion. Node is needed only for this; the pack itself has
+no build step and ships as plain JavaScript.
+
+It covers what the pack turns destroyed blocks into: every leaf id in the
+current palette, the blocks spelled `leaf` that must *not* match, both positions
+of the leaf setting, the fallbacks when an item cannot be built, and bed and
+banner colour with the count that goes with it.
+
+**Where the engine's behaviour is not established, the suite runs under every
+possibility rather than the likeliest one.** Whether the loot table yields an
+item for one half of a bed or for both has never been checked in game, so every
+bed case runs twice, once each way. Two fixes shipped broken because that guess
+was baked in and relied on — the suite now fails on either of them.
+
+It still cannot reach anything that depends on the real game: what the engine's
+loot tables actually return, whether an explosion keeps its damage, or how a
+blast looks. [TESTING.md](TESTING.md) is the manual matrix for those, with an
+in-game rig and a record of what has actually been verified — so far the
+settings screen, explosion damage surviving `setImpactedBlocks([])`, the
+double-chest case, and leaf drops on poplar.
 
 ## Updating or removing this add-on
 
