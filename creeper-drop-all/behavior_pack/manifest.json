@@ -2,7 +2,7 @@
   "format_version": 3,
   "header": {
     "name": "Creeper Drop All",
-    "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
+    "description": "v1.1.1 - Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
     "uuid": "c60c1a0f-5864-4695-a2b5-07999da64790",
     "version": "1.1.1",
     "min_engine_version": "1.26.30"

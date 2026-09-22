@@ -25,6 +25,11 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 - **Banners lost their colour and pattern** to the same cause, unreported but
   broken since 1.0.0.
 
+### Changed
+
+- The pack description now starts with the version, so the pack list in Edit
+  World shows which build you are about to enable.
+
   `minecraft:decorated_pot` has the same problem and is deliberately left alone
   — vanilla drops a pot's sherds rather than the pot unless it is mined with silk
   touch, and this pack mines unenchanted, so "fixing" it could make it worse. See
