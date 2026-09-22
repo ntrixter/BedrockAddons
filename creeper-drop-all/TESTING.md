@@ -297,8 +297,16 @@ Doors, beds, tall grass, large ferns, sunflowers, a sign with text, a monster sp
 Blow up several **different-coloured beds** in one blast, and a patterned banner.
 
 - [ ] Each bed drops its **own** colour — blue stays blue, not red
+- [ ] **Count is right: N beds blown up give N beds, not 2N**
 - [ ] Beds of different colours do **not** merge into one stack
 - [ ] A banner keeps its colour **and its pattern**
+
+The count check is not decoration. A bed is **two blocks**, foot and head, both
+`minecraft:bed`. `head_piece_bit` *is* a block state, so the loot table can tell
+them apart and yields the item for the foot only — that is how vanilla gives you
+one bed. The first cut of this fix bypassed the table and read the block's own
+item for every block, which dropped two beds per bed. So the table decides
+*whether* a block drops; the snapshot only corrects *what*.
 
 Until 1.1.1 every bed came back red whatever you destroyed. `minecraft:bed` is a
 single block id whose states are only `direction`, `head_piece_bit` and
