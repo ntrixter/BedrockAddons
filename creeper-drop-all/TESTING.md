@@ -14,6 +14,13 @@
 Run each test **twice**: once with the pack disabled (baseline) and once enabled. Differences
 that aren't the intended behavior are bugs.
 
+**Before running anything here, run the automated suite** — it covers the drop rules without
+needing a world, and it is faster to fail there than in game:
+
+```sh
+cd creeper-drop-all/tests && node --import ./register.js run.js
+```
+
 **Setup for the first pass:**
 - Settings → Creator → **Content Log GUI** on, so script errors are visible.
 - Set `DEBUG = true` at the top of `behavior_pack/scripts/main.js`, rebuild, redeploy.
