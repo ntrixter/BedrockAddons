@@ -301,12 +301,22 @@ Blow up several **different-coloured beds** in one blast, and a patterned banner
 - [ ] Beds of different colours do **not** merge into one stack
 - [ ] A banner keeps its colour **and its pattern**
 
-The count check is not decoration. A bed is **two blocks**, foot and head, both
-`minecraft:bed`. `head_piece_bit` *is* a block state, so the loot table can tell
-them apart and yields the item for the foot only — that is how vanilla gives you
-one bed. The first cut of this fix bypassed the table and read the block's own
-item for every block, which dropped two beds per bed. So the table decides
-*whether* a block drops; the snapshot only corrects *what*.
+The count check is not decoration — it caught two wrong fixes in a row.
+
+A bed is **two blocks**, foot and head, both `minecraft:bed`. The first cut read
+the block's own item for every block, so both halves dropped: two beds per bed.
+The second assumed the loot table yields an item for the foot only and left the
+head to it — also two beds, because that assumption was wrong.
+
+**Whether the engine yields loot for one half or for both is still not
+established here, and the pack no longer has an opinion on it.** The head piece
+is suppressed outright, so the pair gives one item either way. The automated
+check runs the whole suite twice, once under each possibility.
+
+- [ ] **Blow up a bed where only the HEAD is in the blast.** Expected: no bed
+      drops and the foot is left standing. That is the known cost of suppressing
+      the head, and it is the pack's existing multi-block limitation rather than
+      a new one. Record what happens: `________________`
 
 Until 1.1.1 every bed came back red whatever you destroyed. `minecraft:bed` is a
 single block id whose states are only `direction`, `head_piece_bit` and
