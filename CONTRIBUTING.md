@@ -168,7 +168,7 @@ In each `manifest.json`:
 | Field | What to put |
 | --- | --- |
 | `header.name` | The name shown in game. Real text, not a `pack.name` localisation key — a key would end up published in `catalog.json`. |
-| `header.description` | One short sentence. |
+| `header.description` | `v<version> - ` then one short sentence, e.g. `v1.0.0 - Villagers no longer turn into witches.` The pack list in Edit World is the only place a player sees which build they are about to enable, so the version leads — the line truncates on a narrow screen. `check_repo.py` fails if it drifts from `header.version`. The `modules[0].description` is internal and needs no version. |
 | `header.uuid` | A fresh UUID (or the published one). |
 | `header.version` | `[1, 0, 0]`, or the version being migrated. |
 | `header.min_engine_version` | The lowest Minecraft version you have actually tested. |
@@ -412,7 +412,9 @@ gh label create dependencies  --color 0366D6 --description "Dependency updates"
 
 ## Releasing a change to an existing add-on
 
-1. Bump `header.version` in **every** manifest of that add-on.
+1. Bump `header.version` in **every** manifest of that add-on, **and the
+   `v<version>` prefix in each `header.description` to match**. `check_repo.py`
+   fails if you bump one and forget the other.
 2. Add the matching `CHANGELOG.md` section.
 3. Merge to `main`. Still nothing is published.
 4. Tag `<addon-id>-v<new-version>` and push the tag.

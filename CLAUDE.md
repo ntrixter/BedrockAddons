@@ -99,6 +99,13 @@ carrying a name or a path, and stray editor directories such as `.vscode/` or
 - **Versioning is semver, per add-on, independent of every other add-on.** The
   source of truth is `header.version` in `manifest.json`, and every pack in one
   add-on shares one version.
+- **`header.description` starts with the version**, as `v1.2.3 - `. The pack
+  list in Edit World is the only place a player sees which build they are about
+  to enable, and Minecraft shows nothing else there that identifies it. It leads
+  rather than trails because the line truncates on a narrow screen. Hand-written
+  so the file in the repo is the file that ships; `check_repo.py` fails the build
+  if it drifts from `header.version`. Only the **header** description needs it —
+  a module description is internal.
 - **Bedrock manifests hold only the numeric version.** A prerelease suffix has
   nowhere to live in a manifest, so it lives in the tag: manifests say
   `[1, 5, 0]` and the tag says `sleep-addon-v1.5.0-beta.1`. The build refuses

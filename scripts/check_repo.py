@@ -310,6 +310,44 @@ def load_json(path: str) -> dict | None:
     return None
 
 
+def version_text(version) -> str | None:
+    """header.version as a plain semver string, whichever form it is written in."""
+    if isinstance(version, list) and len(version) == 3:
+        return ".".join(str(n) for n in version)
+    if isinstance(version, str):
+        return version
+    return None
+
+
+def check_version_in_description(path: str, header: dict, version) -> None:
+    """The pack list is the only place a player sees which version they have.
+
+    Minecraft shows header.description under the pack name when you are picking
+    packs for a world, and shows nothing else that identifies the build. So the
+    version goes there, and it goes FIRST, because the line is truncated on a
+    narrow screen and a version at the end of a truncated sentence helps nobody.
+
+    Hand-written rather than stamped in at build time, so that the file in the
+    repository is the file that ships. This check is what stops it drifting: bump
+    header.version without touching the description and the build fails here
+    rather than shipping a pack that lies about which version it is.
+    """
+    wanted = version_text(version)
+    if wanted is None:
+        return  # the version itself is already an error; do not pile on
+
+    description = header.get("description")
+    if not isinstance(description, str) or not description.strip():
+        error(path, None, "missing 'header.description'",
+              f"add one, starting \"v{wanted} - \"")
+        return
+
+    if not description.startswith(f"v{wanted}"):
+        error(path, None,
+              f"header.description does not start with the version v{wanted}: {description[:60]!r}",
+              f"start it \"v{wanted} - \" so the pack list shows which build this is")
+
+
 def check_manifest(path: str, manifest: dict, uuids: dict, strict: bool) -> tuple:
     """Validate one manifest. strict=False for _template, whose values are placeholders."""
     if not isinstance(manifest, dict):
@@ -353,6 +391,8 @@ def check_manifest(path: str, manifest: dict, uuids: dict, strict: bool) -> tupl
         else:
             error(path, None, f"header.version has the wrong type: {version!r}",
                   "use [1, 0, 0] or \"1.0.0\"")
+
+        check_version_in_description(path, header, version)
 
     metadata = manifest.get("metadata")
     if isinstance(metadata, dict):

@@ -93,7 +93,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "18921d46-612a-4224-8b3d-da5cc3de7053",
-    "version": [1, 3, 0]
+    "version": [1, 3, 1]
   }
 ]
 ```
@@ -105,7 +105,7 @@ Every release's notes carry this same block with the version already filled in.
 > manifest is `format_version` 3, where versions are SemVer strings, and it is
 > not yet settled whether `world_behavior_packs.json` must match that form —
 > see the UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the
-> array above is rejected, use `"version": "1.3.0"` instead. The two files have
+> array above is rejected, use `"version": "1.3.1"` instead. The two files have
 > to agree.
 
 ## Settings

@@ -62,6 +62,22 @@ class CatalogError(Exception):
     """A problem the user has to fix. Reported without a traceback."""
 
 
+VERSION_PREFIX_RE = re.compile(r"^v\d+\.\d+\.\d+\s*-\s*")
+
+
+def strip_version_prefix(value):
+    """Drop the "v1.2.3 - " a manifest description carries for the pack list.
+
+    That prefix exists so a player can see which build they are about to enable.
+    The catalog already states the version in its own field, and a description
+    frozen with a version in it would go stale the moment the add-on is updated,
+    so it is removed on the way through.
+    """
+    if not isinstance(value, str):
+        return value
+    return VERSION_PREFIX_RE.sub("", value).strip() or None
+
+
 def usable_manifest_text(value):
     """Return value if it reads as real display text, else None.
 
@@ -243,7 +259,7 @@ def addon_metadata(addon_id: str) -> dict:
             except json.JSONDecodeError:
                 continue
             display_name = display_name or usable_manifest_text(header.get("name"))
-            description = description or usable_manifest_text(header.get("description"))
+            description = description or strip_version_prefix(usable_manifest_text(header.get("description")))
 
     return {
         "display_name": display_name or addon_id,

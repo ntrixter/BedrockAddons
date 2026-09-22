@@ -11,6 +11,15 @@ version, so the heading has to match exactly: `## [1.2.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-22
+
+### Changed
+
+- The pack description now starts with the version, so the pack list in Edit
+  World shows which build you are about to enable. Minecraft shows nothing else
+  there that identifies it, and until now the only way to tell two builds apart
+  was to enable one and look.
+
 ## [1.3.0] - 2026-09-16
 
 ### Added

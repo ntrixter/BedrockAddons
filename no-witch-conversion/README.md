@@ -77,7 +77,7 @@ entry into the existing array rather than overwriting the file.
 [
   {
     "pack_id": "d2af958c-b04d-41c4-8439-0066910c5599",
-    "version": [1, 0, 0]
+    "version": [1, 0, 1]
   }
 ]
 ```
