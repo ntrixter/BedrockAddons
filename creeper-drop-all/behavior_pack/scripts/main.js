@@ -515,10 +515,17 @@ function* lootDrainJob() {
     while (task.i < entries.length) {
       const e = entries[task.i++];
       try {
-        // A snapshotted item wins outright: it is this exact block with its own
-        // data, where the loot table only ever saw a permutation that does not
-        // carry the colour.
-        const loot = e.dataItem ? [e.dataItem] : generateLoot(e.perm);
+        // The loot table still decides WHETHER this block drops; the snapshot
+        // only corrects WHAT it drops.
+        //
+        // That division matters because a bed is two blocks. Foot and head are
+        // both minecraft:bed, and head_piece_bit IS in the permutation, so the
+        // table already knows to yield the bed item for one half and nothing for
+        // the other. Bypassing it and taking getItemStack on every block dropped
+        // two beds per bed - which is exactly what shipping a straight
+        // substitution did. Swap the item, keep the count.
+        const loot = generateLoot(e.perm);
+        if (e.dataItem && loot && loot.length === 1) loot[0] = e.dataItem;
         if ((loot && loot.length) || e.items) {
           const key = bucketKey(e.x, e.y, e.z);
           let b = buckets.get(key);

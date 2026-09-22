@@ -21,7 +21,9 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
   permutation the loot table was given, and every bed came back the same.
   Different-coloured beds also merged into one stack because they looked
   identical. The pack now reads the block's own item for these, which carries
-  the colour.
+  the colour, and swaps it in only where the loot table already yielded exactly
+  one item — a bed is two blocks and only one half drops, so the table keeps
+  deciding *whether* something drops while the snapshot corrects *what*.
 - **Banners lost their colour and pattern** to the same cause, unreported but
   broken since 1.0.0.
 
