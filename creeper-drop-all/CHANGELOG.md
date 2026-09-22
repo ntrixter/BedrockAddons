@@ -21,9 +21,15 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
   permutation the loot table was given, and every bed came back the same.
   Different-coloured beds also merged into one stack because they looked
   identical. The pack now reads the block's own item for these, which carries
-  the colour, and swaps it in only where the loot table already yielded exactly
-  one item — a bed is two blocks and only one half drops, so the table keeps
-  deciding *whether* something drops while the snapshot corrects *what*.
+  the colour, and swaps it in where the loot table yielded exactly one item — so
+  a block that drops something else entirely, stone to cobblestone or ore to raw
+  material, is left alone.
+
+  A bed is two blocks, foot and head. Its head piece is suppressed outright so
+  the pair yields one bed however the engine treats the halves — which is not
+  something this pack should need to know, and guessing at it produced two wrong
+  fixes before this one. The cost is that a blast taking only the head drops no
+  bed; see TESTING.md T9c.
 - **Banners lost their colour and pattern** to the same cause, unreported but
   broken since 1.0.0.
 

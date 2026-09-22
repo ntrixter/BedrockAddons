@@ -141,6 +141,29 @@ const ITEM_DATA_BLOCKS = [
   "minecraft:wall_banner",
 ];
 
+/**
+ * Blocks that occupy two block positions but are one thing to the player, and
+ * the block state that identifies the half which does NOT drop.
+ *
+ * A bed is foot + head, both minecraft:bed. Exactly one bed item must come out
+ * of the pair however many halves the blast took, so the half named here is
+ * suppressed outright rather than left to the loot table to decide.
+ *
+ * Suppressing explicitly is the point. Whether the engine yields an item for
+ * one half or for both is not something this pack should have an opinion on -
+ * an earlier fix assumed "foot only", shipped, and dropped two beds per bed
+ * because the assumption was wrong. Forcing the head to nothing gives the same
+ * answer either way.
+ *
+ * The cost is a blast that takes the head and leaves the foot: no bed comes
+ * out. That is the pack's existing multi-block limitation rather than a new one
+ * - it already leaves the surviving half standing - and it is the safe
+ * direction to be wrong in. See TESTING.md T9.
+ */
+const MULTIBLOCK_SPARE_HALF = {
+  "minecraft:bed": "head_piece_bit",
+};
+
 /* ------------------------------------------------------------------ *
  * Module state
  * ------------------------------------------------------------------ */
@@ -329,12 +352,20 @@ function onExplosionBefore(ev) {
         }
       }
 
+      // One half of a two-block thing yields nothing, so the pair gives one item.
+      const spare = MULTIBLOCK_SPARE_HALF[typeId];
+      const suppress = spare !== undefined && readState(perm, spare) === true;
+
       // Read now or never: after this tick the block is air and its block
       // entity is gone with it.
-      const dataItem = ITEM_DATA_BLOCKS.indexOf(typeId) !== -1 ? getItemWithData(block) : undefined;
+      const dataItem =
+        !suppress && ITEM_DATA_BLOCKS.indexOf(typeId) !== -1 ? getItemWithData(block) : undefined;
 
       takenBlocks.add(key);
-      snapshot.push({ x: x, y: y, z: z, perm: perm, items: items, dataItem: dataItem });
+      snapshot.push({
+        x: x, y: y, z: z, perm: perm, items: items,
+        dataItem: dataItem, suppress: suppress,
+      });
     } catch (e) {
       // Unloaded chunk or invalid block reference. Skip this one block - never
       // let a single bad block abort the whole explosion.
@@ -360,6 +391,16 @@ function isSelfContained(typeId) {
     if (typeId.indexOf(suffix) !== -1) return true;
   }
   return false;
+}
+
+/** Restricted-execution safe, so a block state can be read in the snapshot. */
+function readState(perm, name) {
+  try {
+    return perm.getState(name);
+  } catch (e) {
+    warn("getState " + name + ": " + e);
+    return undefined;
+  }
 }
 
 /**
@@ -515,16 +556,12 @@ function* lootDrainJob() {
     while (task.i < entries.length) {
       const e = entries[task.i++];
       try {
-        // The loot table still decides WHETHER this block drops; the snapshot
-        // only corrects WHAT it drops.
-        //
-        // That division matters because a bed is two blocks. Foot and head are
-        // both minecraft:bed, and head_piece_bit IS in the permutation, so the
-        // table already knows to yield the bed item for one half and nothing for
-        // the other. Bypassing it and taking getItemStack on every block dropped
-        // two beds per bed - which is exactly what shipping a straight
-        // substitution did. Swap the item, keep the count.
-        const loot = generateLoot(e.perm);
+        // The spare half of a two-block thing yields nothing at all, whatever
+        // the loot table would have said for it. See MULTIBLOCK_SPARE_HALF.
+        const loot = e.suppress ? [] : generateLoot(e.perm);
+        // Otherwise the table decides WHETHER this block drops and the snapshot
+        // corrects WHAT, so a block that drops something else entirely - stone
+        // to cobblestone, ore to raw material - is left alone.
         if (e.dataItem && loot && loot.length === 1) loot[0] = e.dataItem;
         if ((loot && loot.length) || e.items) {
           const key = bucketKey(e.x, e.y, e.z);
