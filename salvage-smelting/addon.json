@@ -1,0 +1,5 @@
+{
+  "display_name": "Salvage Smelting",
+  "description": "Smelt gear and crafted goods back into half of what they cost to craft, rounded up.",
+  "deprecated": false
+}

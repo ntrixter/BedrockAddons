@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_boots"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_boots"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_boots",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 2
+    }
+  }
+}

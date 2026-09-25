@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:copper_boots"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:copper_boots"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:copper_boots",
+    "output": {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    }
+  }
+}

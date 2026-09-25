@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_pickaxe"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_pickaxe"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_pickaxe",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 2
+    }
+  }
+}

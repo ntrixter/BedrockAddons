@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:copper_axe"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:copper_axe"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:copper_axe",
+    "output": {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    }
+  }
+}

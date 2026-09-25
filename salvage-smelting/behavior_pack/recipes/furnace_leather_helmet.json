@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:leather_helmet"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:leather_helmet"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:leather_helmet",
+    "output": {
+      "item": "minecraft:leather",
+      "count": 3
+    }
+  }
+}

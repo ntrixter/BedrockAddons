@@ -19,6 +19,7 @@ body:
         - creeper-drop-all
         - nightshare
         - no-witch-conversion
+        - salvage-smelting
         - Repository tooling (build, CI, catalog)
         - Other / not listed
     validations:
