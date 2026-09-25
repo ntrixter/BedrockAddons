@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:golden_rail"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:golden_rail"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:golden_rail",
+    "output": {
+      "item": "minecraft:gold_nugget",
+      "count": 5
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_shovel"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_shovel"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_shovel",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:shears"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:shears"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:shears",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 1
+    }
+  }
+}

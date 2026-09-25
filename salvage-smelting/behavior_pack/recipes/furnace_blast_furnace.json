@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:blast_furnace"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:blast_furnace"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:blast_furnace",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 3
+    }
+  }
+}

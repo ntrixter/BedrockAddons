@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:crossbow"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:crossbow"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:crossbow",
+    "output": {
+      "item": "minecraft:string",
+      "count": 2
+    }
+  }
+}

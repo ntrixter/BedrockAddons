@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:bucket"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:bucket"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:bucket",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    }
+  }
+}

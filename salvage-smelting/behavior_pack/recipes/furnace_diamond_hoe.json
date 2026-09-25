@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_hoe"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_hoe"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_hoe",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 1
+    }
+  }
+}

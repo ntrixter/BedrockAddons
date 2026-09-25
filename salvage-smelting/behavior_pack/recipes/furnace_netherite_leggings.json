@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:netherite_leggings"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:netherite_leggings"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:netherite_leggings",
+    "output": {
+      "item": "minecraft:netherite_ingot",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:copper_spear"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:copper_spear"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:copper_spear",
+    "output": {
+      "item": "minecraft:copper_ingot",
+      "count": 1
+    }
+  }
+}

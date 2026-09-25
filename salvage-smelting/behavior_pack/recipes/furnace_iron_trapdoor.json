@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:iron_trapdoor"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:iron_trapdoor"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:iron_trapdoor",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    }
+  }
+}

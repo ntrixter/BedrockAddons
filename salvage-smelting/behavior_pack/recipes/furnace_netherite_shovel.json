@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:netherite_shovel"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:netherite_shovel"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:netherite_shovel",
+    "output": {
+      "item": "minecraft:netherite_ingot",
+      "count": 1
+    }
+  }
+}

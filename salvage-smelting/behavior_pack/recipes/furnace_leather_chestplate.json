@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:leather_chestplate"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:leather_chestplate"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:leather_chestplate",
+    "output": {
+      "item": "minecraft:leather",
+      "count": 4
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:chainmail_helmet"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:chainmail_helmet"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:chainmail_helmet",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 1
+    }
+  }
+}

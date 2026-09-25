@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_leggings"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_leggings"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_leggings",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 4
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_axe"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_axe"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_axe",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 2
+    }
+  }
+}

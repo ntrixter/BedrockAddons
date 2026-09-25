@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:copper_helmet"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:copper_helmet"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:copper_helmet",
+    "output": {
+      "item": "minecraft:copper_ingot",
+      "count": 3
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:diamond_sword"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond_sword"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:diamond_sword",
+    "output": {
+      "item": "minecraft:diamond",
+      "count": 1
+    }
+  }
+}

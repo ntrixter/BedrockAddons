@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:hopper"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:hopper"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:hopper",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 3
+    }
+  }
+}

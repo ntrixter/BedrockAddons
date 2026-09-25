@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:cauldron"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:cauldron"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:cauldron",
+    "output": {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    }
+  }
+}

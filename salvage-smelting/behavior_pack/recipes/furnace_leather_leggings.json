@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:leather_leggings"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:leather_leggings"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:leather_leggings",
+    "output": {
+      "item": "minecraft:leather",
+      "count": 4
+    }
+  }
+}
