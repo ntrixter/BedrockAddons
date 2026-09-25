@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:raw_gold_block"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:raw_gold_block"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:raw_gold_block",
+    "output": {
+      "item": "minecraft:gold_block",
+      "count": 1
+    }
+  }
+}

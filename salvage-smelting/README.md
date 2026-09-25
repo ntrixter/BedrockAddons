@@ -11,12 +11,15 @@ out properly, and extends the same idea to diamond, netherite, leather,
 chainmail, string-strung gear, and the everyday iron and gold goods that vanilla
 will not melt at all.
 
+It also does one thing that is not salvage: a block of raw iron, gold or copper
+smelts straight into the matching ingot block, instead of nine separate smelts.
+
 - **Add-on ID:** `salvage-smelting`
 - **Minimum Minecraft version:** 1.26.30 (Bedrock 26.30)
 - **Packs:** behaviour pack only
 - **Author:** ntrixter
 
-Data only — no scripts, no experiments, no resource pack. It is 75 furnace
+Data only — no scripts, no experiments, no resource pack. It is 78 furnace
 recipes and a manifest.
 
 ## The rule
@@ -42,6 +45,8 @@ Two things sit outside the rule, both deliberately:
   half-the-cost rule without the loop.
 - **Items with no crafting recipe are set by hand**, because there is no cost to
   halve. That is chainmail, saddles, and the string-strung gear below.
+- **Raw ore blocks are not salvage**, so they do not go through the rule at all.
+  See below.
 
 ## What you get back
 
@@ -96,17 +101,38 @@ not a way to recover diamonds.
 | Activator rail, detector rail | 1 iron ingot (9 nuggets) | **5 iron nuggets** |
 | Powered rail | 1 gold ingot (9 nuggets) | **5 gold nuggets** |
 
+### Bulk smelting raw ore blocks
+
+| Input | Returns |
+| --- | --- |
+| Block of raw iron | **1 block of iron** |
+| Block of raw gold | **1 block of gold** |
+| Block of raw copper | **1 block of copper** |
+
+This one is convenience, not salvage, and it takes nothing away and gives
+nothing extra. A block of raw iron is nine raw iron; nine raw iron smelt into
+nine ingots; nine ingots is a block of iron. The metal is identical either way.
+
+What it saves is the tedium: one smelt instead of nine, so eight fewer fuel and
+about eighty fewer seconds per block. In a blast furnace it is roughly five
+seconds for what used to be forty-five.
+
+There is no raw diamond or raw netherite block to add — diamonds drop as items
+and netherite comes from scrap.
+
 ## Things worth knowing
 
-**It replaces 32 vanilla recipes and adds 43 new ones.** Every iron, gold and
+**It replaces 32 vanilla recipes and adds 46 new ones.** Every iron, gold and
 copper gear recipe, and all four chainmail recipes, already exist in vanilla and
 return a nugget. A behaviour pack file at the same path replaces the vanilla one
 outright, so those 32 are rewrites rather than additions — there is no ambiguity
-about which recipe wins and no `priority` juggling. The other 43 are inputs
-vanilla will not smelt at all.
+about which recipe wins and no `priority` juggling. The other 46, the raw ore
+blocks among them, are inputs vanilla will not smelt at all.
 
 **Fuel behaviour is unchanged.** One item per fuel unit, exactly as vanilla. A
-furnace's burn rate is not something a recipe can alter.
+furnace's burn rate is not something a recipe can alter — which is precisely why
+smelting a raw ore block in one go saves the fuel that nine separate smelts
+would have burned.
 
 **Works in a blast furnace too**, which is twice as fast. Every recipe carries
 both the `furnace` and `blast_furnace` tags, including the leather and string
@@ -122,8 +148,8 @@ three item ids that never existed, so it has never actually worked.
 `unlock` block vanilla uses, so a recipe shows up once you are holding the item
 it consumes.
 
-**Nothing is configurable.** The settings panel on the pack is four lines of
-text summarising the rule; there are no toggles. Changing the numbers means
+**Nothing is configurable.** The settings panel on the pack is five lines of
+text summarising what it does; there are no toggles. Changing the numbers means
 editing the pack.
 
 ## Changing the numbers
@@ -136,7 +162,7 @@ python3 salvage-smelting/tools/gen_recipes.py --check  # verify, write nothing
 ```
 
 The cost tables at the top of that script **are** the rule. Editing one number
-there and rerunning is the whole workflow; editing 75 near-identical JSON files
+there and rerunning is the whole workflow; editing 78 near-identical JSON files
 by hand is how the pack previously ended up with five item ids that do not exist
 and a rule applied inconsistently.
 

@@ -23,6 +23,8 @@ THE RULE
     five in nuggets keeps the same half-the-cost rule without the loop.
   * Items with no crafting recipe at all -- chainmail, saddle -- are fixed by
     hand, because there is no cost to halve.
+  * Raw ore blocks are not salvage at all, and do not go through the rule. See
+    BULK below.
 
 Every id here was checked against Mojang's own palette
 (metadata/vanilladata_modules/mojang-items.json) at 1.26.30, 1.26.40 and
@@ -135,6 +137,22 @@ NO_RECIPE = {
     "fishing_rod": (2, "string"),
 }
 
+# Bulk smelting, which is not salvage and is deliberately outside the rule.
+#
+# A raw ore block is nine raw ore, and nine raw ore smelt into nine ingots,
+# which is one ingot block. So this returns exactly what the long way round
+# returns -- no metal is created or destroyed. What it saves is eight fuel and
+# eight smelting cycles, turning a 90-second job into a 10-second one.
+#
+# Vanilla has no furnace recipe for any of the three, so these are additions
+# rather than overrides. There is no raw diamond or raw netherite; diamonds drop
+# as items and netherite comes from scrap.
+BULK = {
+    "raw_iron_block": "iron_block",
+    "raw_gold_block": "gold_block",
+    "raw_copper_block": "copper_block",
+}
+
 
 def build() -> dict[str, tuple[str, int]]:
     """input id (unnamespaced) -> (output id, count)."""
@@ -156,6 +174,9 @@ def build() -> dict[str, tuple[str, int]]:
 
     for item, (count, material) in NO_RECIPE.items():
         out[item] = (material, count)
+
+    for item, block in BULK.items():
+        out[item] = (block, 1)
 
     return out
 
