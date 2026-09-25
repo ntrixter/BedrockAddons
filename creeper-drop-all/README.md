@@ -36,6 +36,11 @@ blasted canopy can be rebuilt. Every leaf type counts, poplar and pale oak
 included, and each drops its own kind. See [Settings](#settings) to turn that
 off.
 
+Beds and banners are a second exception, for a different reason. Their colour
+lives in block entity data rather than in the block itself, so the loot tables
+cannot see it — the pack reads the block's own item instead, and a blue bed
+drops a blue bed.
+
 Verified against the Minecraft **1.26.50** block palette (the 26.51 release).
 `min_engine_version` stays at 1.26.30 on purpose — nothing here needs a newer
 engine, and raising the floor would only shut out players who are behind.
@@ -114,7 +119,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "c60c1a0f-5864-4695-a2b5-07999da64790",
-    "version": [1, 1, 0]
+    "version": [1, 1, 1]
   }
 ]
 ```
@@ -126,7 +131,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form — see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.1"` instead. The two files have to agree.
 
 ## Settings
 
@@ -209,13 +214,34 @@ drops.
 
 ## Tests
 
-There is no automated suite. [TESTING.md](TESTING.md) is the manual matrix, with
-an in-game rig (the gamerules and effects that stop a test producing a false
-result) and a record of what has actually been verified.
+The drop rules can be exercised without launching Minecraft:
 
-Verified in game so far: the settings screen, that suppressing block destruction
-still leaves explosion damage intact, creeper drops, and that a double chest
-drops its contents once rather than twice. The rest of the matrix is unrun.
+```sh
+cd creeper-drop-all/tests && node --import ./register.js run.js
+```
+
+A Node ESM loader hook redirects the bare `@minecraft/server` import to a mock,
+so the **shipping** scripts under `behavior_pack/scripts/` run unmodified
+against a simulated explosion. Node is needed only for this; the pack itself has
+no build step and ships as plain JavaScript.
+
+It covers what the pack turns destroyed blocks into: every leaf id in the
+current palette, the blocks spelled `leaf` that must *not* match, both positions
+of the leaf setting, the fallbacks when an item cannot be built, and bed and
+banner colour with the count that goes with it.
+
+**Where the engine's behaviour is not established, the suite runs under every
+possibility rather than the likeliest one.** Whether the loot table yields an
+item for one half of a bed or for both has never been checked in game, so every
+bed case runs twice, once each way. Two fixes shipped broken because that guess
+was baked in and relied on — the suite now fails on either of them.
+
+It still cannot reach anything that depends on the real game: what the engine's
+loot tables actually return, whether an explosion keeps its damage, or how a
+blast looks. [TESTING.md](TESTING.md) is the manual matrix for those, with an
+in-game rig and a record of what has actually been verified — so far the
+settings screen, explosion damage surviving `setImpactedBlocks([])`, the
+double-chest case, and leaf drops on poplar.
 
 ## Updating or removing this add-on
 

@@ -11,6 +11,38 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-20
+
+### Fixed
+
+- **A blown-up bed dropped a red bed whatever colour it was.** `minecraft:bed`
+  is a single block id whose only states are `direction`, `head_piece_bit` and
+  `occupied_bit` — the colour lives in block entity data, so it was never in the
+  permutation the loot table was given, and every bed came back the same.
+  Different-coloured beds also merged into one stack because they looked
+  identical. The pack now reads the block's own item for these, which carries
+  the colour, and swaps it in where the loot table yielded exactly one item — so
+  a block that drops something else entirely, stone to cobblestone or ore to raw
+  material, is left alone.
+
+  A bed is two blocks, foot and head. Its head piece is suppressed outright so
+  the pair yields one bed however the engine treats the halves — which is not
+  something this pack should need to know, and guessing at it produced two wrong
+  fixes before this one. The cost is that a blast taking only the head drops no
+  bed; see TESTING.md T9c.
+- **Banners lost their colour and pattern** to the same cause, unreported but
+  broken since 1.0.0.
+
+### Changed
+
+- The pack description now starts with the version, so the pack list in Edit
+  World shows which build you are about to enable.
+
+  `minecraft:decorated_pot` has the same problem and is deliberately left alone
+  — vanilla drops a pot's sherds rather than the pot unless it is mined with silk
+  touch, and this pack mines unenchanted, so "fixing" it could make it worse. See
+  TESTING.md T9c.
+
 ## [1.1.0] - 2026-09-15
 
 ### Added

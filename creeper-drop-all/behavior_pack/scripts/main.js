@@ -106,6 +106,64 @@ const SELF_CONTAINED = ["shulker_box"];
  */
 const PROTECT_EXTRA = ["minecraft:ender_chest"];
 
+/**
+ * Blocks whose identity lives in BLOCK ENTITY data rather than in their block
+ * states, so a permutation alone cannot describe them.
+ *
+ * A bed is one id, minecraft:bed, whose only states are direction,
+ * head_piece_bit and occupied_bit - the colour is not among them. Feed that
+ * permutation to generateLootFromBlockPermutation and the colour was never in
+ * the input, so every bed came back the same colour whatever you blew up. Wool
+ * and shulker boxes flattened to one id per colour and are unaffected; beds,
+ * banners and decorated pots did not.
+ *
+ * For these, snapshot block.getItemStack(1, true) instead - withData is what
+ * carries the colour, the banner patterns and the pot sherds across. It is
+ * legal in restricted execution, so it can be read in P1 beside the
+ * permutation, which is the only moment the block still exists.
+ *
+ * Deliberately a LIST, not "any block that drops itself". getItemStack returns
+ * the block AS AN ITEM, which for stone is stone rather than cobblestone and
+ * for ores is the ore rather than its raw material - using it broadly would gut
+ * the point of this pack. A block belongs here only when its own item carries
+ * data the permutation cannot AND the block genuinely drops itself.
+ *
+ * minecraft:decorated_pot has the same block entity problem and is deliberately
+ * NOT here. Vanilla drops a pot's sherds rather than the pot unless it is mined
+ * with silk touch, and this pack mines unenchanted on purpose. None of these
+ * blocks has a data-driven loot table to check that against, so listing the pot
+ * risks turning a wrong drop into a differently wrong one. Left alone until
+ * somebody confirms in game what an exploded pot should give - see TESTING.md.
+ */
+const ITEM_DATA_BLOCKS = [
+  "minecraft:bed",
+  "minecraft:standing_banner",
+  "minecraft:wall_banner",
+];
+
+/**
+ * Blocks that occupy two block positions but are one thing to the player, and
+ * the block state that identifies the half which does NOT drop.
+ *
+ * A bed is foot + head, both minecraft:bed. Exactly one bed item must come out
+ * of the pair however many halves the blast took, so the half named here is
+ * suppressed outright rather than left to the loot table to decide.
+ *
+ * Suppressing explicitly is the point. Whether the engine yields an item for
+ * one half or for both is not something this pack should have an opinion on -
+ * an earlier fix assumed "foot only", shipped, and dropped two beds per bed
+ * because the assumption was wrong. Forcing the head to nothing gives the same
+ * answer either way.
+ *
+ * The cost is a blast that takes the head and leaves the foot: no bed comes
+ * out. That is the pack's existing multi-block limitation rather than a new one
+ * - it already leaves the surviving half standing - and it is the safe
+ * direction to be wrong in. See TESTING.md T9.
+ */
+const MULTIBLOCK_SPARE_HALF = {
+  "minecraft:bed": "head_piece_bit",
+};
+
 /* ------------------------------------------------------------------ *
  * Module state
  * ------------------------------------------------------------------ */
@@ -294,8 +352,20 @@ function onExplosionBefore(ev) {
         }
       }
 
+      // One half of a two-block thing yields nothing, so the pair gives one item.
+      const spare = MULTIBLOCK_SPARE_HALF[typeId];
+      const suppress = spare !== undefined && readState(perm, spare) === true;
+
+      // Read now or never: after this tick the block is air and its block
+      // entity is gone with it.
+      const dataItem =
+        !suppress && ITEM_DATA_BLOCKS.indexOf(typeId) !== -1 ? getItemWithData(block) : undefined;
+
       takenBlocks.add(key);
-      snapshot.push({ x: x, y: y, z: z, perm: perm, items: items });
+      snapshot.push({
+        x: x, y: y, z: z, perm: perm, items: items,
+        dataItem: dataItem, suppress: suppress,
+      });
     } catch (e) {
       // Unloaded chunk or invalid block reference. Skip this one block - never
       // let a single bad block abort the whole explosion.
@@ -321,6 +391,29 @@ function isSelfContained(typeId) {
     if (typeId.indexOf(suffix) !== -1) return true;
   }
   return false;
+}
+
+/** Restricted-execution safe, so a block state can be read in the snapshot. */
+function readState(perm, name) {
+  try {
+    return perm.getState(name);
+  } catch (e) {
+    warn("getState " + name + ": " + e);
+    return undefined;
+  }
+}
+
+/**
+ * The block's own item, carrying its block entity data. Restricted-execution
+ * safe, so this is callable from the snapshot phase.
+ */
+function getItemWithData(block) {
+  try {
+    return block.getItemStack(1, true);
+  } catch (e) {
+    warn("getItemStack: " + e);
+    return undefined;
+  }
 }
 
 function getContainer(block) {
@@ -463,7 +556,13 @@ function* lootDrainJob() {
     while (task.i < entries.length) {
       const e = entries[task.i++];
       try {
-        const loot = generateLoot(e.perm);
+        // The spare half of a two-block thing yields nothing at all, whatever
+        // the loot table would have said for it. See MULTIBLOCK_SPARE_HALF.
+        const loot = e.suppress ? [] : generateLoot(e.perm);
+        // Otherwise the table decides WHETHER this block drops and the snapshot
+        // corrects WHAT, so a block that drops something else entirely - stone
+        // to cobblestone, ore to raw material - is left alone.
+        if (e.dataItem && loot && loot.length === 1) loot[0] = e.dataItem;
         if ((loot && loot.length) || e.items) {
           const key = bucketKey(e.x, e.y, e.z);
           let b = buckets.get(key);

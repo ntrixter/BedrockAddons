@@ -1,0 +1,45 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Salvage Smelting",
+    "description": "v2.0.0 - Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
+    "uuid": "c449f4aa-7021-45fa-9db8-1183e2ac9301",
+    "version": "2.0.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "data",
+      "description": "78 furnace and blast furnace recipes: salvage at half an item's crafting cost, plus bulk raw ore block smelting.",
+      "uuid": "ae6fcd03-741c-43b2-895c-155581bd1a35",
+      "version": "2.0.0"
+    }
+  ],
+  "metadata": {
+    "product_type": "addon",
+    "authors": ["ntrixter"],
+    "url": "https://github.com/ntrixter/BedrockAddons"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "Salvage Smelting has nothing to configure. This panel is a summary of what the pack does."
+    },
+    {
+      "type": "label",
+      "text": "Gear and crafted goods smelt into half of what they cost to make, rounded up. An iron chestplate costs 8 ingots and returns 4; a sword costs 2 and returns 1. Durability makes no difference - a furnace recipe cannot see it."
+    },
+    {
+      "type": "label",
+      "text": "Items crafted in batches pay in nuggets instead, so that salvaging never returns more metal than the item cost. Chainmail returns 1 iron ingot per piece, and bows, crossbows and fishing rods return 2 string."
+    },
+    {
+      "type": "label",
+      "text": "Raw ore blocks smelt straight into the matching ingot block: a block of raw iron becomes a block of iron. The metal is the same either way - it saves you eight fuel and eight smelting cycles."
+    },
+    {
+      "type": "label",
+      "text": "Fuel use per smelt is unchanged. Everything works in both a furnace and a blast furnace."
+    }
+  ]
+}

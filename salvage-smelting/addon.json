@@ -1,0 +1,5 @@
+{
+  "display_name": "Salvage Smelting",
+  "description": "Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
+  "deprecated": false
+}

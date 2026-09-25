@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:saddle"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:saddle"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:saddle",
+    "output": {
+      "item": "minecraft:leather",
+      "count": 2
+    }
+  }
+}

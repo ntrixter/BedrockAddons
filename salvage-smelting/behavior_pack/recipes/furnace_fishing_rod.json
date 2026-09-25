@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:fishing_rod"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:fishing_rod"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:fishing_rod",
+    "output": {
+      "item": "minecraft:string",
+      "count": 2
+    }
+  }
+}

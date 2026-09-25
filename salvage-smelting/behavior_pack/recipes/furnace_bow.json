@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:bow"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:bow"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:bow",
+    "output": {
+      "item": "minecraft:string",
+      "count": 2
+    }
+  }
+}

@@ -14,6 +14,13 @@
 Run each test **twice**: once with the pack disabled (baseline) and once enabled. Differences
 that aren't the intended behavior are bugs.
 
+**Before running anything here, run the automated suite** — it covers the drop rules without
+needing a world, and it is faster to fail there than in game:
+
+```sh
+cd creeper-drop-all/tests && node --import ./register.js run.js
+```
+
 **Setup for the first pass:**
 - Settings → Creator → **Content Log GUI** on, so script errors are visible.
 - Set `DEBUG = true` at the top of `behavior_pack/scripts/main.js`, rebuild, redeploy.
@@ -291,6 +298,49 @@ Doors, beds, tall grass, large ferns, sunflowers, a sign with text, a monster sp
 - [ ] Doors / beds / tall plants drop **one** item each, not two
 - [ ] Spawner drops nothing (correct)
 - [ ] Sign drops the sign item; **text is lost** — expected, matches vanilla
+
+### ☐ T9c — Colour survives the blast (regression, fixed in 1.1.1)
+
+Blow up several **different-coloured beds** in one blast, and a patterned banner.
+
+- [ ] Each bed drops its **own** colour — blue stays blue, not red
+- [ ] **Count is right: N beds blown up give N beds, not 2N**
+- [ ] Beds of different colours do **not** merge into one stack
+- [ ] A banner keeps its colour **and its pattern**
+
+The count check is not decoration — it caught two wrong fixes in a row.
+
+A bed is **two blocks**, foot and head, both `minecraft:bed`. The first cut read
+the block's own item for every block, so both halves dropped: two beds per bed.
+The second assumed the loot table yields an item for the foot only and left the
+head to it — also two beds, because that assumption was wrong.
+
+**Whether the engine yields loot for one half or for both is still not
+established here, and the pack no longer has an opinion on it.** The head piece
+is suppressed outright, so the pair gives one item either way. The automated
+check runs the whole suite twice, once under each possibility.
+
+- [ ] **Blow up a bed where only the HEAD is in the blast.** Expected: no bed
+      drops and the foot is left standing. That is the known cost of suppressing
+      the head, and it is the pack's existing multi-block limitation rather than
+      a new one. Record what happens: `________________`
+
+Until 1.1.1 every bed came back red whatever you destroyed. `minecraft:bed` is a
+single block id whose states are only `direction`, `head_piece_bit` and
+`occupied_bit`, so the colour was never in the permutation handed to the loot
+table. The fix snapshots `block.getItemStack(1, true)` for these blocks instead.
+
+**Open question — `minecraft:decorated_pot`.** It has the same block-entity
+problem and is deliberately *not* fixed. Vanilla drops a pot's sherds rather than
+the pot unless mined with silk touch, and this pack mines unenchanted, so reading
+the pot's own item could turn a wrong drop into a differently wrong one. None of
+these blocks has a data-driven loot table to check against.
+
+- [ ] Blow up a decorated pot and **record what it gives**: `________________`
+- [ ] Break one by hand for comparison: `________________`
+
+If hand-breaking gives sherds, leave the pot alone. If it gives the pot with its
+sherds intact, add `minecraft:decorated_pot` to `ITEM_DATA_BLOCKS`.
 
 ### ☐ T9b — Falling-block ordering (visual QA, non-blocking)
 P2 clears blocks in snapshot-array order, not necessarily bottom-to-top the way the engine would.

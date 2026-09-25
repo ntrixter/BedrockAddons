@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:rail"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:rail"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:rail",
+    "output": {
+      "item": "minecraft:iron_nugget",
+      "count": 2
+    }
+  }
+}

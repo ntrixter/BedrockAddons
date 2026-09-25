@@ -1,0 +1,22 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "smeltingplus:copper_shovel"
+    },
+    "unlock": [
+      {
+        "item": "minecraft:copper_shovel"
+      }
+    ],
+    "tags": [
+      "furnace",
+      "blast_furnace"
+    ],
+    "input": "minecraft:copper_shovel",
+    "output": {
+      "item": "minecraft:copper_ingot",
+      "count": 1
+    }
+  }
+}
