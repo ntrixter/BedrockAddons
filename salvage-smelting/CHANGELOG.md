@@ -44,6 +44,12 @@ Every payout changed, so this is a major version.
 
 ### Added
 
+- **Raw ore blocks smelt straight into the matching ingot block.** A block of
+  raw iron gives a block of iron, and the same for gold and copper. This is
+  convenience rather than salvage and sits outside the half-cost rule: a raw
+  block is nine raw ore, which smelts into nine ingots, which is one ingot
+  block — so the metal is identical either way. What it saves is eight fuel and
+  eight smelting cycles. Vanilla has no recipe for any of the three.
 - Chainmail helmet, chestplate, leggings and boots return 1 iron ingot each.
   Vanilla smelts them to a single nugget; chainmail is not craftable, so there
   is no cost to halve and the value is set by hand.

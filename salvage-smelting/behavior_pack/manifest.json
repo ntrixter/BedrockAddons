@@ -2,7 +2,7 @@
   "format_version": 3,
   "header": {
     "name": "Salvage Smelting",
-    "description": "v2.0.0 - Smelt worn gear and iron, gold, copper, diamond or leather goods back into half of what they cost to craft.",
+    "description": "v2.0.0 - Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
     "uuid": "c449f4aa-7021-45fa-9db8-1183e2ac9301",
     "version": "2.0.0",
     "min_engine_version": "1.26.30"
@@ -10,7 +10,7 @@
   "modules": [
     {
       "type": "data",
-      "description": "75 furnace and blast furnace recipes that return half an item's crafting cost.",
+      "description": "78 furnace and blast furnace recipes: salvage at half an item's crafting cost, plus bulk raw ore block smelting.",
       "uuid": "ae6fcd03-741c-43b2-895c-155581bd1a35",
       "version": "2.0.0"
     }
@@ -35,7 +35,11 @@
     },
     {
       "type": "label",
-      "text": "Fuel use is unchanged. Works in both a furnace and a blast furnace."
+      "text": "Raw ore blocks smelt straight into the matching ingot block: a block of raw iron becomes a block of iron. The metal is the same either way - it saves you eight fuel and eight smelting cycles."
+    },
+    {
+      "type": "label",
+      "text": "Fuel use per smelt is unchanged. Everything works in both a furnace and a blast furnace."
     }
   ]
 }
