@@ -1,0 +1,33 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Compass Link",
+    "description": "v1.0.0 - Hold a compass to see your position in the other dimension, for lining up Nether portals.",
+    "uuid": "a5e66d13-59ba-4e3f-b26d-bac8ccaac290",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.40"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "f156080c-afee-4340-a791-5f075e4203ea",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.9.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  }
+}
