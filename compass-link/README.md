@@ -18,7 +18,8 @@ you are standing in the *other* dimension.
 
 Four times a second the pack looks at every player. If the item in the selected
 hotbar slot is a compass, it writes a line on the action bar, the text that
-appears just above the hotbar.
+appears just above the hotbar. That means the plain compass, the lodestone
+compass and the recovery compass.
 
 | You are in | The action bar shows | The sum |
 | --- | --- | --- |
@@ -35,13 +36,15 @@ Put the compass away and the line disappears.
 
 ## Things worth knowing
 
-**Only the plain compass counts, and only while it is the selected hotbar
-item.** A lodestone compass or a recovery compass does nothing, and neither does
-a compass in your offhand or further along your inventory. That is deliberate
-for now.
+**All three compasses count, but only while one is the selected hotbar item.**
+The plain compass, the lodestone compass and the recovery compass all show the
+readout. A compass in your offhand or further along your inventory does not, and
+neither does any other item.
 
-**It does not change the compass.** A compass still points at the world spawn.
-This pack adds a readout and nothing more.
+**It does not change the compass.** Each one keeps pointing where it always did:
+the plain compass at the world spawn, the lodestone compass at its lodestone, the
+recovery compass at where you last died. This pack adds a readout and nothing
+more, and the readout is the same whichever compass you hold.
 
 **The numbers are where *you* are, not where a portal is.** Use them to decide
 where the other portal should go. The game does the linking.
@@ -126,7 +129,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "a5e66d13-59ba-4e3f-b26d-bac8ccaac290",
-    "version": [1, 0, 0]
+    "version": [1, 1, 0]
   }
 ]
 ```
@@ -138,7 +141,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form — see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
