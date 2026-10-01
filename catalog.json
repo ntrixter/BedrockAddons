@@ -1,8 +1,39 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-17T13:49:54Z",
+  "generated_at": "2026-10-01T20:22:16Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
+    "compass-link": {
+      "display_name": "Compass Link",
+      "description": "Hold a compass to see your position in the other dimension, for lining up Nether portals.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.1.0",
+        "tag": "compass-link-v1.1.0",
+        "filename": "compass-link-1.1.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/compass-link-v1.1.0/compass-link-1.1.0.mcpack",
+        "sha256": "54416a3760f370f15b217af929939bd8ea0d1d88872c0cb066bd1e0faa117d18",
+        "published_at": "2026-10-01T20:21:58Z",
+        "min_engine_version": [
+          1,
+          26,
+          40
+        ],
+        "packs": [
+          {
+            "uuid": "a5e66d13-59ba-4e3f-b26d-bac8ccaac290",
+            "type": "data",
+            "version": [
+              1,
+              1,
+              0
+            ],
+            "folder": "compass-link_BP"
+          }
+        ]
+      },
+      "latest_prerelease": null
+    },
     "creeper-drop-all": {
       "display_name": "Creeper Drop All",
       "description": "Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you.",
@@ -94,6 +125,13 @@
           }
         ]
       },
+      "latest_prerelease": null
+    },
+    "salvage-smelting": {
+      "display_name": "Salvage Smelting",
+      "description": "Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
+      "deprecated": false,
+      "latest_stable": null,
       "latest_prerelease": null
     }
   }
