@@ -7,15 +7,15 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.0.0] - 2026-10-01`.
+version, so the heading has to match exactly: `## [1.1.0] - 2026-10-01`.
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-01
+## [1.1.0] - 2026-10-01
 
 First release in this repository. Formerly an unreleased test pack called
-"Opposite Dimension Compass Coordinates"; the script is unchanged, and the name,
-description, icon and packaging are what is new.
+"Opposite Dimension Compass Coordinates". It was renamed and packaged as 1.0.0
+and tested, but never published, so this is the version that ships.
 
 ### Added
 
@@ -24,5 +24,8 @@ description, icon and packaging are what is new.
   Nether, with your height passed through unchanged. Every number is rounded
   down to a whole block. Nothing shows in the End or in a custom dimension, and
   the line clears when you put the compass away.
-- Only a plain compass in the selected hotbar slot counts. Lodestone compasses,
-  recovery compasses and a compass in the offhand do not.
+- It works with the plain compass, the lodestone compass and the recovery
+  compass, whichever is the selected hotbar item. A compass in the offhand does
+  not count, and neither does any other item, including another pack's custom
+  item with "compass" in its name. Each compass keeps pointing where it always
+  did; only the readout is added.

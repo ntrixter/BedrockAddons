@@ -1,7 +1,13 @@
 import { system, world } from "@minecraft/server";
 
 const TICKS_PER_UPDATE = 5;
-const COMPASS_ID = "minecraft:compass";
+// Matched by id rather than by the word "compass", so another pack's custom item
+// with that word in its name is left alone.
+const COMPASS_IDS = new Set([
+  "minecraft:compass",
+  "minecraft:lodestone_compass",
+  "minecraft:recovery_compass",
+]);
 const NETHER_SCALE = 8;
 
 /** Return the selected hotbar stack, or undefined if inventory is unavailable. */
@@ -47,7 +53,7 @@ system.runInterval(() => {
   for (const player of world.getPlayers()) {
     try {
       const selectedItem = getSelectedItem(player);
-      if (selectedItem?.typeId !== COMPASS_ID) {
+      if (!COMPASS_IDS.has(selectedItem?.typeId)) {
         if (showingCoordinates.delete(player.id)) {
           player.onScreenDisplay.setActionBar("");
         }
