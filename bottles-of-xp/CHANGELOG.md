@@ -7,13 +7,13 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.1.0] - 2026-10-02`.
+version, so the heading has to match exactly: `## [1.1.1] - 2026-10-02`.
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-10-02
+## [1.1.1] - 2026-10-02
 
-First release. 1.0.0 to 1.0.3 were test builds - the first three under the
+First release. 1.0.0 to 1.1.0 were test builds - the first three under the
 working name XP Bottling - and none was published.
 
 ### Added

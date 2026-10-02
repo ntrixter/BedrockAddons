@@ -352,6 +352,13 @@ build, which printed what the game reported after every change it made.
   placeholders put in a chest with `/replaceitem` showed as their ingredients.
   Verified in game 2026-10-02 with Bottles of XP. `entityContainerOpened` (a
   chest minecart, say) follows the same pattern but has not been run.
+- **UNVERIFIED: a pack's item can wear a vanilla block's own 3D icon.** Give it
+  `minecraft:block_placer` naming the block, and no `minecraft:icon`. Microsoft
+  documents this from 1.21.50 with no toggle, and Mojang's own `shelf_mushroom`
+  item does exactly that in 1.26.50. `minecraft:icon` cannot do it: the vanilla
+  item atlas has no flat picture of most blocks - gilded blackstone, for one -
+  only the block textures. Bottles of XP's packing placeholder relies on it, and
+  has not been seen in game yet.
 - **A recipe tagged only `crafting_table` also works in the 2x2 inventory grid**
   if it fits there. No other tag is needed. Verified in game 2026-10-02 with
   Bottles of XP's one-item shapeless recipes.
