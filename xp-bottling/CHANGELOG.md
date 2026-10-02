@@ -7,13 +7,15 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.0.0] - 2026-10-02`.
+version, so the heading has to match exactly: `## [1.0.1] - 2026-10-02`.
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-02
+## [1.0.1] - 2026-10-02
 
-First release.
+First release. 1.0.0 was a test build and was never published: it emptied
+bottles correctly, but refunded every glass bottle, because the game reported
+less XP than the player had.
 
 ### Added
 
@@ -22,5 +24,8 @@ First release.
   grid. Shift-click converts a whole stack.
 - The XP is raw points at a fixed 7 per bottle. Throwing a bottle is unchanged.
 - If you are short of XP, the glass bottles you could not pay for come back with
-  a message, and anything that does not fit drops at your feet rather than being
-  deleted.
+  a message saying how much XP you have, and anything that does not fit drops at
+  your feet rather than being deleted.
+- XP is worked out from level and progress and taken without ever subtracting
+  across a level boundary, and every charge is checked: if the game does not end
+  up exactly 7 XP per bottle lower, the XP goes back and so do the glass bottles.
