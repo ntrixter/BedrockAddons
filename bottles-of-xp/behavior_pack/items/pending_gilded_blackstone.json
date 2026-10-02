@@ -11,10 +11,8 @@
       "minecraft:display_name": {
         "value": "Gilded Blackstone (9 Bottles o' Enchanting)"
       },
-      "minecraft:icon": {
-        "textures": {
-          "default": "raw_gold"
-        }
+      "minecraft:block_placer": {
+        "block": "minecraft:gilded_blackstone"
       },
       "minecraft:max_stack_size": 64
     }

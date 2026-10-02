@@ -32,9 +32,10 @@ Shift-click the output to convert a whole stack at once.
 **Why the output is a placeholder.** A crafting recipe can turn one item into
 another, but it cannot add or take experience, and the game has no stable
 "player crafted something" event a script could use instead. So each recipe
-makes a placeholder that looks like the bottle you are getting - it borrows the
-game's own bottle icons - and the pack's script swaps it for the real bottle and
-moves the XP the moment it lands in your inventory. The placeholder is the
+makes a placeholder that looks like what you are getting - the bottles borrow
+the game's own icons, and the gilded blackstone one is drawn as the real block -
+and the pack's script swaps it for the real thing and moves any XP the moment it
+lands in your inventory. The placeholder is the
 receipt: crafting makes it from a real bottle and the swap consumes it, so
 nothing can be paid twice or paid for nothing.
 
@@ -71,9 +72,6 @@ the world loads.
   also turn on a player they see mining it.
 - **Turning storage off leaves packed blocks as they are.** They stay gilded
   blackstone, which unpacks again once storage is back on.
-- **The packing output shows raw gold, not the block.** The game has no flat
-  gilded blackstone icon a pack's item can borrow, so the placeholder uses the
-  raw gold one. It turns into the real block as it lands.
 - **Packing needs a crafting table**, because nine bottles fill a 3x3 grid.
   Unpacking fits the 2x2 grid in your inventory.
 
@@ -164,14 +162,15 @@ stand inside its block - and for the same reason, `~ ~-1 ~` from on top of a
 chest is the block under it, not the chest.
 
 **1.0.3** renamed the add-on, including its item ids, and was not run in game
-before 1.1.0 replaced it. **1.1.0** adds gilded blackstone storage and has not
-been run in Minecraft yet. What to check:
+before 1.1.0 replaced it. **1.1.1** adds gilded blackstone storage and has not
+been run in Minecraft yet; 1.1.0 was the same, with a raw gold icon standing in
+for the block. What to check:
 
-1. The pack list shows "Bottles of XP" at v1.1.0, the gear icon beside it
+1. The pack list shows "Bottles of XP" at v1.1.1, the gear icon beside it
    shows the storage setting, and both bottle trades still work.
 2. With storage on: nine Bottles o' Enchanting in a crafting table make one
    gilded blackstone, and one gilded blackstone makes nine bottles, shift-click
-   included.
+   included. The packing output looks like a gilded blackstone block.
 3. With storage off, after reloading the world: both recipes hand your items
    back with a chat message.
 4. A packing placeholder dropped from the cursor turns back into nine bottles.
@@ -256,7 +255,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": [1, 1, 0]
+    "version": [1, 1, 1]
   }
 ]
 ```
@@ -268,7 +267,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form - see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.1"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
