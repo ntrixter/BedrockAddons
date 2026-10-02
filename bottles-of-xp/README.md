@@ -141,12 +141,12 @@ added gilded blackstone storage behind a world setting, through placeholders; in
 1.1.1 the packing placeholder was seen in game drawn as the real block.
 **1.1.2** drops the setting: the storage recipes now make the real items
 directly, and the script is the one tested in 1.0.2, apart from the rename and a
-comment. 1.1.2 has not been run in Minecraft yet. What to check:
+comment.
 
-1. The pack list shows "Bottles of XP" at v1.1.2, with no gear icon, and both
-   bottle trades still work.
-2. Nine Bottles o' Enchanting in a crafting table make one gilded blackstone,
-   and one gilded blackstone makes nine bottles, shift-click included.
+**Verified in 1.1.2:** the pack list shows "Bottles of XP" at v1.1.2 with no
+gear icon, both bottle trades still work, and nine Bottles o' Enchanting pack
+into one gilded blackstone at a crafting table and unpack again, shift-click
+included.
 
 **Not yet seen in game:** placeholders in a chest minecart or other entity
 container, which turn back through a different event from a chest's; and a
