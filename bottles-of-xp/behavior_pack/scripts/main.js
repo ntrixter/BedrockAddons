@@ -1,7 +1,7 @@
 import { ItemStack, world } from "@minecraft/server";
 
 /**
- * XP Bottling: trade Bottles o' Enchanting for raw experience at a crafting
+ * Bottles of XP: trade Bottles o' Enchanting for raw experience at a crafting
  * table, and back again, at a fixed 7 XP a bottle.
  *
  * A crafting recipe can turn one item into another, but it cannot add or take
@@ -34,8 +34,8 @@ const DEBUG = false;
 
 const GLASS_BOTTLE = "minecraft:glass_bottle";
 const XP_BOTTLE = "minecraft:experience_bottle";
-const PENDING_GLASS_BOTTLE = "xpbottling:pending_glass_bottle";
-const PENDING_XP_BOTTLE = "xpbottling:pending_experience_bottle";
+const PENDING_GLASS_BOTTLE = "bottlesofxp:pending_glass_bottle";
+const PENDING_XP_BOTTLE = "bottlesofxp:pending_experience_bottle";
 
 /** What each placeholder was crafted from, and turns back into if it never reaches an inventory. */
 const INGREDIENT = new Map([
@@ -183,7 +183,7 @@ function settle(player) {
     const bottles = returned === 1 ? "1 glass bottle" : `${returned} glass bottles`;
     player.sendMessage(
       unreadable
-        ? `XP Bottling could not read or take your XP, so nothing was charged: ${bottles} returned.`
+        ? `Bottles of XP could not read or take your XP, so nothing was charged: ${bottles} returned.`
         : `Not enough XP: ${bottles} returned. You have ${totalXp(player)} XP, and each Bottle o' Enchanting costs ${XP_PER_BOTTLE}.`,
     );
     if (DEBUG) player.sendMessage(`[debug] ${describe(player)}`);

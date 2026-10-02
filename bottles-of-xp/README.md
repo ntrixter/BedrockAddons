@@ -1,4 +1,4 @@
-# XP Bottling
+# Bottles of XP
 
 Trade Bottles o' Enchanting for experience at a crafting table, and back again,
 at a fixed **7 XP a bottle**. Put a Bottle o' Enchanting in the crafting grid and
@@ -6,8 +6,8 @@ take out a glass bottle and 7 XP. Put a glass bottle in, and if you have 7 XP to
 spare, take out a Bottle o' Enchanting. It is a way to keep experience safely in
 a chest and get exactly that much back later.
 
-- **Add-on ID:** `xp-bottling` (kebab-case; also the tag prefix, the issue label
-  and the artifact filename)
+- **Add-on ID:** `bottles-of-xp` (kebab-case; also the tag prefix, the issue
+  label and the artifact filename)
 - **Minimum Minecraft version:** 1.26.30 (`min_engine_version` in the manifest)
 - **Packs:** behaviour pack only
 - **Author:** ntrixter
@@ -86,10 +86,12 @@ crafting table.
 the recipes.
 
 **The placeholders are hidden from the Creative inventory.** They still exist
-for commands, so `/give @s xpbottling:pending_glass_bottle` is a quick way to
+for commands, so `/give @s bottlesofxp:pending_glass_bottle` is a quick way to
 test the swap.
 
 ## Testing in game
+
+1.0.0 to 1.0.2 were test builds, under the working name XP Bottling.
 
 **Verified in 1.0.1:** the pack loads, the placeholders show the vanilla bottle
 icons, and both trades work, including shift-clicked stacks, partial refunds and
@@ -104,11 +106,16 @@ the bottle it was crafted from; and placeholders put in a chest have turned
 back by the time it opens. 1.0.2 also drops the debug lines.
 
 To repeat the chest check, put placeholders in a chest at `x y z` with
-`/replaceitem block x y z slot.container 0 xpbottling:pending_experience_bottle 5`
+`/replaceitem block x y z slot.container 0 bottlesofxp:pending_experience_bottle 5`
 and open it: it should show 5 glass bottles. Stand on the chest to read its
 `x y z` from the coordinates display - a chest is less than a block tall, so you
 stand inside its block - and for the same reason, `~ ~-1 ~` from on top of a
 chest is the block under it, not the chest.
+
+**1.0.3** renames the add-on, including its item ids, and changes nothing else.
+It has not been run in Minecraft yet. To check it: the pack list shows "Bottles
+of XP" at v1.0.3, both trades work, and a crafted bottle dropped from the
+cursor still turns back.
 
 **Not yet seen in game:** placeholders in a chest minecart or other entity
 container, which turn back through a different event from a chest's; and a
@@ -117,10 +124,10 @@ loads.
 
 ## Download
 
-Grab the latest `xp-bottling-<version>.mcpack` from the
-[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=xp-bottling).
+Grab the latest `bottles-of-xp-<version>.mcpack` from the
+[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=bottles-of-xp).
 Releases in this repository are shared across every add-on, so filter by the
-`xp-bottling-v` tag prefix.
+`bottles-of-xp-v` tag prefix.
 
 ## Install on a client
 
@@ -132,7 +139,7 @@ Releases in this repository are shared across every add-on, so filter by the
 
 1. Rename the downloaded file to `.zip` and extract it. A single-pack `.mcpack`
    extracts loose, with `manifest.json` at the top level, so create a
-   `xp-bottling_BP` folder yourself inside the server's `behavior_packs/`
+   `bottles-of-xp_BP` folder yourself inside the server's `behavior_packs/`
    directory and put the extracted files in it.
 2. Register the pack in the world (below).
 3. Restart the server.
@@ -170,8 +177,8 @@ and `resource_packs/`. The download uses neither shape, because the client
 import path decided the layout, so wrap it once:
 
 ```sh
-mkdir -p packs/behavior_packs/xp-bottling_BP
-unzip -q xp-bottling-<version>.mcpack -d packs/behavior_packs/xp-bottling_BP
+mkdir -p packs/behavior_packs/bottles-of-xp_BP
+unzip -q bottles-of-xp-<version>.mcpack -d packs/behavior_packs/bottles-of-xp_BP
 ```
 
 Mount `packs/` into the container and point `MC_PACK` at its in-container path.
@@ -190,7 +197,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": [1, 0, 2]
+    "version": [1, 0, 3]
   }
 ]
 ```
@@ -202,7 +209,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form - see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.2"` instead. The two files have to agree.
+> is rejected, use `"version": "1.0.3"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
@@ -240,7 +247,7 @@ The script's arithmetic and bookkeeping are tested without Minecraft, against a
 mock of `@minecraft/server`:
 
 ```sh
-cd xp-bottling/tests && node --import ./register.js run.js
+cd bottles-of-xp/tests && node --import ./register.js run.js
 ```
 
 Where the game's behaviour is not established - whether taking XP can cross a

@@ -1,10 +1,10 @@
 {
   "format_version": 3,
   "header": {
-    "name": "XP Bottling",
-    "description": "v1.0.2 - Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again.",
+    "name": "Bottles of XP",
+    "description": "v1.0.3 - Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again.",
     "uuid": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "min_engine_version": "1.26.30"
   },
   "modules": [
@@ -12,13 +12,13 @@
       "type": "data",
       "description": "Two crafting recipes and the two placeholder items they make.",
       "uuid": "83ced233-cfad-47d0-a2b9-948577f36d51",
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     {
       "type": "script",
       "language": "javascript",
       "uuid": "fe89bd04-c752-4be6-b328-0f13f45e5274",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "entry": "scripts/main.js"
     }
   ],

@@ -16,12 +16,12 @@ body:
         Add a new option to this list whenever an add-on is added to the
         repository; see CONTRIBUTING.md.
       options:
+        - bottles-of-xp
         - compass-link
         - creeper-drop-all
         - nightshare
         - no-witch-conversion
         - salvage-smelting
-        - xp-bottling
         - Repository tooling (build, CI, catalog)
         - Other / not listed
     validations:

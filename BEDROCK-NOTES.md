@@ -301,7 +301,7 @@ tooling originally conflated the two and rejected the first script pack outright
 
 ## Experience (`@minecraft/server`)
 
-Verified in game 2026-10-02, from the `[debug]` lines of an XP Bottling test
+Verified in game 2026-10-02, from the `[debug]` lines of a Bottles of XP test
 build, which printed what the game reported after every change it made.
 
 - **Bedrock's experience curve is vanilla's.** Points to go from level L to L+1
@@ -345,21 +345,21 @@ build, which printed what the game reported after every change it made.
 - **`entitySpawn` reports an item dropped from the cursor**, and the item can be
   replaced from there: check `typeId === "minecraft:item"`, read
   `getComponent("minecraft:item").itemStack`, then `remove()` it and
-  `spawnItem` something else in its place. Verified in game 2026-10-02 - XP
-  Bottling 1.0.2 turns a dropped placeholder back into its ingredient this way.
+  `spawnItem` something else in its place. Verified in game 2026-10-02 -
+  Bottles of XP turns a dropped placeholder back into its ingredient this way.
 - **`blockContainerOpened` arrives before the player can take anything out.**
   Items changed in that event are already changed when the chest's screen shows:
   placeholders put in a chest with `/replaceitem` showed as their ingredients.
-  Verified in game 2026-10-02 with XP Bottling 1.0.2. `entityContainerOpened`
-  (a chest minecart, say) follows the same pattern but has not been run.
+  Verified in game 2026-10-02 with Bottles of XP. `entityContainerOpened` (a
+  chest minecart, say) follows the same pattern but has not been run.
 - **A recipe tagged only `crafting_table` also works in the 2x2 inventory grid**
-  if it fits there. No other tag is needed. Verified in game 2026-10-02 with XP
-  Bottling's one-item shapeless recipes.
+  if it fits there. No other tag is needed. Verified in game 2026-10-02 with
+  Bottles of XP's one-item shapeless recipes.
 - **UNVERIFIED: whether `Entity.remove()` makes an entity invalid at once or at
   the end of the tick, and whether a chunk load is reported by `entitySpawn`
   (cause `Loaded`) as well as by `entityLoad`.** Between them those could make
-  one item turn into two, so XP Bottling remembers the ids it has handled rather
-  than trusting `isValid`.
+  one item turn into two, so Bottles of XP remembers the ids it has handled
+  rather than trusting `isValid`.
 
 ---
 
