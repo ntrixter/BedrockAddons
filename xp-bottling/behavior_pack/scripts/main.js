@@ -17,19 +17,31 @@ import { ItemStack, world } from "@minecraft/server";
  *
  * The placeholder is the receipt. Crafting makes one from a real bottle, and
  * settling consumes it, so nothing is ever paid twice or paid for nothing.
+ *
+ * Only a player's inventory settles one. Dropped from the cursor, or found in a
+ * chest a Crafter filled, it turns back into the bottle it was made from, so a
+ * placeholder cannot be thrown at someone, or left in a chest for them, to bill
+ * them for it. One clicked into a bundle is out of reach, and settles with
+ * whoever takes it out.
  */
 
 const XP_PER_BOTTLE = 7;
 
-// Test builds only: a "[debug]" chat line with the raw numbers the game reports
-// whenever XP moves, so an in-game test shows what the XP API really returned.
-// Switch off before release.
-const DEBUG = true;
+// Set true for a test build: a "[debug]" chat line with the raw numbers the
+// game reports whenever XP moves, so an in-game test shows what the XP API
+// really returned.
+const DEBUG = false;
 
 const GLASS_BOTTLE = "minecraft:glass_bottle";
 const XP_BOTTLE = "minecraft:experience_bottle";
 const PENDING_GLASS_BOTTLE = "xpbottling:pending_glass_bottle";
 const PENDING_XP_BOTTLE = "xpbottling:pending_experience_bottle";
+
+/** What each placeholder was crafted from, and turns back into if it never reaches an inventory. */
+const INGREDIENT = new Map([
+  [PENDING_GLASS_BOTTLE, XP_BOTTLE],
+  [PENDING_XP_BOTTLE, GLASS_BOTTLE],
+]);
 
 /** Points needed to go from `level` to `level + 1`, on vanilla's experience curve. */
 function levelCost(level) {
@@ -56,9 +68,9 @@ function levelFor(points) {
  * The player's total experience in points, or undefined if the game's numbers
  * do not fit vanilla's curve - in which case nothing is charged.
  *
- * Worked out from level and progress, not read from getTotalXp(): in the first
- * in-game test every glass bottle came straight back from a player who had XP,
- * so getTotalXp() was reporting less than 7.
+ * Worked out from level and progress and checked against the game's own bar
+ * size, so a change to the curve stops the pack rather than mischarging. In
+ * game it has agreed with getTotalXp() every time.
  */
 function totalXp(player) {
   const level = player.level;
@@ -184,6 +196,51 @@ function giveBack(player, container, stack) {
   if (leftover) player.dimension.spawnItem(leftover, player.location);
 }
 
+/**
+ * Turn every placeholder in a container back into what it was crafted from.
+ * No XP moves either way.
+ */
+function revertIn(container) {
+  if (!container) return;
+  for (let slot = 0; slot < container.size; slot++) {
+    const item = container.getItem(slot);
+    const ingredient = INGREDIENT.get(item?.typeId);
+    if (ingredient) container.setItem(slot, new ItemStack(ingredient, item.amount));
+  }
+}
+
+// Ids of placeholders already turned back. One item can be reported more than
+// once - a chunk load by both entityLoad and entitySpawn - and the game may not
+// count it gone until the tick ends. The reports arrive together, so only recent
+// ids need keeping.
+const turnedBack = new Set();
+
+/**
+ * A placeholder on the ground turns back into what it was crafted from, where
+ * it lies and still moving the way it was thrown. No XP moves either way.
+ */
+function revertDropped(entity) {
+  if (!entity.isValid || entity.typeId !== "minecraft:item" || turnedBack.has(entity.id)) return;
+  const stack = entity.getComponent("minecraft:item")?.itemStack;
+  const ingredient = INGREDIENT.get(stack?.typeId);
+  if (!ingredient) return;
+
+  if (turnedBack.size >= 1000) turnedBack.clear();
+  turnedBack.add(entity.id);
+  const { dimension, location } = entity;
+  const velocity = entity.getVelocity();
+  // The placeholder goes before the bottle appears: if anything fails between
+  // the two, nothing is doubled.
+  entity.remove();
+  const bottle = dimension.spawnItem(new ItemStack(ingredient, stack.amount), location);
+  try {
+    bottle.clearVelocity();
+    bottle.applyImpulse(velocity);
+  } catch {
+    // Only the throw is lost; the bottle itself is already back.
+  }
+}
+
 world.afterEvents.playerInventoryItemChange.subscribe((event) => settle(event.player), {
   includeItems: [PENDING_GLASS_BOTTLE, PENDING_XP_BOTTLE],
 });
@@ -191,3 +248,19 @@ world.afterEvents.playerInventoryItemChange.subscribe((event) => settle(event.pl
 // A placeholder can reach an inventory while nothing is listening - the pack
 // switched off and back on, say. Settle everyone as they spawn.
 world.afterEvents.playerSpawn.subscribe((event) => settle(event.player));
+
+// Dropped from the cursor: the craft is called off. One left on the ground while
+// the script was not running turns back as its chunk loads.
+world.afterEvents.entitySpawn.subscribe((event) => revertDropped(event.entity));
+world.afterEvents.entityLoad.subscribe((event) => revertDropped(event.entity));
+
+// A Crafter can fill a chest with placeholders. Whoever opens it finds the
+// bottles they were made from, and is not charged for taking them.
+world.afterEvents.blockContainerOpened.subscribe((event) => {
+  revertIn(event.block.getComponent("minecraft:inventory")?.container);
+});
+world.afterEvents.entityContainerOpened.subscribe((event) => {
+  // A player's own inventory settles its placeholders; it never turns them back.
+  if (!event.entity.isValid || event.entity.typeId === "minecraft:player") return;
+  revertIn(event.entity.getComponent("minecraft:inventory")?.container);
+});

@@ -299,6 +299,62 @@ tooling originally conflated the two and rejected the first script pack outright
 
 ---
 
+## Experience (`@minecraft/server`)
+
+Verified in game 2026-10-02, from the `[debug]` lines of an XP Bottling test
+build, which printed what the game reported after every change it made.
+
+- **Bedrock's experience curve is vanilla's.** Points to go from level L to L+1
+  are 2L+7 for levels 0-15, 5L-38 for 16-30, and 9L-158 from 31. The bar sizes
+  read at levels 0, 1, 2, 3, 13, 18, 25 and 29 were 7, 9, 11, 13, 33, 52, 87 and
+  107, every one on the formula.
+- **`totalXpNeededForNextLevel` is the size of the current level's bar**, not
+  the running total to reach the next level. `xpEarnedAtCurrentLevel` is whole
+  points into that bar.
+- **`getTotalXp()` is the player's total in points.** It matched the bars below
+  the current level plus progress in every reading.
+- **Reads see `addExperience` and `addLevels` at once**, in the same tick, so a
+  script can check a change on the next line.
+- **To set an exact total, empty the bar, change whole levels, then add the
+  rest:** `addExperience(-progress)`, `addLevels(targetLevel - level)`,
+  `addExperience(remainder)`. It landed exactly every time, including from 1,379
+  points to 931 across several levels in one go. Emptying the bar first also
+  sidesteps what `addLevels` does to progress part-way through a bar, which is
+  still unknown.
+- **UNVERIFIED: a negative `addExperience` larger than the current progress is
+  reported to stop at the bottom of the level** instead of crossing it (Mojang
+  bugs MCPE-184867 and MCPE-177737, seen only in search results). The method
+  above never asks it to, so it has not been tested either way.
+
+---
+
+## Reacting to a craft (`@minecraft/server`)
+
+- **There is no stable "player crafted" event.** `PlayerCraftRecipeAfterEvent`
+  exists only in the 26.60 preview, as beta. A stable pack can make a recipe's
+  result a placeholder item and act when it arrives, through
+  `playerInventoryItemChange` filtered with `includeItems` to the placeholder.
+  Verified in game: it fires when the crafted item lands in a slot, including a
+  whole shift-clicked stack.
+- **Until it lands, the crafted item is on the cursor, and the cursor is not part
+  of the inventory container.** `PlayerCursorInventoryComponent` can read the
+  cursor and `clear()` it but has no setter, so a held placeholder cannot be
+  swapped for the real item. Both consequences were seen in game: a held
+  placeholder will not merge onto a stack of the real item, and one dropped from
+  the cursor stays a placeholder on the ground for anyone to pick up.
+- **UNVERIFIED: `entitySpawn` reports a dropped item, and `blockContainerOpened` /
+  `entityContainerOpened` arrive before the player can take anything out.** XP
+  Bottling 1.0.2 relies on both to turn a stray placeholder back into its
+  ingredient. Checking `typeId === "minecraft:item"` in `entitySpawn` is the
+  documented way to catch a dropped item, but neither has been run in this
+  repository yet. Also unknown: whether `Entity.remove()` makes an entity
+  invalid at once or at the end of the tick, and whether a chunk load is reported
+  by `entitySpawn` (cause `Loaded`) as well as by `entityLoad`. Between them those
+  could make one item turn into two, so XP Bottling remembers the ids it has
+  handled rather than trusting `isValid`.
+
+---
+
 ## Difficulty does not seem to scale mob melee damage
 
 **UNVERIFIED**, but on documentary evidence rather than a hunch, and with a

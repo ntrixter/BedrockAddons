@@ -7,15 +7,13 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.0.1] - 2026-10-02`.
+version, so the heading has to match exactly: `## [1.0.2] - 2026-10-02`.
 
 ## [Unreleased]
 
-## [1.0.1] - 2026-10-02
+## [1.0.2] - 2026-10-02
 
-First release. 1.0.0 was a test build and was never published: it emptied
-bottles correctly, but refunded every glass bottle, because the game reported
-less XP than the player had.
+First release. 1.0.0 and 1.0.1 were test builds and were never published.
 
 ### Added
 
@@ -29,3 +27,7 @@ less XP than the player had.
 - XP is worked out from level and progress and taken without ever subtracting
   across a level boundary, and every charge is checked: if the game does not end
   up exactly 7 XP per bottle lower, the XP goes back and so do the glass bottles.
+- A crafted bottle completes the trade only in the inventory it lands in.
+  Dropped from the cursor, or found in a chest when the chest is opened, it
+  turns back into the bottle it was crafted from and no XP moves, so it cannot
+  be thrown at another player to charge them for it.
