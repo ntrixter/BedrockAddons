@@ -1,19 +1,19 @@
-// Mock of the bits of @minecraft/server that XP Bottling touches: two event
-// signals, ItemStack, a player inventory and the player's experience.
+// Mock of the bits of @minecraft/server that XP Bottling touches: the event
+// signals, ItemStack, containers, item entities, and the player's experience.
 //
 // Experience is modelled the way Bedrock stores it - a level plus progress into
 // that level - because that is where the pack's first in-game test broke.
 //
 // Where the engine's behaviour is NOT established, the mock is switchable
 // rather than opinionated, and the suite runs under every combination. The
-// first build trusted a guess about getTotalXp() and every glass bottle came
-// straight back.
+// first build passed against a mock that knew only one answer to each, then
+// refunded every glass bottle in game.
 
 export const control = {
   /**
-   * What getTotalXp() returns. "total" is what its documentation says. "level"
-   * - points into the current level only - reproduces the first in-game test,
-   * where a player holding XP was refunded as though they had under 7.
+   * What getTotalXp() returns. "total" is what its documentation says, and
+   * what 1.0.1's debug lines showed in game. "level" - points into the current
+   * level only - and "zero" are kept because the pack must not depend on it.
    */
   totalXpMode: "total",
   /**
@@ -30,9 +30,38 @@ export const control = {
    * must refuse to do arithmetic on.
    */
   barMode: "cost",
+  /**
+   * Entity.remove(): "immediate" - the entity is invalid at once and removing
+   * it again throws - or "deferred", gone only when the tick ends, with a second
+   * remove() a silent no-op. Deferred is the case that could turn one dropped
+   * placeholder into two bottles.
+   */
+  removeMode: "immediate",
+  /** Whether entitySpawn also fires, with cause Loaded, for an entity entityLoad reports. */
+  spawnOnLoad: false,
+  /** The cause entitySpawn gives an item a player drops. Nothing says which, so the pack must not care. */
+  dropCause: "Spawned",
+  /** clearVelocity/applyImpulse on an item entity: "works", or "throws". */
+  impulseMode: "works",
 };
 
-export const hooks = { inventoryChange: null, inventoryChangeOptions: null, spawn: null };
+export const hooks = {
+  inventoryChange: null,
+  inventoryChangeOptions: null,
+  spawn: null,
+  entitySpawn: null,
+  entityLoad: null,
+  blockContainerOpened: null,
+  entityContainerOpened: null,
+};
+
+export const EntityInitializationCause = {
+  Born: "Born",
+  Event: "Event",
+  Loaded: "Loaded",
+  Spawned: "Spawned",
+  Transformed: "Transformed",
+};
 
 // The engine's curve. Deliberately written out here rather than imported, so a
 // mistake in the pack's copy cannot hide itself.
@@ -93,22 +122,157 @@ class Container {
   }
 }
 
+export const makeContainer = (size) => new Container(size);
+
+// After-events are not delivered as things happen but in a batch, later in the
+// tick. endTick() delivers them, then completes any deferred removals. Like the
+// game, it carries on past a handler that throws; the error lands in
+// scriptErrors, where the suite counts it as a failure.
+let pending = [];
+let removing = [];
+export const scriptErrors = [];
+
+/** Queue an after-event for the next endTick(). */
+export function queue(hook, event) {
+  pending.push([hook, event]);
+}
+
+export function discardPending() {
+  pending = [];
+  removing = [];
+}
+
+export function endTick() {
+  const batch = pending;
+  pending = [];
+  for (const [hook, event] of batch) {
+    try {
+      hooks[hook]?.(event);
+    } catch (error) {
+      scriptErrors.push(`${hook}: ${error.message}`);
+    }
+  }
+  for (const entity of removing) entity.finishRemoval();
+  removing = [];
+}
+
+/** A dimension that keeps the item entities lying in it, so a test can see what is on the ground. */
+export function makeDimension() {
+  const dimension = {
+    items: [],
+    spawnItem(stack, location) {
+      // The engine gives a spawned item a small pop of its own.
+      const entity = makeItemEntity(dimension, stack, location, { x: 0.02, y: 0.2, z: -0.02 });
+      queue("entitySpawn", { entity, cause: EntityInitializationCause.Spawned });
+      return entity;
+    },
+  };
+  return dimension;
+}
+
+let nextId = 1;
+
+/** An item lying in `dimension`. No event is queued; see dropItem and loadItem. */
+export function makeItemEntity(dimension, stack, location, velocity) {
+  let state = "live"; // live | removing | gone
+  const entity = {
+    id: String(-(nextId++)),
+    typeId: "minecraft:item",
+    dimension,
+    location: { ...location },
+    velocity: { ...velocity },
+    stack: stack.clone(),
+    get isValid() { return state !== "gone"; },
+    getComponent(id) {
+      if (state === "gone") throw new Error("mock: InvalidEntityError");
+      return id === "minecraft:item" ? { itemStack: entity.stack.clone() } : undefined;
+    },
+    getVelocity() { return { ...entity.velocity }; },
+    clearVelocity() {
+      if (control.impulseMode === "throws") throw new Error("mock: clearVelocity unsupported");
+      entity.velocity = { x: 0, y: 0, z: 0 };
+    },
+    applyImpulse(v) {
+      if (control.impulseMode === "throws") throw new Error("mock: applyImpulse unsupported");
+      entity.velocity = { x: entity.velocity.x + v.x, y: entity.velocity.y + v.y, z: entity.velocity.z + v.z };
+    },
+    remove() {
+      if (state === "gone") throw new Error("mock: InvalidEntityError");
+      if (control.removeMode === "immediate") return entity.finishRemoval();
+      if (state === "live") {
+        state = "removing";
+        removing.push(entity);
+      }
+    },
+    finishRemoval() {
+      state = "gone";
+      dimension.items = dimension.items.filter((e) => e !== entity);
+    },
+  };
+  dimension.items.push(entity);
+  return entity;
+}
+
+/** A player throwing `stack` from the cursor: a new item entity, reported by entitySpawn. */
+export function dropItem(dimension, stack, location, velocity) {
+  const entity = makeItemEntity(dimension, stack, location, velocity);
+  queue("entitySpawn", { entity, cause: control.dropCause });
+  return entity;
+}
+
+/**
+ * Items already lying in a chunk as it loads: each reported by entityLoad, and
+ * maybe by entitySpawn too - every entitySpawn first, so the two reports of one
+ * item have others between them.
+ */
+export function loadChunk(dimension, stacks, location) {
+  const entities = stacks.map((stack) => makeItemEntity(dimension, stack, location, { x: 0, y: 0, z: 0 }));
+  if (control.spawnOnLoad) {
+    for (const entity of entities) queue("entitySpawn", { entity, cause: EntityInitializationCause.Loaded });
+  }
+  for (const entity of entities) queue("entityLoad", { entity });
+  return entities;
+}
+
+/** A block, with a container if it has one. */
+export function makeBlock(container) {
+  return { getComponent: (id) => (id === "minecraft:inventory" && container ? { container } : undefined) };
+}
+
+/** A non-player entity, with a container if it has one: a chest minecart, a donkey. */
+export function makeEntity(typeId, container) {
+  const entity = {
+    id: String(-(nextId++)),
+    typeId,
+    isValid: true,
+    getComponent(id) {
+      if (!entity.isValid) throw new Error("mock: InvalidEntityError");
+      return id === "minecraft:inventory" && container ? { container } : undefined;
+    },
+  };
+  return entity;
+}
+
 /** A player with `points` total experience and a 36-slot inventory (0-8 hotbar). */
 export function makePlayer(points = 0) {
   const container = new Container(36);
+  const dimension = makeDimension();
   const [level, into] = fromTotal(points);
   const player = {
+    typeId: "minecraft:player",
     isValid: true,
     location: { x: 0, y: 64, z: 0 },
     messages: [],
-    dropped: [],
     container,
+    dimension,
     lvl: level,
     pts: into,
     getComponent: (id) => (id === "minecraft:inventory" ? { container } : undefined),
 
     /** Ground truth, for the tests - not part of the API. */
     trueTotal() { return cumulative(this.lvl) + this.pts; },
+    /** What lies on the ground in the player's dimension - not part of the API. */
+    get dropped() { return dimension.items.map((e) => e.stack); },
 
     get level() { return this.lvl; },
     get xpEarnedAtCurrentLevel() { return this.pts; },
@@ -144,7 +308,6 @@ export function makePlayer(points = 0) {
     },
     sendMessage(text) { this.messages.push(text); },
   };
-  player.dimension = { spawnItem: (stack, at) => player.dropped.push({ ...stack.clone(), at }) };
   return player;
 }
 
@@ -154,5 +317,9 @@ export const world = {
       subscribe(fn, options) { hooks.inventoryChange = fn; hooks.inventoryChangeOptions = options; },
     },
     playerSpawn: { subscribe(fn) { hooks.spawn = fn; } },
+    entitySpawn: { subscribe(fn) { hooks.entitySpawn = fn; } },
+    entityLoad: { subscribe(fn) { hooks.entityLoad = fn; } },
+    blockContainerOpened: { subscribe(fn) { hooks.blockContainerOpened = fn; } },
+    entityContainerOpened: { subscribe(fn) { hooks.entityContainerOpened = fn; } },
   },
 };

@@ -33,13 +33,18 @@ receipt: crafting makes it from a real bottle and the swap consumes it, so
 nothing can be paid twice or paid for nothing.
 
 **How it reads and takes XP.** The pack works your total out from your level
-and progress, checked against the game's own bar size, rather than asking the
-game for the total: in the first in-game test that call reported less than the
-player had, and every glass bottle came straight back. It also never subtracts
-across a level boundary, which the game is reported not to do correctly; it
-empties the current bar, drops whole levels, then adds the remainder back. After
-every charge it checks the result, and if the game did not land exactly 7 XP per
-bottle lower, it puts the XP back and returns your glass bottles.
+and progress and checks it against the game's own bar size, so if an update ever
+changed the experience curve, the pack would refuse to charge rather than charge
+the wrong amount. It never subtracts across a level boundary, which the game is
+reported not to do correctly; it empties the current bar, drops whole levels,
+then adds the remainder back. After every charge it checks the result, and if
+the game did not land exactly 7 XP per bottle lower, it puts the XP back and
+returns your glass bottles.
+
+**Only your inventory completes the trade.** On the ground or in a chest, a
+placeholder turns back into the bottle it was crafted from, and no XP moves.
+That stops anyone crafting "Bottle o' Enchanting (-7 XP)" and throwing it at
+another player to charge them for it.
 
 ## Things worth knowing
 
@@ -54,10 +59,25 @@ message saying why.
 **Nothing is deleted.** If a partial refund does not fit in your inventory, the
 rest drops at your feet.
 
-**The swap happens when the placeholder reaches an inventory, not on the click.**
-Drop one from the cursor onto the ground and whoever picks it up gets the
-conversion - including the 7 XP cost of a "Bottle o' Enchanting (-7 XP)". A
-Crafter block can make placeholders too, with the same result.
+**Dropping a crafted bottle calls the trade off.** Drop it from the cursor and
+the bottle you crafted it from flies out instead: a glass bottle for "Bottle o'
+Enchanting (-7 XP)", a Bottle o' Enchanting for "Glass Bottle (+7 XP)". Nobody
+is paid or charged, including whoever picks it up. A Crafter can make
+placeholders too; any it puts in a chest turn back the same way when the chest
+is opened.
+
+**Bundles are the exception.** A placeholder can be clicked into a bundle
+straight from the cursor, and the pack does not look inside bundles, so it stays
+a placeholder in there. Whoever later takes it out into their inventory gets
+the trade on its label. For a "Bottle o' Enchanting (-7 XP)" that is a real
+Bottle o' Enchanting for 7 XP, which they can craft straight back into the same
+7 XP, so it costs them nothing - but it was not their choice.
+
+**A crafted bottle on the cursor will not join a matching stack.** Until it
+lands it is still the placeholder, a different item from the bottles in your
+inventory, so clicking it onto a partial stack swaps the two instead of merging
+them. Put it in an empty slot, or shift-click the output, and it becomes the
+real bottle there; from then on it stacks like any other.
 
 **One-item recipes fit the 2x2 grid in your inventory**, so a crafting table
 should not be needed.
@@ -71,26 +91,26 @@ test the swap.
 
 ## Testing in game
 
-1.0.0, the first test build, emptied bottles correctly but refunded every glass
-bottle. This build carries the fix and has not been run in Minecraft yet.
+**Verified in 1.0.1:** the pack loads, the placeholders show the vanilla bottle
+icons, and both trades work, including shift-clicked stacks, partial refunds and
+charges across many level boundaries, all exact to the point. That build's
+`[debug]` chat lines showed the game's own experience numbers matching vanilla's
+curve. The same test found that a crafted bottle dropped from the cursor stayed
+a placeholder, and charged whoever picked it up.
 
-**It also prints `[debug]` chat lines** whenever XP moves: the numbers the game
-itself reports for your level, progress and total. If anything below goes
-wrong, those lines show exactly what the game returned. They come out before
-release.
+1.0.2 fixes that, drops the debug lines, and has not been run in Minecraft yet.
+What to check:
 
-These are the things only the game can confirm:
-
-1. The pack loads with no content errors, and the two placeholders show the
-   vanilla glass-bottle and Bottle o' Enchanting icons, with their names.
-2. Crafting a Bottle o' Enchanting gives a glass bottle and exactly 7 XP.
-3. Crafting a glass bottle with 7 or more XP gives a Bottle o' Enchanting and
-   takes 7 XP. With 0-6 XP, the glass bottle comes back with a message.
-4. Shift-clicking a stack converts all of it, and a partial refund (e.g. 64
-   glass bottles with 35 XP) gives 5 + 59.
-5. Taking XP across a level boundary lowers the level properly.
-6. Both recipes work in the 2x2 inventory grid as well as a crafting table.
-7. A placeholder never stays in your inventory.
+1. Craft a glass bottle into a Bottle o' Enchanting with at least 7 XP, then
+   click outside the inventory window to drop it. A glass bottle flies out and
+   your XP does not change. Do the same with a Bottle o' Enchanting: one flies
+   out, and no XP is added.
+2. Put placeholders in a chest, then open it: they are the bottles they were
+   made from. For a chest at `x y z`,
+   `/replaceitem block x y z slot.container 0 xpbottling:pending_experience_bottle 5`
+   should show as 5 glass bottles.
+3. Everything above from 1.0.1 still works, and no `[debug]` lines appear.
+4. Not yet checked in any build: both recipes in the 2x2 inventory grid.
 
 ## Download
 
@@ -167,7 +187,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": [1, 0, 1]
+    "version": [1, 0, 2]
   }
 ]
 ```
@@ -179,7 +199,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form - see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.1"` instead. The two files have to agree.
+> is rejected, use `"version": "1.0.2"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
@@ -208,7 +228,8 @@ On a dedicated server, replace the folder under `behavior_packs/` and restart.
 
 **Before removing it, make sure nobody is holding a placeholder.** Without the
 pack, a placeholder is an unknown item and is lost. Normally none exist for
-more than an instant, so this only matters if the script was not running.
+more than an instant, so this only matters if one was put in a bundle or the
+script was not running.
 
 ## Tests
 
@@ -219,14 +240,17 @@ mock of `@minecraft/server`:
 cd xp-bottling/tests && node --import ./register.js run.js
 ```
 
-Where the game's behaviour is not established - what `getTotalXp()` returns,
-whether taking XP can cross a level boundary, what `addLevels` does to progress,
-and what the bar size means - every case runs under every combination, and the
-pack must give the same answer under all of them. The first build trusted one
-guess, and so did this suite, which is how a broken build passed. A further set
-checks that when the game misbehaves outright, nothing is given away and nothing
-is lost. It cannot cover what only the game knows - see "Testing in game"
-above.
+Where the game's behaviour is not established - whether taking XP can cross a
+level boundary, what `addLevels` does to progress, what the bar size means, and
+whether `getTotalXp()` can be relied on - every case runs under every
+combination, and the pack must give the same answer under all of them. The first
+build passed a suite that modelled the game one way only, then refunded every
+glass bottle in game. Placeholders that never reach an inventory get the same
+treatment: whether a removed item is gone at once, whether a loading chunk
+reports an item twice, what cause a dropped item is reported with, and whether a
+thrown item's flight can be copied. A further set checks that when the game
+misbehaves outright, nothing is given away and nothing is lost. It cannot cover
+what only the game knows - see "Testing in game" above.
 
 ## Changelog
 
