@@ -16,6 +16,7 @@ versioned and released on its own schedule.
 | [nightshare](nightshare/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=nightshare-v*&sort=semver&label=nightshare) | Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice. |
 | [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 | [salvage-smelting](salvage-smelting/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=salvage-smelting-v*&sort=semver&label=salvage-smelting) | Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks. |
+| [xp-bottling](xp-bottling/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=xp-bottling-v*&sort=semver&label=xp-bottling) | Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again. |
 
 ## How this repository is laid out
 

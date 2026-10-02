@@ -21,6 +21,7 @@ body:
         - nightshare
         - no-witch-conversion
         - salvage-smelting
+        - xp-bottling
         - Repository tooling (build, CI, catalog)
         - Other / not listed
     validations:
