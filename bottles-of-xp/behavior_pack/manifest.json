@@ -2,23 +2,23 @@
   "format_version": 3,
   "header": {
     "name": "Bottles of XP",
-    "description": "v1.1.1 - Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again, or pack nine into one gilded blackstone.",
+    "description": "v1.1.2 - Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again, or pack nine into one gilded blackstone.",
     "uuid": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "min_engine_version": "1.26.30"
   },
   "modules": [
     {
       "type": "data",
-      "description": "Four crafting recipes and the four placeholder items they make.",
+      "description": "Four crafting recipes, and the two placeholder items the bottle trades make.",
       "uuid": "83ced233-cfad-47d0-a2b9-948577f36d51",
-      "version": "1.1.1"
+      "version": "1.1.2"
     },
     {
       "type": "script",
       "language": "javascript",
       "uuid": "fe89bd04-c752-4be6-b328-0f13f45e5274",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "entry": "scripts/main.js"
     }
   ],
@@ -35,29 +35,5 @@
     "license": "MIT",
     "url": "https://github.com/ntrixter/BedrockAddons",
     "product_type": "addon"
-  },
-  "settings": [
-    {
-      "type": "label",
-      "text": "§lBottles of XP§r - trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again."
-    },
-    {
-      "type": "label",
-      "text": "§7Changes here take effect the next time the world loads.§r"
-    },
-    {
-      "type": "toggle",
-      "text": "Gilded blackstone storage",
-      "name": "bottlesofxp:gilded_storage",
-      "default": true
-    },
-    {
-      "type": "label",
-      "text": "§7On: nine Bottles o' Enchanting pack into one gilded blackstone at a crafting table, and one gilded blackstone unpacks into nine - including gilded blackstone found in bastions. Off: both recipes still show, but whatever they make is handed straight back.§r"
-    },
-    {
-      "type": "label",
-      "text": "§7Mine placed gilded blackstone with Silk Touch. Without it, the block can break into gold nuggets, and the nine bottles in it are gone.§r"
-    }
-  ]
+  }
 }

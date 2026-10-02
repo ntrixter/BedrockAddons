@@ -29,12 +29,8 @@ await import("../behavior_pack/scripts/main.js");
 
 const GLASS = "minecraft:glass_bottle";
 const XPB = "minecraft:experience_bottle";
-const GILDED = "minecraft:gilded_blackstone";
 const P_GLASS = "bottlesofxp:pending_glass_bottle";
 const P_XPB = "bottlesofxp:pending_experience_bottle";
-const P_PACK = "bottlesofxp:pending_gilded_blackstone";
-const P_UNPACK = "bottlesofxp:pending_bottles";
-const SETTING = "bottlesofxp:gilded_storage";
 
 let failures = 0;
 
@@ -49,8 +45,6 @@ const dropped = (p, id) => p.dropped.filter((d) => d.typeId === id).reduce((n, d
 const told = (p) => p.messages.filter((m) => !m.startsWith("[debug]"));
 /** What lies on the ground in a dimension, as [item, amount]. */
 const ground = (d) => d.items.map((e) => [e.stack.typeId, e.stack.amount]);
-/** How many of `id` a container holds. */
-const c = (container, id) => container.slots.reduce((n, s) => n + (s?.typeId === id ? s.amount : 0), 0);
 /** A container's non-empty slots, as { slot: [item, amount] }. */
 const slotsOf = (c) => Object.fromEntries(c.slots.flatMap((s, i) => (s ? [[i, [s.typeId, s.amount]]] : [])));
 
@@ -261,56 +255,6 @@ function revertCases(check) {
     check("a player's own inventory is left to settle", [count(p, P_XPB), count(p, GLASS)], [1, 0]);
   }
   {
-    // A packing placeholder is worth nine bottles, so more than a stack can come back.
-    discardPending();
-    const d = makeDimension();
-    dropItem(d, new ItemStack(P_PACK, 3), at, thrown);
-    endTick();
-    endTick();
-    check("thrown packing placeholder x3: 27 bottles, flying as thrown",
-      [ground(d), d.items[0]?.velocity], [[[XPB, 27]], control.impulseMode === "works" ? thrown : pop]);
-    const e = makeDimension();
-    dropItem(e, new ItemStack(P_PACK, 64), at, thrown);
-    endTick();
-    endTick();
-    check("thrown packing placeholder x64: 576 bottles, as nine full stacks",
-      ground(e), Array(9).fill([XPB, 64]));
-    const f = makeDimension();
-    dropItem(f, new ItemStack(P_UNPACK, 5), at, thrown);
-    endTick();
-    endTick();
-    check("thrown unpacking placeholder x5: 5 gilded blackstone", ground(f), [[GILDED, 5]]);
-  }
-  {
-    const chest = makeContainer(27);
-    chest.setItem(4, new ItemStack(P_PACK, 64));
-    const opener = makePlayer(0);
-    queue("blockContainerOpened", { block: makeBlock(chest, opener.dimension), dimension: opener.dimension, openSource: { entity: opener } });
-    endTick();
-    check("a chest's packing placeholders x64: 576 bottles, all kept in the chest",
-      [slotsOf(chest)[4], c(chest, XPB), ground(opener.dimension)], [[XPB, 64], 576, []]);
-  }
-  {
-    // No room: the slot takes a full stack and the rest lands on top of the chest.
-    const chest = makeContainer(27);
-    for (let s = 0; s < 27; s++) chest.setItem(s, new ItemStack("minecraft:cobblestone", 64));
-    chest.setItem(0, new ItemStack(P_PACK, 8));
-    const opener = makePlayer(0);
-    queue("blockContainerOpened", { block: makeBlock(chest, opener.dimension), dimension: opener.dimension, openSource: { entity: opener } });
-    endTick();
-    check("a full chest's packing placeholders x8: 64 bottles in it, 8 on top of it",
-      [slotsOf(chest)[0], opener.dimension.items.map((i) => [i.stack.typeId, i.stack.amount, i.location])],
-      [[XPB, 64], [[XPB, 8, { x: 10.5, y: 65, z: -2.5 }]]]);
-  }
-  {
-    const cart = makeContainer(27);
-    cart.setItem(9, new ItemStack(P_UNPACK, 2));
-    const opener = makePlayer(0);
-    queue("entityContainerOpened", { entity: makeEntity("minecraft:chest_minecart", cart), openSource: { entity: opener } });
-    endTick();
-    check("a chest minecart's unpacking placeholders: gilded blackstone back", slotsOf(cart), { 9: [GILDED, 2] });
-  }
-  {
     // Gone by the time the event arrives - broken, say.
     const gone = makeEntity("minecraft:chest_minecart", makeContainer(27));
     gone.isValid = false;
@@ -320,86 +264,9 @@ function revertCases(check) {
   }
 }
 
-/** Gilded blackstone storage settled in an inventory; `on` is what the world's setting says. */
-function storageCases(check, on) {
-  const off = (what) => [`Gilded blackstone storage is turned off on this world: ${what} returned.`];
-  {
-    const p = makePlayer(40);
-    put(p, 4, P_PACK, 1); land(p, 4);
-    check("pack one: [gilded blackstone, bottles, XP]", [count(p, GILDED), count(p, XPB), p.trueTotal()], on ? [1, 0, 40] : [0, 9, 40]);
-    check("pack one: what the player is told", told(p), on ? [] : off("9 Bottles o' Enchanting"));
-  }
-  {
-    const p = makePlayer(0);
-    put(p, 10, P_PACK, 64); land(p, 10);
-    check("pack a shift-clicked stack of 64", [count(p, GILDED), count(p, XPB), dropped(p, XPB)], on ? [64, 0, 0] : [0, 576, 0]);
-  }
-  {
-    const p = makePlayer(0);
-    put(p, 2, P_UNPACK, 1); land(p, 2);
-    check("unpack one: [bottles, gilded blackstone]", [count(p, XPB), count(p, GILDED)], on ? [9, 0] : [0, 1]);
-    check("unpack one: what the player is told", told(p), on ? [] : off("1 gilded blackstone"));
-  }
-  {
-    // Two free slots: the placeholder's slot and the free ones fill, the rest drops at the player's feet.
-    const p = makePlayer(0);
-    for (let s = 0; s < 36; s++) put(p, s, "minecraft:cobblestone", 64);
-    p.container.setItem(30, undefined);
-    p.container.setItem(31, undefined);
-    put(p, 5, P_UNPACK, 64); land(p, 5);
-    check("unpack 64 into a nearly full inventory: [kept, dropped, gilded, cobblestone]",
-      [count(p, XPB), dropped(p, XPB), count(p, GILDED), count(p, "minecraft:cobblestone")],
-      on ? [192, 384, 0, 33 * 64] : [0, 0, 64, 33 * 64]);
-  }
-  {
-    // Storage moves no XP, and the XP trades work beside it in the same sweep.
-    const p = makePlayer(20);
-    put(p, 0, P_XPB, 2); put(p, 1, P_PACK, 1); put(p, 2, P_UNPACK, 1); put(p, 3, P_GLASS, 1);
-    land(p, 0);
-    check("mixed sweep: [bottles, gilded, glass, XP, placeholders left]",
-      [count(p, XPB), count(p, GILDED), count(p, GLASS), p.trueTotal(), count(p, P_PACK) + count(p, P_UNPACK) + count(p, P_XPB) + count(p, P_GLASS)],
-      [11, 1, 1, 13, 0]);
-  }
-  {
-    let seed = on ? 1234567 : 7654321;
-    const rand = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
-    let broken = 0;
-    for (let run = 0; run < 300; run++) {
-      const x0 = rand(2000);
-      const p = makePlayer(x0);
-      let g = 0, b = 0, k = 0, u = 0, glass0 = 0, xpb0 = 0, gilded0 = 0;
-      for (let s = 0; s < 36; s++) {
-        const roll = rand(12), n = 1 + rand(64);
-        if (roll === 0) { put(p, s, P_GLASS, n); g += n; }
-        else if (roll === 1) { put(p, s, P_XPB, n); b += n; }
-        else if (roll === 2) { put(p, s, P_PACK, n); k += n; }
-        else if (roll === 3) { put(p, s, P_UNPACK, n); u += n; }
-        else if (roll === 4) { put(p, s, GLASS, n); glass0 += n; }
-        else if (roll === 5) { put(p, s, XPB, n); xpb0 += n; }
-        else if (roll === 6) { put(p, s, GILDED, n); gilded0 += n; }
-        else if (roll < 10) put(p, s, "minecraft:dirt", n);
-      }
-      const dirt0 = count(p, "minecraft:dirt");
-      try { land(p, 0); } catch { broken++; continue; }
-      const paid = Math.min(b, Math.floor((x0 + 7 * g) / 7));
-      const out = (id) => count(p, id) + dropped(p, id);
-      const ok =
-        [P_GLASS, P_XPB, P_PACK, P_UNPACK].every((id) => count(p, id) === 0) &&
-        out(GLASS) - glass0 === g + (b - paid) &&
-        out(XPB) - xpb0 === paid + 9 * (on ? u : k) &&
-        out(GILDED) - gilded0 === (on ? k : u) &&
-        p.trueTotal() === x0 + 7 * g - 7 * paid &&
-        count(p, "minecraft:dirt") === dirt0 &&
-        told(p).length === (b - paid > 0 ? 1 : 0) + (on ? 0 : (k > 0 ? 1 : 0) + (u > 0 ? 1 : 0));
-      if (!ok) broken++;
-    }
-    check("300 random inventories: any item or XP point created or lost", broken, 0);
-  }
-}
-
-console.log("\n0. The script listens only for its own four placeholders");
+console.log("\n0. The script listens only for its own two placeholders");
 {
-  const ok = JSON.stringify([...(hooks.inventoryChangeOptions?.includeItems ?? [])].sort()) === JSON.stringify([P_GLASS, P_XPB, P_PACK, P_UNPACK].sort());
+  const ok = JSON.stringify(hooks.inventoryChangeOptions?.includeItems) === JSON.stringify([P_GLASS, P_XPB]);
   if (!ok) failures++;
   console.log(`  ${ok ? "PASS" : "FAIL"}  includeItems filter`);
 }
@@ -466,45 +333,6 @@ for (const removeMode of ["immediate", "deferred"]) {
     }
   }
 }
-
-console.log("\n4. Gilded blackstone storage, with the world's setting on and off");
-function loadWorld(settings) {
-  control.packSettings = settings;
-  hooks.worldLoad({});
-}
-Object.assign(control, { totalXpMode: "total", negativeMode: "crosses", addLevelsMode: "fraction", barMode: "cost" });
-for (const [label, settings, on] of [
-  ["setting on", { [SETTING]: true }, true],
-  ["setting off", { [SETTING]: false }, false],
-]) {
-  loadWorld(settings);
-  const bad = [];
-  let n = 0;
-  storageCases((l, actual, expected) => {
-    n++;
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) bad.push(`${l}: got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}`);
-  }, on);
-  failures += bad.length;
-  console.log(`  ${bad.length ? "FAIL" : "PASS"}  ${label.padEnd(70)} ${n - bad.length}/${n}`);
-  for (const line of bad) console.log(`          ${line}`);
-}
-// How the setting is read: anything but a real boolean leaves the default, which is on.
-for (const [label, settings, want] of [
-  ["never changed from the default", {}, true],
-  ["not a boolean (\"false\" as text)", { [SETTING]: "false" }, true],
-  ["the engine cannot supply settings", "throws", true],
-  ["off, then the world reloads with it on", { [SETTING]: true }, true],
-]) {
-  if (label.startsWith("off, then")) loadWorld({ [SETTING]: false });
-  loadWorld(settings);
-  const p = makePlayer(0);
-  put(p, 0, P_PACK, 1); land(p, 0);
-  const on = count(p, GILDED) === 1;
-  const ok = on === want;
-  if (!ok) failures++;
-  console.log(`  ${ok ? "PASS" : "FAIL"}  ${("read: " + label).padEnd(70)} storage ${on ? "on" : "off"}`);
-}
-loadWorld({});
 
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : `${failures} CHECK(S) FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

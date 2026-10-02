@@ -18,7 +18,8 @@
       }
     ],
     "result": {
-      "item": "bottlesofxp:pending_bottles"
+      "item": "minecraft:experience_bottle",
+      "count": 9
     }
   }
 }
