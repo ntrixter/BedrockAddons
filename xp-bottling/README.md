@@ -79,8 +79,8 @@ inventory, so clicking it onto a partial stack swaps the two instead of merging
 them. Put it in an empty slot, or shift-click the output, and it becomes the
 real bottle there; from then on it stacks like any other.
 
-**One-item recipes fit the 2x2 grid in your inventory**, so a crafting table
-should not be needed.
+**One-item recipes fit the 2x2 grid in your inventory**, so you do not need a
+crafting table.
 
 **Throwing a Bottle o' Enchanting is unchanged.** The fixed 7 XP applies only to
 the recipes.
@@ -98,20 +98,22 @@ charges across many level boundaries, all exact to the point. That build's
 curve. The same test found that a crafted bottle dropped from the cursor stayed
 a placeholder, and charged whoever picked it up.
 
-**Verified in 1.0.2:** crafting still works, and a crafted bottle dropped from
-the cursor turns back into the bottle it was crafted from. 1.0.2 also drops the
-debug lines.
+**Verified in 1.0.2:** both recipes work in the 2x2 inventory grid as well as
+at a crafting table; a crafted bottle dropped from the cursor turns back into
+the bottle it was crafted from; and placeholders put in a chest have turned
+back by the time it opens. 1.0.2 also drops the debug lines.
 
-Still to check:
+To repeat the chest check, put placeholders in a chest at `x y z` with
+`/replaceitem block x y z slot.container 0 xpbottling:pending_experience_bottle 5`
+and open it: it should show 5 glass bottles. Stand on the chest to read its
+`x y z` from the coordinates display - a chest is less than a block tall, so you
+stand inside its block - and for the same reason, `~ ~-1 ~` from on top of a
+chest is the block under it, not the chest.
 
-1. Put placeholders in a chest, then open it: they are the bottles they were
-   made from. For a chest at `x y z`,
-   `/replaceitem block x y z slot.container 0 xpbottling:pending_experience_bottle 5`
-   should show as 5 glass bottles. Stand on the chest to read its `x y z` from
-   the coordinates display - a chest is less than a block tall, so you stand
-   inside its block - and for the same reason, `~ ~-1 ~` from on top of a chest
-   is the block under it, not the chest.
-2. Both recipes in the 2x2 inventory grid.
+**Not yet seen in game:** placeholders in a chest minecart or other entity
+container, which turn back through a different event from a chest's; and a
+placeholder left on the ground by an earlier build turning back as its chunk
+loads.
 
 ## Download
 
