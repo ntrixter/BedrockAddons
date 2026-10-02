@@ -357,9 +357,9 @@ build, which printed what the game reported after every change it made.
   documents this from 1.21.50 with no toggle, and Mojang's own `shelf_mushroom`
   item does exactly that in 1.26.50. `minecraft:icon` cannot do it: the vanilla
   item atlas has no flat picture of most blocks - gilded blackstone, for one -
-  only the block textures. Verified in game 2026-10-02: Bottles of XP's packing
-  placeholder shows as a gilded blackstone block in the crafting output, with
-  its own name in the tooltip.
+  only the block textures. Verified in game 2026-10-02: a Bottles of XP test
+  build's packing placeholder showed as a gilded blackstone block in the
+  crafting output, with its own name in the tooltip.
 - **A recipe tagged only `crafting_table` also works in the 2x2 inventory grid**
   if it fits there. No other tag is needed. Verified in game 2026-10-02 with
   Bottles of XP's one-item shapeless recipes.
