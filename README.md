@@ -11,12 +11,12 @@ versioned and released on its own schedule.
 
 | Add-on | Latest release | What it does |
 | --- | --- | --- |
+| [bottles-of-xp](bottles-of-xp/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=bottles-of-xp-v*&sort=semver&label=bottles-of-xp) | Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again. |
 | [compass-link](compass-link/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=compass-link-v*&sort=semver&label=compass-link) | Hold a compass to see your position in the other dimension, for lining up Nether portals. |
 | [creeper-drop-all](creeper-drop-all/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=creeper-drop-all-v*&sort=semver&label=creeper-drop-all) | Explosions drop 100% of the blocks they destroy, instead of the fraction vanilla leaves you. |
 | [nightshare](nightshare/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=nightshare-v*&sort=semver&label=nightshare) | Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice. |
 | [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 | [salvage-smelting](salvage-smelting/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=salvage-smelting-v*&sort=semver&label=salvage-smelting) | Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks. |
-| [xp-bottling](xp-bottling/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=xp-bottling-v*&sort=semver&label=xp-bottling) | Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again. |
 
 ## How this repository is laid out
 

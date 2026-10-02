@@ -1,4 +1,4 @@
-// Mock of the bits of @minecraft/server that XP Bottling touches: the event
+// Mock of the bits of @minecraft/server that Bottles of XP touches: the event
 // signals, ItemStack, containers, item entities, and the player's experience.
 //
 // Experience is modelled the way Bedrock stores it - a level plus progress into

@@ -1,9 +1,9 @@
-// XP Bottling test harness.
+// Bottles of XP test harness.
 //
 // Loads the shipping script against a mock of @minecraft/server (loader.js
 // redirects the import) and drives its event handlers directly:
 //
-//   cd xp-bottling/tests && node --import ./register.js run.js
+//   cd bottles-of-xp/tests && node --import ./register.js run.js
 //
 // The first in-game test refunded every glass bottle, from a build this suite
 // had passed while modelling the game one way only. Now every case runs under
@@ -29,8 +29,8 @@ await import("../behavior_pack/scripts/main.js");
 
 const GLASS = "minecraft:glass_bottle";
 const XPB = "minecraft:experience_bottle";
-const P_GLASS = "xpbottling:pending_glass_bottle";
-const P_XPB = "xpbottling:pending_experience_bottle";
+const P_GLASS = "bottlesofxp:pending_glass_bottle";
+const P_XPB = "bottlesofxp:pending_experience_bottle";
 
 let failures = 0;
 
@@ -298,7 +298,7 @@ function failSafe(label, modes, setup) {
   const p = makePlayer(30);
   setup(p);
   land(p, 0);
-  const got = [count(p, XPB), count(p, GLASS), p.trueTotal(), told(p).some((m) => m.startsWith("XP Bottling could not"))];
+  const got = [count(p, XPB), count(p, GLASS), p.trueTotal(), told(p).some((m) => m.startsWith("Bottles of XP could not"))];
   const ok = JSON.stringify(got) === JSON.stringify([0, 3, 30, true]);
   if (!ok) failures++;
   console.log(`  ${ok ? "PASS" : "FAIL"}  ${label.padEnd(64)} [XP bottles, glass, XP, warned] = ${JSON.stringify(got)}`);
