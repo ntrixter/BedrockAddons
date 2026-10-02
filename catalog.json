@@ -1,8 +1,39 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-01T20:22:16Z",
+  "generated_at": "2026-10-02T16:04:35Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
+    "bottles-of-xp": {
+      "display_name": "Bottles of XP",
+      "description": "Trade Bottles o' Enchanting for 7 XP each at a crafting table, and back again, or pack nine into one gilded blackstone.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.1.2",
+        "tag": "bottles-of-xp-v1.1.2",
+        "filename": "bottles-of-xp-1.1.2.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/bottles-of-xp-v1.1.2/bottles-of-xp-1.1.2.mcpack",
+        "sha256": "7cb601a7101c5762f1682a1af35c6798ef07560b4ed91455b3abc9b3bcd1324d",
+        "published_at": "2026-10-02T16:00:49Z",
+        "min_engine_version": [
+          1,
+          26,
+          30
+        ],
+        "packs": [
+          {
+            "uuid": "82230254-ab17-4cdf-b948-0f433c032018",
+            "type": "data",
+            "version": [
+              1,
+              1,
+              2
+            ],
+            "folder": "bottles-of-xp_BP"
+          }
+        ]
+      },
+      "latest_prerelease": null
+    },
     "compass-link": {
       "display_name": "Compass Link",
       "description": "Hold a compass to see your position in the other dimension, for lining up Nether portals.",
