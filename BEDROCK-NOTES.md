@@ -342,16 +342,18 @@ build, which printed what the game reported after every change it made.
   swapped for the real item. Both consequences were seen in game: a held
   placeholder will not merge onto a stack of the real item, and one dropped from
   the cursor stays a placeholder on the ground for anyone to pick up.
-- **UNVERIFIED: `entitySpawn` reports a dropped item, and `blockContainerOpened` /
-  `entityContainerOpened` arrive before the player can take anything out.** XP
-  Bottling 1.0.2 relies on both to turn a stray placeholder back into its
-  ingredient. Checking `typeId === "minecraft:item"` in `entitySpawn` is the
-  documented way to catch a dropped item, but neither has been run in this
-  repository yet. Also unknown: whether `Entity.remove()` makes an entity
-  invalid at once or at the end of the tick, and whether a chunk load is reported
-  by `entitySpawn` (cause `Loaded`) as well as by `entityLoad`. Between them those
-  could make one item turn into two, so XP Bottling remembers the ids it has
-  handled rather than trusting `isValid`.
+- **`entitySpawn` reports an item dropped from the cursor**, and the item can be
+  replaced from there: check `typeId === "minecraft:item"`, read
+  `getComponent("minecraft:item").itemStack`, then `remove()` it and
+  `spawnItem` something else in its place. Verified in game 2026-10-02 - XP
+  Bottling 1.0.2 turns a dropped placeholder back into its ingredient this way.
+- **UNVERIFIED: `blockContainerOpened` and `entityContainerOpened` arrive before
+  the player can take anything out**, which XP Bottling relies on to turn back
+  placeholders in a chest. Also unknown: whether `Entity.remove()` makes an
+  entity invalid at once or at the end of the tick, and whether a chunk load is
+  reported by `entitySpawn` (cause `Loaded`) as well as by `entityLoad`. Between
+  them those could make one item turn into two, so XP Bottling remembers the
+  ids it has handled rather than trusting `isValid`.
 
 ---
 
