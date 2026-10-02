@@ -32,6 +32,15 @@ moves the XP the moment it lands in your inventory. The placeholder is the
 receipt: crafting makes it from a real bottle and the swap consumes it, so
 nothing can be paid twice or paid for nothing.
 
+**How it reads and takes XP.** The pack works your total out from your level
+and progress, checked against the game's own bar size, rather than asking the
+game for the total: in the first in-game test that call reported less than the
+player had, and every glass bottle came straight back. It also never subtracts
+across a level boundary, which the game is reported not to do correctly; it
+empties the current bar, drops whole levels, then adds the remainder back. After
+every charge it checks the result, and if the game did not land exactly 7 XP per
+bottle lower, it puts the XP back and returns your glass bottles.
+
 ## Things worth knowing
 
 **It moves raw experience points, not levels.** 7 points is a big part of the
@@ -62,8 +71,15 @@ test the swap.
 
 ## Testing in game
 
-This build has not been run in Minecraft yet. These are the things only the
-game can confirm:
+1.0.0, the first test build, emptied bottles correctly but refunded every glass
+bottle. This build carries the fix and has not been run in Minecraft yet.
+
+**It also prints `[debug]` chat lines** whenever XP moves: the numbers the game
+itself reports for your level, progress and total. If anything below goes
+wrong, those lines show exactly what the game returned. They come out before
+release.
+
+These are the things only the game can confirm:
 
 1. The pack loads with no content errors, and the two placeholders show the
    vanilla glass-bottle and Bottle o' Enchanting icons, with their names.
@@ -151,7 +167,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": [1, 0, 0]
+    "version": [1, 0, 1]
   }
 ]
 ```
@@ -163,7 +179,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form - see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.0"` instead. The two files have to agree.
+> is rejected, use `"version": "1.0.1"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
@@ -203,10 +219,14 @@ mock of `@minecraft/server`:
 cd xp-bottling/tests && node --import ./register.js run.js
 ```
 
-That covers both directions, refunds, full inventories, payout-before-charge
-ordering, the spawn sweep, and 5,000 random inventories checked for any item or
-XP point created or lost. It cannot cover what only the game knows - see
-"Testing in game" above.
+Where the game's behaviour is not established - what `getTotalXp()` returns,
+whether taking XP can cross a level boundary, what `addLevels` does to progress,
+and what the bar size means - every case runs under every combination, and the
+pack must give the same answer under all of them. The first build trusted one
+guess, and so did this suite, which is how a broken build passed. A further set
+checks that when the game misbehaves outright, nothing is given away and nothing
+is lost. It cannot cover what only the game knows - see "Testing in game"
+above.
 
 ## Changelog
 
