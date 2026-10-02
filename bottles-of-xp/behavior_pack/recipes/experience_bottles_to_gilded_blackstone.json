@@ -1,0 +1,29 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bottlesofxp:experience_bottles_to_gilded_blackstone"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "###",
+      "###",
+      "###"
+    ],
+    "key": {
+      "#": {
+        "item": "minecraft:experience_bottle"
+      }
+    },
+    "unlock": [
+      {
+        "item": "minecraft:experience_bottle"
+      }
+    ],
+    "result": {
+      "item": "bottlesofxp:pending_gilded_blackstone"
+    }
+  }
+}

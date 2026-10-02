@@ -43,9 +43,12 @@ export const control = {
   dropCause: "Spawned",
   /** clearVelocity/applyImpulse on an item entity: "works", or "throws". */
   impulseMode: "works",
+  /** What world.getPackSettings() returns - or "throws". */
+  packSettings: {},
 };
 
 export const hooks = {
+  worldLoad: null,
   inventoryChange: null,
   inventoryChangeOptions: null,
   spawn: null,
@@ -86,6 +89,9 @@ export class ItemStack {
     if (!Number.isInteger(amount) || amount < 1 || amount > 255) {
       throw new Error(`mock: ItemStack amount out of range: ${amount}`);
     }
+    // The game clamps anything over a full stack without a word, losing the
+    // rest - so here it is an error, and the suite catches the loss.
+    if (amount > 64) throw new Error(`mock: ItemStack of ${amount} would be clamped to 64`);
     this.typeId = typeId;
     this.amount = amount;
     this.maxAmount = 64;
@@ -234,16 +240,23 @@ export function loadChunk(dimension, stacks, location) {
   return entities;
 }
 
-/** A block, with a container if it has one. */
-export function makeBlock(container) {
-  return { getComponent: (id) => (id === "minecraft:inventory" && container ? { container } : undefined) };
+/** A block at `location`, with a container if it has one. */
+export function makeBlock(container, dimension = makeDimension(), location = { x: 10, y: 64, z: -3 }) {
+  return {
+    dimension,
+    location,
+    ...location,
+    getComponent: (id) => (id === "minecraft:inventory" && container ? { container } : undefined),
+  };
 }
 
 /** A non-player entity, with a container if it has one: a chest minecart, a donkey. */
-export function makeEntity(typeId, container) {
+export function makeEntity(typeId, container, dimension = makeDimension(), location = { x: -7.5, y: 63, z: 2.25 }) {
   const entity = {
     id: String(-(nextId++)),
     typeId,
+    dimension,
+    location,
     isValid: true,
     getComponent(id) {
       if (!entity.isValid) throw new Error("mock: InvalidEntityError");
@@ -312,7 +325,12 @@ export function makePlayer(points = 0) {
 }
 
 export const world = {
+  getPackSettings() {
+    if (control.packSettings === "throws") throw new Error("mock: no pack settings");
+    return { ...control.packSettings };
+  },
   afterEvents: {
+    worldLoad: { subscribe(fn) { hooks.worldLoad = fn; } },
     playerInventoryItemChange: {
       subscribe(fn, options) { hooks.inventoryChange = fn; hooks.inventoryChangeOptions = options; },
     },
