@@ -6,13 +6,17 @@ take out a glass bottle and 7 XP. Put a glass bottle in, and if you have 7 XP to
 spare, take out a Bottle o' Enchanting. It is a way to keep experience safely in
 a chest and get exactly that much back later.
 
+For bulk storage, nine Bottles o' Enchanting also pack into one gilded
+blackstone, and one gilded blackstone unpacks into nine. That part is a world
+setting, **Gilded blackstone storage**, on unless the world's owner turns it off.
+
 - **Add-on ID:** `bottles-of-xp` (kebab-case; also the tag prefix, the issue
   label and the artifact filename)
 - **Minimum Minecraft version:** 1.26.30 (`min_engine_version` in the manifest)
 - **Packs:** behaviour pack only
 - **Author:** ntrixter
-- **No experiments and no resource pack.** Two recipes, two placeholder items
-  and one script.
+- **No experiments and no resource pack.** Four recipes, four placeholder items,
+  one setting and one script.
 
 ## How it works
 
@@ -20,6 +24,8 @@ a chest and get exactly that much back later.
 | --- | --- | --- |
 | 1 Bottle o' Enchanting | Glass Bottle (+7 XP) | a glass bottle, and 7 XP added |
 | 1 glass bottle | Bottle o' Enchanting (-7 XP) | a Bottle o' Enchanting, and 7 XP taken - or your glass bottle back if you have less than 7 XP |
+| 9 Bottles o' Enchanting, filling a crafting table's grid | Gilded Blackstone (9 Bottles o' Enchanting) | one gilded blackstone - or, with storage off, your 9 bottles back |
+| 1 gilded blackstone | 9 Bottles o' Enchanting | nine Bottles o' Enchanting - or, with storage off, your gilded blackstone back |
 
 Shift-click the output to convert a whole stack at once.
 
@@ -42,9 +48,54 @@ the game did not land exactly 7 XP per bottle lower, it puts the XP back and
 returns your glass bottles.
 
 **Only your inventory completes the trade.** On the ground or in a chest, a
-placeholder turns back into the bottle it was crafted from, and no XP moves.
-That stops anyone crafting "Bottle o' Enchanting (-7 XP)" and throwing it at
-another player to charge them for it.
+placeholder turns back into what it was crafted from, and no XP moves. That
+stops anyone crafting "Bottle o' Enchanting (-7 XP)" and throwing it at another
+player to charge them for it.
+
+## Gilded blackstone storage
+
+Turn it on or off with the gear icon beside the pack, under **Edit World →
+Behaviour Packs**. It is on by default, and a change takes effect the next time
+the world loads.
+
+- **Off does not hide the recipes.** A pack cannot add or remove a recipe while
+  the world runs, so both still show in the crafting grid. Whatever they make
+  is handed straight back, with a chat message saying storage is off.
+- **Gilded blackstone found in bastions unpacks too.** Every block from a
+  bastion's walls or chests is worth nine Bottles o' Enchanting while storage is
+  on. Bastions are finite, so that is a one-off haul, but it is the world
+  owner's call.
+- **Mine placed gilded blackstone with Silk Touch.** Without it, the block has a
+  10% chance of breaking into gold nuggets instead, Fortune raises that, and
+  Fortune III always does it. Whatever the block was holding is gone. Piglins
+  also turn on a player they see mining it.
+- **Turning storage off leaves packed blocks as they are.** They stay gilded
+  blackstone, which unpacks again once storage is back on.
+- **The packing output shows raw gold, not the block.** The game has no flat
+  gilded blackstone icon a pack's item can borrow, so the placeholder uses the
+  raw gold one. It turns into the real block as it lands.
+- **Packing needs a crafting table**, because nine bottles fill a 3x3 grid.
+  Unpacking fits the 2x2 grid in your inventory.
+
+On a dedicated server, set it in `worlds/<world name>/world_behavior_pack_settings.json`,
+beside `world_behavior_packs.json`:
+
+```json
+{
+  "format_version": "1.21.100",
+  "minecraft:pack_settings": {
+    "settings": [
+      {
+        "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
+        "values": { "bottlesofxp:gilded_storage": false }
+      }
+    ]
+  }
+}
+```
+
+The game writes this file itself the first time a setting is changed, so on a
+server you may have to create it. Restart the server for a change to apply.
 
 ## Things worth knowing
 
@@ -79,8 +130,8 @@ inventory, so clicking it onto a partial stack swaps the two instead of merging
 them. Put it in an empty slot, or shift-click the output, and it becomes the
 real bottle there; from then on it stacks like any other.
 
-**One-item recipes fit the 2x2 grid in your inventory**, so you do not need a
-crafting table.
+**The bottle trades fit the 2x2 grid in your inventory**, so you do not need a
+crafting table for those.
 
 **Throwing a Bottle o' Enchanting is unchanged.** The fixed 7 XP applies only to
 the recipes.
@@ -112,10 +163,18 @@ and open it: it should show 5 glass bottles. Stand on the chest to read its
 stand inside its block - and for the same reason, `~ ~-1 ~` from on top of a
 chest is the block under it, not the chest.
 
-**1.0.3** renames the add-on, including its item ids, and changes nothing else.
-It has not been run in Minecraft yet. To check it: the pack list shows "Bottles
-of XP" at v1.0.3, both trades work, and a crafted bottle dropped from the
-cursor still turns back.
+**1.0.3** renamed the add-on, including its item ids, and was not run in game
+before 1.1.0 replaced it. **1.1.0** adds gilded blackstone storage and has not
+been run in Minecraft yet. What to check:
+
+1. The pack list shows "Bottles of XP" at v1.1.0, the gear icon beside it
+   shows the storage setting, and both bottle trades still work.
+2. With storage on: nine Bottles o' Enchanting in a crafting table make one
+   gilded blackstone, and one gilded blackstone makes nine bottles, shift-click
+   included.
+3. With storage off, after reloading the world: both recipes hand your items
+   back with a chat message.
+4. A packing placeholder dropped from the cursor turns back into nine bottles.
 
 **Not yet seen in game:** placeholders in a chest minecart or other entity
 container, which turn back through a different event from a chest's; and a
@@ -197,7 +256,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "82230254-ab17-4cdf-b948-0f433c032018",
-    "version": [1, 0, 3]
+    "version": [1, 1, 0]
   }
 ]
 ```
@@ -209,7 +268,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form - see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.0.3"` instead. The two files have to agree.
+> is rejected, use `"version": "1.1.0"` instead. The two files have to agree.
 
 ## Updating or removing this add-on
 
@@ -258,7 +317,9 @@ build passed a suite that modelled the game one way only, then refunded every
 glass bottle in game. Placeholders that never reach an inventory get the same
 treatment: whether a removed item is gone at once, whether a loading chunk
 reports an item twice, what cause a dropped item is reported with, and whether a
-thrown item's flight can be copied. A further set checks that when the game
+thrown item's flight can be copied. Gilded blackstone storage runs with the
+setting on and off, including stacks too big for one slot and a setting that is
+missing or not a true or false. A further set checks that when the game
 misbehaves outright, nothing is given away and nothing is lost. It cannot cover
 what only the game knows - see "Testing in game" above.
 

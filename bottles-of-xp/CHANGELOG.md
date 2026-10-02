@@ -7,14 +7,14 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.0.3] - 2026-10-02`.
+version, so the heading has to match exactly: `## [1.1.0] - 2026-10-02`.
 
 ## [Unreleased]
 
-## [1.0.3] - 2026-10-02
+## [1.1.0] - 2026-10-02
 
-First release. 1.0.0 to 1.0.2 were test builds, under the working name XP
-Bottling, and were never published.
+First release. 1.0.0 to 1.0.3 were test builds - the first three under the
+working name XP Bottling - and none was published.
 
 ### Added
 
@@ -32,3 +32,7 @@ Bottling, and were never published.
   Dropped from the cursor, or found in a chest when the chest is opened, it
   turns back into the bottle it was crafted from and no XP moves, so it cannot
   be thrown at another player to charge them for it.
+- Gilded blackstone storage: nine Bottles o' Enchanting pack into one gilded
+  blackstone at a crafting table, and one unpacks into nine. A world setting,
+  on by default, under the pack's gear icon; with it off, both recipes hand
+  your items back.

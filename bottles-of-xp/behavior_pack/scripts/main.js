@@ -23,9 +23,23 @@ import { ItemStack, world } from "@minecraft/server";
  * placeholder cannot be thrown at someone, or left in a chest for them, to bill
  * them for it. One clicked into a bundle is out of reach, and settles with
  * whoever takes it out.
+ *
+ * Nine bottles also pack into one gilded blackstone, and back, while the world's
+ * "Gilded blackstone storage" setting is on. Those recipes make placeholders too,
+ * for a different reason: a pack cannot add or remove a recipe while the world
+ * runs, so the setting is applied as the crafted item lands - packed or unpacked
+ * if storage is on, handed back if it is off. No XP moves either way.
+ *
+ *   9 Bottles o' Enchanting -> "Gilded Blackstone (9 Bottles o' Enchanting)"
+ *   gilded blackstone       -> "9 Bottles o' Enchanting"
  */
 
 const XP_PER_BOTTLE = 7;
+const BOTTLES_PER_BLOCK = 9;
+
+// Every item this pack hands out stacks to 64. new ItemStack clamps a larger
+// amount to that without a word, so bigger counts go out as several stacks.
+const FULL_STACK = 64;
 
 // Set true for a test build: a "[debug]" chat line with the raw numbers the
 // game reports whenever XP moves, so an in-game test shows what the XP API
@@ -34,13 +48,33 @@ const DEBUG = false;
 
 const GLASS_BOTTLE = "minecraft:glass_bottle";
 const XP_BOTTLE = "minecraft:experience_bottle";
+const GILDED_BLACKSTONE = "minecraft:gilded_blackstone";
 const PENDING_GLASS_BOTTLE = "bottlesofxp:pending_glass_bottle";
 const PENDING_XP_BOTTLE = "bottlesofxp:pending_experience_bottle";
+const PENDING_GILDED_BLACKSTONE = "bottlesofxp:pending_gilded_blackstone";
+const PENDING_BOTTLES = "bottlesofxp:pending_bottles";
 
-/** What each placeholder was crafted from, and turns back into if it never reaches an inventory. */
+// The world's "Gilded blackstone storage" setting, read when the world loads:
+// the stable API has no event for a change. The default matches the manifest's.
+const STORAGE_SETTING = "bottlesofxp:gilded_storage";
+const STORAGE_DEFAULT = true;
+let storageOn = STORAGE_DEFAULT;
+
+/**
+ * What each placeholder was crafted from, and how many of it: what it turns back
+ * into if it never reaches an inventory, or if storage is off.
+ */
 const INGREDIENT = new Map([
-  [PENDING_GLASS_BOTTLE, XP_BOTTLE],
-  [PENDING_XP_BOTTLE, GLASS_BOTTLE],
+  [PENDING_GLASS_BOTTLE, { item: XP_BOTTLE, per: 1 }],
+  [PENDING_XP_BOTTLE, { item: GLASS_BOTTLE, per: 1 }],
+  [PENDING_GILDED_BLACKSTONE, { item: XP_BOTTLE, per: BOTTLES_PER_BLOCK }],
+  [PENDING_BOTTLES, { item: GILDED_BLACKSTONE, per: 1 }],
+]);
+
+/** What the storage placeholders become while storage is on. */
+const STORED = new Map([
+  [PENDING_GILDED_BLACKSTONE, { item: GILDED_BLACKSTONE, per: 1 }],
+  [PENDING_BOTTLES, { item: XP_BOTTLE, per: BOTTLES_PER_BLOCK }],
 ]);
 
 /** Points needed to go from `level` to `level + 1`, on vanilla's experience curve. */
@@ -188,6 +222,26 @@ function settle(player) {
     );
     if (DEBUG) player.sendMessage(`[debug] ${describe(player)}`);
   }
+
+  // Gilded blackstone storage: each placeholder becomes what it makes, or with
+  // storage off goes back to what it was made from.
+  const handedBack = new Map();
+  for (let slot = 0; slot < container.size; slot++) {
+    const item = container.getItem(slot);
+    if (!STORED.has(item?.typeId)) continue;
+    const { item: id, per } = (storageOn ? STORED : INGREDIENT).get(item.typeId);
+    replaceInSlot(container, slot, id, item.amount * per, (stack) => player.dimension.spawnItem(stack, player.location));
+    if (!storageOn) handedBack.set(id, (handedBack.get(id) ?? 0) + item.amount * per);
+  }
+  for (const [id, count] of handedBack) {
+    player.sendMessage(`Gilded blackstone storage is turned off on this world: ${countOf(id, count)} returned.`);
+  }
+}
+
+/** "1 Bottle o' Enchanting", "9 Bottles o' Enchanting", "2 gilded blackstone". */
+function countOf(item, n) {
+  if (item === XP_BOTTLE) return n === 1 ? "1 Bottle o' Enchanting" : `${n} Bottles o' Enchanting`;
+  return `${n} gilded blackstone`;
 }
 
 /** Back into the inventory; whatever does not fit lands at the player's feet. Never deleted. */
@@ -196,16 +250,37 @@ function giveBack(player, container, stack) {
   if (leftover) player.dimension.spawnItem(leftover, player.location);
 }
 
+/** `count` of `item`, as stacks of at most a full one each. */
+function stacksOf(item, count) {
+  const stacks = [];
+  for (let left = count; left > 0; left -= FULL_STACK) stacks.push(new ItemStack(item, Math.min(left, FULL_STACK)));
+  return stacks;
+}
+
 /**
- * Turn every placeholder in a container back into what it was crafted from.
- * No XP moves either way.
+ * Swap the stack in `slot` for `count` of `item`. The slot takes the first full
+ * stack, the rest of the container whatever it can, and `spill` anything still
+ * left over. Never deleted.
  */
-function revertIn(container) {
+function replaceInSlot(container, slot, item, count, spill) {
+  const [first, ...rest] = stacksOf(item, count);
+  container.setItem(slot, first);
+  for (const stack of rest) {
+    const leftover = container.addItem(stack);
+    if (leftover) spill(leftover);
+  }
+}
+
+/**
+ * Turn every placeholder in a container back into what it was crafted from;
+ * whatever no longer fits goes to `spill`. No XP moves either way.
+ */
+function revertIn(container, spill) {
   if (!container) return;
   for (let slot = 0; slot < container.size; slot++) {
     const item = container.getItem(slot);
-    const ingredient = INGREDIENT.get(item?.typeId);
-    if (ingredient) container.setItem(slot, new ItemStack(ingredient, item.amount));
+    const back = INGREDIENT.get(item?.typeId);
+    if (back) replaceInSlot(container, slot, back.item, item.amount * back.per, spill);
   }
 }
 
@@ -222,27 +297,43 @@ const turnedBack = new Set();
 function revertDropped(entity) {
   if (!entity.isValid || entity.typeId !== "minecraft:item" || turnedBack.has(entity.id)) return;
   const stack = entity.getComponent("minecraft:item")?.itemStack;
-  const ingredient = INGREDIENT.get(stack?.typeId);
-  if (!ingredient) return;
+  const back = INGREDIENT.get(stack?.typeId);
+  if (!back) return;
 
   if (turnedBack.size >= 1000) turnedBack.clear();
   turnedBack.add(entity.id);
   const { dimension, location } = entity;
   const velocity = entity.getVelocity();
-  // The placeholder goes before the bottle appears: if anything fails between
+  // The placeholder goes before anything replaces it: if something fails between
   // the two, nothing is doubled.
   entity.remove();
-  const bottle = dimension.spawnItem(new ItemStack(ingredient, stack.amount), location);
-  try {
-    bottle.clearVelocity();
-    bottle.applyImpulse(velocity);
-  } catch {
-    // Only the throw is lost; the bottle itself is already back.
+  for (const each of stacksOf(back.item, stack.amount * back.per)) {
+    const replacement = dimension.spawnItem(each, location);
+    try {
+      replacement.clearVelocity();
+      replacement.applyImpulse(velocity);
+    } catch {
+      // Only the throw is lost; the item itself is already back.
+    }
   }
 }
 
+/** The world's storage setting; anything but a real true or false means the default. */
+function readStorageSetting() {
+  try {
+    const value = world.getPackSettings()[STORAGE_SETTING];
+    return typeof value === "boolean" ? value : STORAGE_DEFAULT;
+  } catch {
+    return STORAGE_DEFAULT; // the engine supplied no pack settings
+  }
+}
+
+world.afterEvents.worldLoad.subscribe(() => {
+  storageOn = readStorageSetting();
+});
+
 world.afterEvents.playerInventoryItemChange.subscribe((event) => settle(event.player), {
-  includeItems: [PENDING_GLASS_BOTTLE, PENDING_XP_BOTTLE],
+  includeItems: [...INGREDIENT.keys()],
 });
 
 // A placeholder can reach an inventory while nothing is listening - the pack
@@ -257,10 +348,16 @@ world.afterEvents.entityLoad.subscribe((event) => revertDropped(event.entity));
 // A Crafter can fill a chest with placeholders. Whoever opens it finds the
 // bottles they were made from, and is not charged for taking them.
 world.afterEvents.blockContainerOpened.subscribe((event) => {
-  revertIn(event.block.getComponent("minecraft:inventory")?.container);
+  const { block } = event;
+  revertIn(block.getComponent("minecraft:inventory")?.container, (stack) =>
+    block.dimension.spawnItem(stack, { x: block.x + 0.5, y: block.y + 1, z: block.z + 0.5 }),
+  );
 });
 world.afterEvents.entityContainerOpened.subscribe((event) => {
+  const { entity } = event;
   // A player's own inventory settles its placeholders; it never turns them back.
-  if (!event.entity.isValid || event.entity.typeId === "minecraft:player") return;
-  revertIn(event.entity.getComponent("minecraft:inventory")?.container);
+  if (!entity.isValid || entity.typeId === "minecraft:player") return;
+  revertIn(entity.getComponent("minecraft:inventory")?.container, (stack) =>
+    entity.dimension.spawnItem(stack, entity.location),
+  );
 });
