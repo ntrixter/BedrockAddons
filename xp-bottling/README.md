@@ -98,19 +98,20 @@ charges across many level boundaries, all exact to the point. That build's
 curve. The same test found that a crafted bottle dropped from the cursor stayed
 a placeholder, and charged whoever picked it up.
 
-1.0.2 fixes that, drops the debug lines, and has not been run in Minecraft yet.
-What to check:
+**Verified in 1.0.2:** crafting still works, and a crafted bottle dropped from
+the cursor turns back into the bottle it was crafted from. 1.0.2 also drops the
+debug lines.
 
-1. Craft a glass bottle into a Bottle o' Enchanting with at least 7 XP, then
-   click outside the inventory window to drop it. A glass bottle flies out and
-   your XP does not change. Do the same with a Bottle o' Enchanting: one flies
-   out, and no XP is added.
-2. Put placeholders in a chest, then open it: they are the bottles they were
+Still to check:
+
+1. Put placeholders in a chest, then open it: they are the bottles they were
    made from. For a chest at `x y z`,
    `/replaceitem block x y z slot.container 0 xpbottling:pending_experience_bottle 5`
-   should show as 5 glass bottles.
-3. Everything above from 1.0.1 still works, and no `[debug]` lines appear.
-4. Not yet checked in any build: both recipes in the 2x2 inventory grid.
+   should show as 5 glass bottles. Stand on the chest to read its `x y z` from
+   the coordinates display - a chest is less than a block tall, so you stand
+   inside its block - and for the same reason, `~ ~-1 ~` from on top of a chest
+   is the block under it, not the chest.
+2. Both recipes in the 2x2 inventory grid.
 
 ## Download
 
