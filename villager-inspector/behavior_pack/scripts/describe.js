@@ -201,19 +201,6 @@ export function describe({ profession, baby, nameTag, slots, links }) {
  * been seen using it, { loaded: false } when the owner is out of range, or
  * { profession, baby, nameTag, distance } for a live owner.
  */
-/** Confirmation after a name tag used on a block names its villager. */
-export function describeNamed(owner) {
-  const blocks = Math.round(owner.distance);
-  const label = villagerLabel(owner.profession, owner.baby, owner.nameTag);
-  return `${GREEN}Named ${label} · ${blocks} block${blocks === 1 ? "" : "s"}`;
-}
-
-/** Why a name tag used on a block did nothing; the tag is kept. */
-export function describeNotNamed(blockName, notNearby) {
-  if (notNearby) return `${YELLOW}The villager using this ${blockName} is not nearby`;
-  return `${GREY}No villager seen using this ${blockName} yet`;
-}
-
 export function describeBlock(blockName, owner) {
   if (!owner) return `${GREY}${blockName} · not seen in use yet`;
   if (!owner.loaded) return `${YELLOW}${blockName} · owner not nearby`;

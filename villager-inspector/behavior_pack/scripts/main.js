@@ -1,5 +1,5 @@
-import { GameMode, system, world } from "@minecraft/server";
-import { describe, describeBlock, describeNamed, describeNotNamed } from "./describe.js";
+import { system, world } from "@minecraft/server";
+import { describe, describeBlock } from "./describe.js";
 import * as links from "./links.js";
 
 const TICKS_PER_UPDATE = 5;
@@ -8,7 +8,6 @@ const BED_SCAN_RADIUS = 48;
 const JOB_SEARCH_RADIUS = 2;
 const VILLAGER = "minecraft:villager_v2";
 const PARTICLE = "minecraft:villager_happy";
-const NAME_TAG = "minecraft:name_tag";
 
 /** Read once at load: there is no stable settings-change event yet. */
 function readSettings() {
@@ -105,7 +104,7 @@ function showVillager(player, villager) {
   return true;
 }
 
-/** What describeBlock() and describeNamed() need about a live owner. */
+/** What describeBlock() needs about a live owner. */
 function ownerInfo(villager, player) {
   const v = villager.location;
   const p = player.location;
@@ -137,19 +136,8 @@ function showBlock(player, target) {
 
 const showing = new Set();
 
-// A one-off message (naming) stays up this long before the look readout
-// takes the action bar back.
-const MESSAGE_HOLD_TICKS = 40;
-const holdUntil = new Map();
-const lastNamedTick = new Map();
-
-function hold(player) {
-  holdUntil.set(player.id, system.currentTick + MESSAGE_HOLD_TICKS);
-}
-
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
-    if ((holdUntil.get(player.id) ?? 0) > system.currentTick) continue;
     try {
       const villager = targetVillager(player);
       const block = targetBlock(player);
@@ -272,95 +260,3 @@ world.afterEvents.entityDie.subscribe(
   },
   { entityTypes: [VILLAGER] },
 );
-
-// A renamed name tag used on a bed or job block names the villager using it.
-//
-// The before-event runs in restricted execution, so it reads only the item and
-// the block type, cancels the click (a renamed tag has no vanilla use on these
-// blocks), and hands the rest to system.run. The after-event and itemUse are
-// fallbacks in case the before-event is not raised for a block the item does
-// nothing to; a per-player tick guard keeps one click from naming twice.
-
-function warn(what, err) {
-  console.warn(`[villager-inspector] ${what}: ${err}`);
-}
-
-function renamedTag(itemStack) {
-  return itemStack?.typeId === NAME_TAG && itemStack.nameTag ? itemStack.nameTag : undefined;
-}
-
-function nameThroughBlock(player, block, name) {
-  const tick = system.currentTick;
-  const last = lastNamedTick.get(player.id);
-  if (last !== undefined && tick - last < 5) return;
-  const info = blockInfo(block);
-  if (!info) return;
-  lastNamedTick.set(player.id, tick);
-
-  const owner = links.ownerOf(block, info.kind);
-  if (!owner?.entity) {
-    player.onScreenDisplay.setActionBar(describeNotNamed(info.name, !!owner));
-    hold(player);
-    return;
-  }
-  const villager = owner.entity;
-  villager.nameTag = name;
-  if (player.getGameMode() !== GameMode.Creative) useOneNameTag(player);
-  player.onScreenDisplay.setActionBar(describeNamed(ownerInfo(villager, player)));
-  hold(player);
-  sparkleVillager(villager);
-}
-
-world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
-  const name = renamedTag(event.itemStack);
-  if (!name) return;
-  const { player, block } = event;
-  if (block.typeId !== links.BED && !(block.typeId in links.JOB_BLOCKS)) return;
-  event.cancel = true;
-  if (!event.isFirstEvent) return;
-  const dimension = block.dimension;
-  const location = { x: block.x, y: block.y, z: block.z };
-  system.run(() => {
-    try {
-      const target = dimension.getBlock(location);
-      if (target) nameThroughBlock(player, target, name);
-    } catch (err) {
-      warn("naming through a block failed", err);
-    }
-  });
-});
-
-world.afterEvents.playerInteractWithBlock.subscribe(({ player, block, itemStack, isFirstEvent }) => {
-  const name = renamedTag(itemStack);
-  if (!name || !isFirstEvent) return;
-  try {
-    nameThroughBlock(player, block, name);
-  } catch (err) {
-    warn("naming through a block (after-event) failed", err);
-  }
-});
-
-world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {
-  const name = renamedTag(itemStack);
-  if (!name) return;
-  try {
-    const hit = player.getBlockFromViewDirection({ maxDistance: settings.reach });
-    if (hit) nameThroughBlock(player, hit.block, name);
-  } catch (err) {
-    warn("naming through a block (itemUse) failed", err);
-  }
-});
-
-function useOneNameTag(player) {
-  const container = player.getComponent("minecraft:inventory")?.container;
-  if (!container) return;
-  const slot = player.selectedSlotIndex;
-  const stack = container.getItem(slot);
-  if (stack?.typeId !== NAME_TAG) return;
-  if (stack.amount > 1) {
-    stack.amount -= 1;
-    container.setItem(slot, stack);
-  } else {
-    container.setItem(slot, undefined);
-  }
-}
