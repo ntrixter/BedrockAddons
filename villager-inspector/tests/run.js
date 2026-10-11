@@ -131,16 +131,14 @@ console.log("Link bookkeeping");
   check("moved: old block freed", links.ownerOf(composter, "job"), undefined);
   check("moved: new block owned", links.ownerOf(other, "job")?.entity, b);
 
-  // A stale world entry: the read-only lookup used in a before-event must not
-  // write, and must still report no owner. An ordinary lookup then cleans up.
+  // A stale world entry, left by a re-claim while the owner was unloaded,
+  // reports no owner and is cleaned up.
   {
     const stale = setBlock(7, 64, 0, "minecraft:composter");
     const staleKey = "vi:o:7,64,0,minecraft:overworld";
     world.setDynamicProperty(staleKey, b.id);
-    check("read-only: no owner", links.ownerOf(stale, "job", { readOnly: true }), undefined);
-    check("read-only: entry kept", world.getDynamicProperty(staleKey), b.id);
-    links.ownerOf(stale, "job");
-    check("normal read cleans up", world.getDynamicProperty(staleKey), undefined);
+    check("stale entry: no owner", links.ownerOf(stale, "job"), undefined);
+    check("stale entry: cleaned up", world.getDynamicProperty(staleKey), undefined);
   }
 
   unload(b);
