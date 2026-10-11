@@ -428,6 +428,33 @@ creeper blasts were not checked.
 
 ---
 
+## Villagers (`@minecraft/server`)
+
+- **A villager's job is `minecraft:variant`, not `minecraft:mark_variant`.** In
+  vanilla `villager_v2.json`, `mark_variant` is the biome skin (desert 1, snow 4,
+  and so on). The profession component groups set `variant`: 0 unskilled,
+  1 farmer, 2 fisherman, 3 shepherd, 4 fletcher, 5 librarian, 6 cartographer,
+  7 cleric, 8 armorer, 9 weaponsmith, 10 toolsmith, 11 butcher,
+  12 leatherworker, 13 mason, 14 nitwit. Read from the 1.26.20 file shipped in
+  `no-witch-conversion`, not checked in game.
+- **Breeding food lives in the 8-slot inventory, and willingness is not in the
+  JSON.** `minecraft:shareables` asks for 3 bread or 12 of carrot, potato or
+  beetroot (`want_amount`), which works out to bread being worth 4 crops. Only
+  the item stacks are visible to a script. Willingness, trades and trade tier
+  are not exposed on stable.
+- **The farmer's shareables turn wheat into bread** (`craft_into`, wheat
+  `want_amount` 45). They also pick up wheat seeds and beetroot seeds
+  (`pickup_only`), which is why a farm farmer is "locked" by filling all eight
+  slots with one plantable item.
+- **UNVERIFIED: whether a script can read a villager's inventory.**
+  The entity declares `"inventory_size": 8, "private": true`. The stable
+  `EntityInventoryComponent.private` doc says only "will not drop its inventory
+  on death", so `container.getItem()` is expected to work. If it does not,
+  `villager-inspector` shows nothing at all. Confirm with that pack and replace
+  this line with the result.
+
+---
+
 ## Script API versioning
 
 - Declaring an **older** stable module version still works on newer engines —
