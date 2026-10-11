@@ -1,5 +1,5 @@
-import { system, world } from "@minecraft/server";
-import { describe, describeBlock } from "./describe.js";
+import { GameMode, system, world } from "@minecraft/server";
+import { describe, describeBlock, describeNamed, describeNotNamed } from "./describe.js";
 import * as links from "./links.js";
 
 const TICKS_PER_UPDATE = 5;
@@ -8,6 +8,7 @@ const BED_SCAN_RADIUS = 48;
 const JOB_SEARCH_RADIUS = 2;
 const VILLAGER = "minecraft:villager_v2";
 const PARTICLE = "minecraft:villager_happy";
+const NAME_TAG = "minecraft:name_tag";
 
 /** Read once at load: there is no stable settings-change event yet. */
 function readSettings() {
@@ -41,17 +42,23 @@ function targetVillager(player) {
   return nearest;
 }
 
+/** { name, kind } for a bed or job block, or undefined for anything else. */
+function blockInfo(block) {
+  if (block.typeId === links.BED) return { name: "Bed", kind: "bed" };
+  const name = links.JOB_BLOCKS[block.typeId];
+  return name ? { name, kind: "job" } : undefined;
+}
+
 /** The bed or job block the player is pointing at, with its distance. */
 function targetBlock(player) {
   const hit = player.getBlockFromViewDirection({ maxDistance: settings.reach });
   if (!hit) return undefined;
-  const { typeId } = hit.block;
-  const name = typeId === links.BED ? "Bed" : links.JOB_BLOCKS[typeId];
-  if (!name) return undefined;
+  const info = blockInfo(hit.block);
+  if (!info) return undefined;
   const head = player.getHeadLocation();
   const at = hit.block.location;
   const distance = Math.hypot(at.x + 0.5 - head.x, at.y + 0.5 - head.y, at.z + 0.5 - head.z);
-  return { block: hit.block, name, kind: typeId === links.BED ? "bed" : "job", distance };
+  return { block: hit.block, ...info, distance };
 }
 
 function sparkle(dimension, location) {
@@ -98,21 +105,30 @@ function showVillager(player, villager) {
   return true;
 }
 
+/** What describeBlock() and describeNamed() need about a live owner. */
+function ownerInfo(villager, player) {
+  const v = villager.location;
+  const p = player.location;
+  return {
+    loaded: true,
+    profession: villager.getComponent("minecraft:variant")?.value ?? 0,
+    baby: villager.hasComponent("minecraft:is_baby"),
+    nameTag: villager.nameTag || undefined,
+    distance: Math.hypot(v.x - p.x, v.y - p.y, v.z - p.z),
+  };
+}
+
+function sparkleVillager(villager) {
+  const at = villager.location;
+  sparkle(villager.dimension, { x: at.x, y: at.y + 2.2, z: at.z });
+}
+
 function showBlock(player, target) {
   const owner = links.ownerOf(target.block, target.kind);
   let info;
   if (owner?.entity) {
-    const v = owner.entity;
-    const p = player.location;
-    info = {
-      loaded: true,
-      profession: v.getComponent("minecraft:variant")?.value ?? 0,
-      baby: v.hasComponent("minecraft:is_baby"),
-      nameTag: v.nameTag || undefined,
-      distance: Math.hypot(v.location.x - p.x, v.location.y - p.y, v.location.z - p.z),
-    };
-    const at = v.location;
-    sparkle(v.dimension, { x: at.x, y: at.y + 2.2, z: at.z });
+    info = ownerInfo(owner.entity, player);
+    sparkleVillager(owner.entity);
   } else if (owner) {
     info = { loaded: false };
   }
@@ -245,3 +261,62 @@ world.afterEvents.entityDie.subscribe(
   },
   { entityTypes: [VILLAGER] },
 );
+
+// A renamed name tag used on a bed or job block names the villager using it.
+// Before-events run in restricted execution: decide and cancel here, write in
+// system.run. Only a live owner cancels the click, so a tag with nowhere to go
+// falls through to vanilla and is not used up.
+world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
+  const { player, block, itemStack, isFirstEvent } = event;
+  if (itemStack?.typeId !== NAME_TAG) return;
+  const name = itemStack.nameTag;
+  if (!name) return;
+  let info;
+  let owner;
+  try {
+    info = blockInfo(block);
+    if (!info) return;
+    owner = links.ownerOf(block, info.kind, { readOnly: true });
+  } catch {
+    return;
+  }
+  if (!owner?.entity) {
+    if (isFirstEvent) {
+      system.run(() => {
+        try {
+          player.onScreenDisplay.setActionBar(describeNotNamed(info.name, !!owner));
+        } catch {
+          // Player left.
+        }
+      });
+    }
+    return;
+  }
+  event.cancel = true;
+  if (!isFirstEvent) return;
+  const villager = owner.entity;
+  system.run(() => {
+    try {
+      villager.nameTag = name;
+      if (player.getGameMode() !== GameMode.Creative) useOneNameTag(player);
+      player.onScreenDisplay.setActionBar(describeNamed(ownerInfo(villager, player)));
+      sparkleVillager(villager);
+    } catch {
+      // The villager or player went away in the meantime.
+    }
+  });
+});
+
+function useOneNameTag(player) {
+  const container = player.getComponent("minecraft:inventory")?.container;
+  if (!container) return;
+  const slot = player.selectedSlotIndex;
+  const stack = container.getItem(slot);
+  if (stack?.typeId !== NAME_TAG) return;
+  if (stack.amount > 1) {
+    stack.amount -= 1;
+    container.setItem(slot, stack);
+  } else {
+    container.setItem(slot, undefined);
+  }
+}

@@ -123,7 +123,7 @@ export function linkOf(villager, kind) {
  * it, { entity: undefined } if the owner is not loaded (or has died while
  * unloaded), or { entity } for a live owner whose own pointer agrees.
  */
-export function ownerOf(block, kind) {
+export function ownerOf(block, kind, { readOnly = false } = {}) {
   const key = blockKey(kind === "bed" ? bedHead(block) : block);
   const id = world.getDynamicProperty(OWNER_PREFIX + key);
   if (typeof id !== "string") return undefined;
@@ -131,7 +131,9 @@ export function ownerOf(block, kind) {
   if (!entity) return { entity: undefined };
   const prop = kind === "bed" ? "vi:bed" : "vi:job";
   if (entity.getDynamicProperty(prop) !== key) {
-    world.setDynamicProperty(OWNER_PREFIX + key, undefined);
+    // A before-event runs in restricted execution, where writes throw; the
+    // stale entry is cleaned up on the next ordinary read instead.
+    if (!readOnly) world.setDynamicProperty(OWNER_PREFIX + key, undefined);
     return undefined;
   }
   return { entity };

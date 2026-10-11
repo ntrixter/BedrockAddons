@@ -94,6 +94,18 @@ it, and that villager sparkles:
 A bed or workstation right in front of a villager takes priority, so looking
 at a bed with someone asleep on it names the sleeper.
 
+**Naming a villager through its block.** Rename a name tag on an anvil and use
+it on a bed or workstation. The villager using that block gets the name, and
+it sparkles so you can see which one. One name tag is used up, except in
+Creative, the same as tagging the villager directly. You will not fall asleep,
+open the barrel or smoker, or use the lectern by accident. If no villager has
+been seen using the block yet, or its villager is out of range, nothing is
+named, you keep the tag, and the line says why. A name tag that has not been
+renamed works the normal way.
+
+**Everyone nearby sees the sparkles**, not just the player looking. That is
+handy for pointing a villager out to a friend.
+
 **These links are learned, not read.** Minecraft gives add-ons no way to ask
 which bed or workstation a villager has claimed. That is kept in the game's
 own village data, which scripts cannot reach. So the pack watches:
@@ -193,6 +205,11 @@ need a real world:
    two-checks rule covers it, but the answer belongs in the notes.
 7. **Bed halves.** Look at the foot and at the head of the same bed. Both
    should name the same villager.
+8. **Naming through a block.** Rename a name tag "Bob" and use it on a linked
+   composter. The farmer becomes `Farmer "Bob"`, one tag is used up, and the
+   composter gains nothing. Use one on a bed by day: its sleeper is named and
+   you do not try to sleep. Use one on a workstation nothing has used yet: you
+   keep the tag.
 
 Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
 
