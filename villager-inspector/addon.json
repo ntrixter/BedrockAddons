@@ -1,0 +1,5 @@
+{
+  "display_name": "Villager Inspector",
+  "description": "Look at a villager to see what it is carrying: its bread and breeding food, and whether a farmer is locked to one crop.",
+  "deprecated": false
+}
