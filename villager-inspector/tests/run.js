@@ -12,9 +12,9 @@
 // at the job site, whether the raycast finds a villager behind glass, or how
 // the line looks on a phone. See README.md "Confirm in-game".
 
-import { describe, describeBlock } from "../behavior_pack/scripts/describe.js";
+import { describe, describeBlock, describeNamed, describeNotNamed } from "../behavior_pack/scripts/describe.js";
 import * as links from "../behavior_pack/scripts/links.js";
-import { setBlock, makeVillager, unload, reset } from "@minecraft/server";
+import { world, setBlock, makeVillager, unload, reset } from "@minecraft/server";
 
 let failures = 0;
 function check(label, actual, expected) {
@@ -106,6 +106,12 @@ check("owned, one block", describeBlock("Lectern", { loaded: true, profession: L
 check("owner away", describeBlock("Bed", { loaded: false }), "§eBed · owner not nearby");
 check("never seen", describeBlock("Lectern", undefined), "§7Lectern · not seen in use yet");
 
+console.log("Naming through a block");
+check("named", describeNamed({ loaded: true, profession: FARMER, nameTag: "Bob", distance: 5.6 }),
+  "§aNamed Farmer \"Bob\" · 6 blocks");
+check("not seen", describeNotNamed("Composter", false), "§7No villager seen using this Composter yet");
+check("not nearby", describeNotNamed("Bed", true), "§eThe villager using this Bed is not nearby");
+
 console.log("Link bookkeeping");
 {
   reset();
@@ -124,6 +130,18 @@ console.log("Link bookkeeping");
   links.record(b, "job", other);
   check("moved: old block freed", links.ownerOf(composter, "job"), undefined);
   check("moved: new block owned", links.ownerOf(other, "job")?.entity, b);
+
+  // A stale world entry: the read-only lookup used in a before-event must not
+  // write, and must still report no owner. An ordinary lookup then cleans up.
+  {
+    const stale = setBlock(7, 64, 0, "minecraft:composter");
+    const staleKey = "vi:o:7,64,0,minecraft:overworld";
+    world.setDynamicProperty(staleKey, b.id);
+    check("read-only: no owner", links.ownerOf(stale, "job", { readOnly: true }), undefined);
+    check("read-only: entry kept", world.getDynamicProperty(staleKey), b.id);
+    links.ownerOf(stale, "job");
+    check("normal read cleans up", world.getDynamicProperty(staleKey), undefined);
+  }
 
   unload(b);
   check("owner unloaded", JSON.stringify(links.ownerOf(other, "job")), "{}");
