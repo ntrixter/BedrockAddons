@@ -1,17 +1,20 @@
 // Villager Inspector test harness.
 //
 // Drives describe.js, the part that turns an inventory into the action-bar
-// line, with plain objects. It never imports @minecraft/server, so it needs no
-// mock and no install step:
+// line, with plain objects; and links.js, the bed and workstation bookkeeping,
+// against a small mock of @minecraft/server. loader.js redirects that import,
+// so the shipping scripts load unmodified with no install step:
 //
-//   cd villager-inspector/tests && node run.js
+//   cd villager-inspector/tests && node --import ./register.js run.js
 //
 // It cannot check anything that needs the real game: whether a script may read
-// a villager's private inventory at all, whether the raycast finds a villager
-// behind glass, or how the line looks on a phone. See README.md "Confirm
-// in-game".
+// a villager's private inventory at all, whether resupply_trades really fires
+// at the job site, whether the raycast finds a villager behind glass, or how
+// the line looks on a phone. See README.md "Confirm in-game".
 
-import { describe } from "../behavior_pack/scripts/describe.js";
+import { describe, describeBlock } from "../behavior_pack/scripts/describe.js";
+import * as links from "../behavior_pack/scripts/links.js";
+import { setBlock, makeVillager, unload, reset } from "@minecraft/server";
 
 let failures = 0;
 function check(label, actual, expected) {
@@ -78,6 +81,87 @@ check("empty", describe({ profession: FARMER, slots: slots() }),
 check("mixed, many kinds", describe({ profession: FARMER,
   slots: slots(["wheat_seeds", 64], ["wheat_seeds", 64], ["potato", 1], ["carrot", 1], ["beetroot_seeds", 1]) }),
   "§cFarmer · Bread ×0 · MIXED · Wheat Seeds ×2 slots, Potato ×1 slot, Carrot ×1 slot +1 more");
+
+console.log("Names and link markers");
+check("name tag", describe({ profession: UNEMPLOYED, nameTag: "Bob", slots: slots(["bread", 3]) }),
+  "§aUnemployed \"Bob\" · Bread ×3 · breed 12/12 ✔");
+check("links known", describe({ profession: LIBRARIAN, slots: slots(), links: { bed: true, job: true } }),
+  "§7Librarian · Bread ×0 · breed 0/12 · bed ✔ · job ✔");
+check("links unknown", describe({ profession: FARMER, slots: full("potato"), links: { bed: false, job: true } }),
+  "§aFarmer · Bread ×0 · Potato 8/8 slots ✔ locked · bed ? · job ✔");
+check("unemployed has no job marker", describe({ profession: UNEMPLOYED, slots: slots(), links: { bed: true, job: false } }),
+  "§7Unemployed · Bread ×0 · breed 0/12 · bed ✔");
+check("nitwit has no job marker", describe({ profession: NITWIT, slots: slots(), links: { bed: false, job: false } }),
+  "§7Nitwit · Bread ×0 · breed 0/12 · bed ?");
+check("baby has no job marker", describe({ profession: UNEMPLOYED, baby: true, slots: slots(), links: { bed: true, job: false } }),
+  "§7Baby villager · Bread ×0 · too young to breed · bed ✔");
+
+console.log("Block lines");
+check("owned", describeBlock("Composter", { loaded: true, profession: FARMER, distance: 3.4 }),
+  "§aComposter · Farmer · 3 blocks");
+check("owned, named", describeBlock("Bed", { loaded: true, profession: LIBRARIAN, nameTag: "Bob", distance: 6 }),
+  "§aBed · Librarian \"Bob\" · 6 blocks");
+check("owned, one block", describeBlock("Lectern", { loaded: true, profession: LIBRARIAN, distance: 1.2 }),
+  "§aLectern · Librarian · 1 block");
+check("owner away", describeBlock("Bed", { loaded: false }), "§eBed · owner not nearby");
+check("never seen", describeBlock("Lectern", undefined), "§7Lectern · not seen in use yet");
+
+console.log("Link bookkeeping");
+{
+  reset();
+  const composter = setBlock(0, 64, 0, "minecraft:composter");
+  const a = makeVillager();
+  links.record(a, "job", composter);
+  check("job recorded", links.linkOf(a, "job"), "0,64,0,minecraft:overworld");
+  check("owner found", links.ownerOf(composter, "job")?.entity, a);
+
+  const b = makeVillager();
+  links.record(b, "job", composter);
+  check("taken over: new owner", links.ownerOf(composter, "job")?.entity, b);
+  check("taken over: old owner loses it", links.linkOf(a, "job"), undefined);
+
+  const other = setBlock(5, 64, 0, "minecraft:composter");
+  links.record(b, "job", other);
+  check("moved: old block freed", links.ownerOf(composter, "job"), undefined);
+  check("moved: new block owned", links.ownerOf(other, "job")?.entity, b);
+
+  unload(b);
+  check("owner unloaded", JSON.stringify(links.ownerOf(other, "job")), "{}");
+
+  const c = makeVillager();
+  const lectern = setBlock(9, 64, 0, "minecraft:lectern");
+  links.record(c, "job", lectern);
+  setBlock(9, 64, 0, "minecraft:air");
+  check("block broken: link dropped", links.linkOf(c, "job"), undefined);
+  check("block broken: index dropped", links.ownerOf(setBlock(9, 64, 0, "minecraft:lectern"), "job"), undefined);
+
+  const d = makeVillager();
+  const e = setBlock(20, 64, 0, "minecraft:barrel");
+  links.record(d, "job", e);
+  links.forget(d.id);
+  check("death forgets", links.ownerOf(e, "job"), undefined);
+}
+{
+  reset();
+  // Bed facing south (direction 0): foot at z=0, head at z=1.
+  const foot = setBlock(0, 64, 0, "minecraft:bed", { direction: 0, head_piece_bit: false });
+  const head = setBlock(0, 64, 1, "minecraft:bed", { direction: 0, head_piece_bit: true });
+  const v = makeVillager();
+  links.record(v, "bed", foot);
+  check("bed stored on the head", links.linkOf(v, "bed"), "0,64,1,minecraft:overworld");
+  check("head finds owner", links.ownerOf(head, "bed")?.entity, v);
+  check("foot finds owner", links.ownerOf(foot, "bed")?.entity, v);
+
+  // A second bed in line behind it, same direction: must not be confused.
+  setBlock(0, 64, 2, "minecraft:bed", { direction: 0, head_piece_bit: false });
+  const head2 = setBlock(0, 64, 3, "minecraft:bed", { direction: 0, head_piece_bit: true });
+  check("bed in line is separate", links.ownerOf(head2, "bed"), undefined);
+
+  const w = makeVillager();
+  const lone = setBlock(10, 64, 0, "minecraft:bed", { direction: 0, head_piece_bit: false });
+  links.record(w, "bed", lone);
+  check("half bed falls back to itself", links.linkOf(w, "bed"), "10,64,0,minecraft:overworld");
+}
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");
 process.exit(failures ? 1 : 0);

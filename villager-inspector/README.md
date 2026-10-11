@@ -70,6 +70,46 @@ bread. Bread counts as mixing, because it takes up a slot a crop should be in.
 If more than three kinds of item are present, the rest show as `+N more`, so
 the line stays short on a phone.
 
+A villager with a name tag shows its name next to its job, as
+`Farmer "Bob"`.
+
+### Beds and workstations
+
+Each villager line ends with its links: `· bed ✔ · job ✔` when the pack knows
+which bed and workstation the villager uses, and `?` when it does not know yet.
+Unemployed villagers, nitwits and babies have no job, so only the bed marker
+shows. While you look at a villager, its bed and its workstation sparkle.
+
+It works the other way too. Look at a bed or a workstation (composter,
+lectern, barrel, smoker and so on) and the line names the villager that uses
+it, and that villager sparkles:
+
+| Block | Line |
+| --- | --- |
+| Owner nearby | `Composter · Farmer · 3 blocks` (green) |
+| Named owner | `Bed · Librarian "Bob" · 6 blocks` (green) |
+| Owner out of range | `Bed · owner not nearby` (yellow) |
+| Not seen in use | `Lectern · not seen in use yet` (grey) |
+
+A bed or workstation right in front of a villager takes priority, so looking
+at a bed with someone asleep on it names the sleeper.
+
+**These links are learned, not read.** Minecraft gives add-ons no way to ask
+which bed or workstation a villager has claimed. That is kept in the game's
+own village data, which scripts cannot reach. So the pack watches:
+
+- **Workstations.** Every time a villager arrives at its workstation to work,
+  the game fires an event the pack can see. The workstation it is standing at
+  is its own.
+- **Beds.** At night the pack looks for villagers asleep on a bed. A villager
+  on the same bed for two checks in a row, two seconds apart, is sleeping
+  there. One just walking across has moved on by then.
+
+So a link appears after the villager's next work trip or next night, not the
+moment you install the pack. If a villager switches to another bed or
+workstation, the link moves the next time it is seen there. Breaking the
+block, or the villager dying, clears it.
+
 ## Things worth knowing
 
 **Glass and fences do not block it, by default.** Breeders and farms are
@@ -97,7 +137,8 @@ list. No experimental toggle is needed.
 | Control | Default | What it does |
 | --- | --- | --- |
 | See villagers through glass and walls | on | Read the villager you are pointing at even if a block is in the way |
-| Reach (blocks) | 8 | How far away a villager can be, from 3 to 16 |
+| Reach (blocks) | 8 | How far away a villager, bed or workstation can be, from 3 to 16 |
+| Show particles | on | Sparkle a looked-at villager's bed and workstation, and a looked-at block's villager |
 
 Settings are per world, and the pack reads them when the world loads. **A
 change applies on the next load.**
@@ -142,18 +183,30 @@ need a real world:
 4. **Wheat.** Vanilla's farmer config turns wheat into bread inside the
    inventory. Watch a wheat farmer whose slots are not all full, and note
    whether bread appears and turns it `MIXED`.
+5. **Workstation links.** Put a composter next to an unemployed villager. Once
+   it becomes a farmer and goes to work, look at the composter and expect
+   `Composter · Farmer` with sparkles over that farmer. Break the composter
+   and place another. The link should move once the farmer works there.
+6. **Bed links.** At night, look at a bed with a villager asleep on it and
+   expect its name. Then look at a villager by day: `bed ✔`. Also note whether
+   the game's own "is sleeping" check reports villagers. Either way the
+   two-checks rule covers it, but the answer belongs in the notes.
+7. **Bed halves.** Look at the foot and at the head of the same bed. Both
+   should name the same villager.
 
 Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
 
 ## Tests
 
 ```sh
-cd villager-inspector/tests && node run.js
+cd villager-inspector/tests && node --import ./register.js run.js
 ```
 
-This drives `describe.js`, the part that turns an inventory into the line, with
-plain objects. It never imports `@minecraft/server`, so it needs no mock and no
-install step. CI does not run it.
+This drives `describe.js`, which turns an inventory into the line, with plain
+objects. It also drives `links.js`, the bed and workstation bookkeeping,
+against a small mock of `@minecraft/server`. A Node loader hook redirects that
+import, so the shipping scripts run unmodified with no install step. CI does
+not run it.
 
 ## Download
 
@@ -243,8 +296,10 @@ all three of:
 2. remove the entry from `<world>/world_behavior_pack_history.json`
 3. remove the entry from `<world>/world_behavior_pack_settings.json`
 
-Removing the pack removes the readout and nothing else. It stores nothing in
-the world.
+Removing the pack removes the readout and nothing else. The only thing it
+stores is the learned bed and workstation links, kept as add-on data on the
+world and on each villager. Without the pack, that data is never read and
+changes nothing.
 
 ## Changelog
 

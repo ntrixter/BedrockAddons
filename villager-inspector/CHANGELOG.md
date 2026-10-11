@@ -28,6 +28,18 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-11`.
   mixed contents or an item it cannot plant are red. Mixed contents are listed
   by slot. A farmer holding bread also shows the bread and the breeding meter,
   and the bread counts as mixing.
-- Settings, under the gear icon beside the pack: read villagers through glass
-  and walls (on by default, since breeders sit behind glass), and reach,
-  3 to 16 blocks with a default of 8.
+- A name-tagged villager shows its name next to its job.
+- Beds and workstations. The pack learns which bed and workstation each
+  villager uses by watching: a villager arriving at its job site to work, and
+  a villager asleep on a bed at night.
+  - A villager's line ends with `bed ✔ · job ✔`, or `?` for a link not seen
+    yet. Its bed and workstation sparkle while you look at it.
+  - Look at a bed or a workstation and the line names the villager using it,
+    with its distance. That villager sparkles.
+  - Links move when a villager is seen using another bed or workstation. They
+    are cleared when the block is broken or the villager dies.
+- Settings, under the gear icon beside the pack:
+  - read villagers through glass and walls (on by default, since breeders sit
+    behind glass)
+  - reach, 3 to 16 blocks, default 8
+  - show particles, on by default

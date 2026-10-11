@@ -1,8 +1,13 @@
 import { system, world } from "@minecraft/server";
-import { describe } from "./describe.js";
+import { describe, describeBlock } from "./describe.js";
+import * as links from "./links.js";
 
 const TICKS_PER_UPDATE = 5;
+const TICKS_PER_BED_SCAN = 40;
+const BED_SCAN_RADIUS = 48;
+const JOB_SEARCH_RADIUS = 2;
 const VILLAGER = "minecraft:villager_v2";
+const PARTICLE = "minecraft:villager_happy";
 
 /** Read once at load: there is no stable settings-change event yet. */
 function readSettings() {
@@ -16,12 +21,13 @@ function readSettings() {
   return {
     throughBlocks: values["villager_inspector:through_blocks"] !== false,
     reach: Number.isFinite(reach) && reach > 0 ? reach : 8,
+    particles: values["villager_inspector:particles"] !== false,
   };
 }
 
 const settings = readSettings();
 
-/** The nearest villager the player is pointing at, or undefined. */
+/** The nearest villager the player is pointing at, as a raycast hit. */
 function targetVillager(player) {
   const hits = player.getEntitiesFromViewDirection({
     type: VILLAGER,
@@ -32,7 +38,35 @@ function targetVillager(player) {
   for (const hit of hits) {
     if (!nearest || hit.distance < nearest.distance) nearest = hit;
   }
-  return nearest?.entity;
+  return nearest;
+}
+
+/** The bed or job block the player is pointing at, with its distance. */
+function targetBlock(player) {
+  const hit = player.getBlockFromViewDirection({ maxDistance: settings.reach });
+  if (!hit) return undefined;
+  const { typeId } = hit.block;
+  const name = typeId === links.BED ? "Bed" : links.JOB_BLOCKS[typeId];
+  if (!name) return undefined;
+  const head = player.getHeadLocation();
+  const at = hit.block.location;
+  const distance = Math.hypot(at.x + 0.5 - head.x, at.y + 0.5 - head.y, at.z + 0.5 - head.z);
+  return { block: hit.block, name, kind: typeId === links.BED ? "bed" : "job", distance };
+}
+
+function sparkle(dimension, location) {
+  if (!settings.particles) return;
+  try {
+    dimension.spawnParticle(PARTICLE, location);
+  } catch {
+    // Unloaded chunk, or the particle id changed: the line still shows.
+  }
+}
+
+function sparkleKey(key) {
+  if (!key) return;
+  const { dim, location } = links.keyLocation(key);
+  sparkle(world.getDimension(dim), location);
 }
 
 /** Copy what describe() needs out of the live entity. */
@@ -47,8 +81,42 @@ function snapshot(villager) {
   return {
     profession: villager.getComponent("minecraft:variant")?.value ?? 0,
     baby: villager.hasComponent("minecraft:is_baby"),
+    nameTag: villager.nameTag || undefined,
     slots,
   };
+}
+
+function showVillager(player, villager) {
+  const snap = snapshot(villager);
+  if (!snap) return false;
+  const bed = links.linkOf(villager, "bed");
+  const job = links.linkOf(villager, "job");
+  snap.links = { bed: !!bed, job: !!job };
+  player.onScreenDisplay.setActionBar(describe(snap));
+  sparkleKey(bed);
+  sparkleKey(job);
+  return true;
+}
+
+function showBlock(player, target) {
+  const owner = links.ownerOf(target.block, target.kind);
+  let info;
+  if (owner?.entity) {
+    const v = owner.entity;
+    const p = player.location;
+    info = {
+      loaded: true,
+      profession: v.getComponent("minecraft:variant")?.value ?? 0,
+      baby: v.hasComponent("minecraft:is_baby"),
+      nameTag: v.nameTag || undefined,
+      distance: Math.hypot(v.location.x - p.x, v.location.y - p.y, v.location.z - p.z),
+    };
+    const at = v.location;
+    sparkle(v.dimension, { x: at.x, y: at.y + 2.2, z: at.z });
+  } else if (owner) {
+    info = { loaded: false };
+  }
+  player.onScreenDisplay.setActionBar(describeBlock(target.name, info));
 }
 
 const showing = new Set();
@@ -57,15 +125,123 @@ system.runInterval(() => {
   for (const player of world.getPlayers()) {
     try {
       const villager = targetVillager(player);
-      const snap = villager && snapshot(villager);
-      if (!snap) {
-        if (showing.delete(player.id)) player.onScreenDisplay.setActionBar("");
-        continue;
+      const block = targetBlock(player);
+      // A bed or job block in front of the villager wins, so looking at a
+      // bed shows its owner rather than whoever is behind it.
+      let shown = false;
+      if (block && (!villager || block.distance < villager.distance)) {
+        showBlock(player, block);
+        shown = true;
+      } else if (villager) {
+        shown = showVillager(player, villager.entity);
       }
-      player.onScreenDisplay.setActionBar(describe(snap));
-      showing.add(player.id);
+      if (shown) showing.add(player.id);
+      else if (showing.delete(player.id)) player.onScreenDisplay.setActionBar("");
     } catch {
       // A player can leave, or a villager despawn, while this update runs.
     }
   }
 }, TICKS_PER_UPDATE);
+
+// Workstation: every vanilla work goal fires this on arrival at the job site.
+world.afterEvents.dataDrivenEntityTrigger.subscribe(
+  ({ entity, eventId }) => {
+    if (eventId !== "minecraft:resupply_trades") return;
+    try {
+      const job = nearestJobBlock(entity);
+      if (job) links.record(entity, "job", job);
+    } catch {
+      // The villager can be removed in the same tick.
+    }
+  },
+  { entityTypes: [VILLAGER], eventTypes: ["minecraft:resupply_trades"] },
+);
+
+function nearestJobBlock(villager) {
+  const { dimension } = villager;
+  const c = villager.location;
+  let best;
+  let bestDist = Infinity;
+  for (let dx = -JOB_SEARCH_RADIUS; dx <= JOB_SEARCH_RADIUS; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dz = -JOB_SEARCH_RADIUS; dz <= JOB_SEARCH_RADIUS; dz++) {
+        const pos = { x: Math.floor(c.x) + dx, y: Math.floor(c.y) + dy, z: Math.floor(c.z) + dz };
+        const block = dimension.getBlock(pos);
+        if (!block || !(block.typeId in links.JOB_BLOCKS)) continue;
+        const d = (pos.x + 0.5 - c.x) ** 2 + (pos.y - c.y) ** 2 + (pos.z + 0.5 - c.z) ** 2;
+        if (d < bestDist) {
+          best = block;
+          bestDist = d;
+        }
+      }
+    }
+  }
+  return best;
+}
+
+// Bed: villagers sleep on their own bed at night. isSleeping is tried first;
+// whether it reports mobs is unverified, so a villager found on the same bed
+// block in two scans in a row at night counts too.
+function isNight() {
+  const t = world.getTimeOfDay();
+  return t >= 12500 && t <= 23500;
+}
+
+function bedUnder(villager) {
+  const { dimension, location: l } = villager;
+  for (const dy of [0, -1]) {
+    const block = dimension.getBlock({ x: Math.floor(l.x), y: Math.floor(l.y) + dy, z: Math.floor(l.z) });
+    if (block?.typeId === links.BED) return block;
+  }
+  return undefined;
+}
+
+// villager id -> bed block key from the previous scan. A villager merely
+// walking across a bed is gone by the next scan; a sleeper is still there.
+let lastOnBed = new Map();
+
+system.runInterval(() => {
+  if (!isNight()) {
+    lastOnBed = new Map();
+    return;
+  }
+  const onBed = new Map();
+  const seen = new Set();
+  for (const player of world.getPlayers()) {
+    let villagers;
+    try {
+      villagers = player.dimension.getEntities({
+        type: VILLAGER,
+        location: player.location,
+        maxDistance: BED_SCAN_RADIUS,
+      });
+    } catch {
+      continue;
+    }
+    for (const v of villagers) {
+      if (seen.has(v.id)) continue;
+      seen.add(v.id);
+      try {
+        const bed = bedUnder(v);
+        if (!bed) continue;
+        const key = links.blockKey(bed);
+        onBed.set(v.id, key);
+        if (v.isSleeping === true || lastOnBed.get(v.id) === key) links.record(v, "bed", bed);
+      } catch {
+        // Despawned or unloaded mid-scan.
+      }
+    }
+  }
+  lastOnBed = onBed;
+}, TICKS_PER_BED_SCAN);
+
+world.afterEvents.entityDie.subscribe(
+  ({ deadEntity }) => {
+    try {
+      links.forget(deadEntity.id);
+    } catch {
+      // Nothing to clean up.
+    }
+  },
+  { entityTypes: [VILLAGER] },
+);

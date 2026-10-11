@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node run.js"
+    "test": "node --import ./register.js run.js"
   }
 }
