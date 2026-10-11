@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-02T16:04:35Z",
+  "generated_at": "2026-10-11T23:11:00Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -163,6 +163,37 @@
       "description": "Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
       "deprecated": false,
       "latest_stable": null,
+      "latest_prerelease": null
+    },
+    "villager-inspector": {
+      "display_name": "Villager Inspector",
+      "description": "Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "villager-inspector-v1.0.0",
+        "filename": "villager-inspector-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/villager-inspector-v1.0.0/villager-inspector-1.0.0.mcpack",
+        "sha256": "dd57789a5e88b19be254da7ae62d88fe556f0812363c1462b353b8059a03e2e5",
+        "published_at": "2026-10-11T23:10:41Z",
+        "min_engine_version": [
+          1,
+          26,
+          30
+        ],
+        "packs": [
+          {
+            "uuid": "cad53067-31cd-48f8-b83b-d37df7e7ec51",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "villager-inspector_BP"
+          }
+        ]
+      },
       "latest_prerelease": null
     }
   }
