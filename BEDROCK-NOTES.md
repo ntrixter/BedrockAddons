@@ -467,6 +467,15 @@ creeper blasts were not checked.
   from foot to head.** `villager-inspector` uses it to file both halves of a bed
   under the head. It checks the partner really is the other half, and falls
   back to the block itself if not.
+- **UNVERIFIED: a name tag used on a composter seems invisible to scripts.**
+  `villager-inspector` tried naming a villager by using a renamed name tag on
+  its linked bed or workstation. It listened on
+  `beforeEvents.playerInteractWithBlock`, `afterEvents.playerInteractWithBlock`
+  and `afterEvents.itemUse`. In game none of them got past "held item is
+  `minecraft:name_tag` with a `nameTag`, block is a bed or job block". No
+  error was logged either. So either the click is not reported, or an anvil
+  name is not exposed as `ItemStack.nameTag`. The feature was dropped. Log
+  what each event actually delivers before trying again.
 - **UNVERIFIED: whether a script can read a villager's inventory.**
   The entity declares `"inventory_size": 8, "private": true`. The stable
   `EntityInventoryComponent.private` doc says only "will not drop its inventory

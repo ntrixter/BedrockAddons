@@ -12,7 +12,7 @@
 // at the job site, whether the raycast finds a villager behind glass, or how
 // the line looks on a phone. See README.md "Confirm in-game".
 
-import { describe, describeBlock, describeNamed, describeNotNamed } from "../behavior_pack/scripts/describe.js";
+import { describe, describeBlock } from "../behavior_pack/scripts/describe.js";
 import * as links from "../behavior_pack/scripts/links.js";
 import { world, setBlock, makeVillager, unload, reset } from "@minecraft/server";
 
@@ -105,12 +105,6 @@ check("owned, one block", describeBlock("Lectern", { loaded: true, profession: L
   "§aLectern · Librarian · 1 block");
 check("owner away", describeBlock("Bed", { loaded: false }), "§eBed · owner not nearby");
 check("never seen", describeBlock("Lectern", undefined), "§7Lectern · not seen in use yet");
-
-console.log("Naming through a block");
-check("named", describeNamed({ loaded: true, profession: FARMER, nameTag: "Bob", distance: 5.6 }),
-  "§aNamed Farmer \"Bob\" · 6 blocks");
-check("not seen", describeNotNamed("Composter", false), "§7No villager seen using this Composter yet");
-check("not nearby", describeNotNamed("Bed", true), "§eThe villager using this Bed is not nearby");
 
 console.log("Link bookkeeping");
 {

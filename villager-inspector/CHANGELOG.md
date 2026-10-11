@@ -38,9 +38,6 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-11`.
     with its distance. That villager sparkles.
   - Links move when a villager is seen using another bed or workstation. They
     are cleared when the block is broken or the villager dies.
-  - Use a renamed name tag on a bed or workstation to name the villager using
-    it. One tag is used up, except in Creative. The tag is kept if no villager
-    is linked or it is out of range.
 - Settings, under the gear icon beside the pack:
   - read villagers through glass and walls (on by default, since breeders sit
     behind glass)
