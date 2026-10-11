@@ -166,12 +166,45 @@ function describeFarmer(name, kinds, size) {
   return colour + parts.join(" · ");
 }
 
-export function describe({ profession, baby, slots }) {
+// Unemployed and nitwit villagers never hold a job site, so no job marker.
+const JOBLESS = new Set([0, 14]);
+
+/** `Farmer "Bob"`, or just `Farmer` without a name tag. */
+export function villagerLabel(profession, baby, nameTag) {
+  const base = baby ? "Baby villager" : PROFESSIONS[profession] ?? "Villager";
+  return nameTag ? `${base} "${nameTag}"` : base;
+}
+
+/**
+ * " · bed ✔ · job ✔", with ? for a link not seen yet. `links` is
+ * { bed, job } of booleans; undefined leaves the suffix off entirely.
+ */
+function linkSuffix(links, profession, baby) {
+  if (!links) return "";
+  const mark = (known) => (known ? "✔" : "?");
+  let text = ` · bed ${mark(links.bed)}`;
+  if (!baby && !JOBLESS.has(profession)) text += ` · job ${mark(links.job)}`;
+  return text;
+}
+
+export function describe({ profession, baby, nameTag, slots, links }) {
   const kinds = tally(slots);
-  if (baby) {
-    return `${GREY}Baby villager · ${breadText(kinds)} · too young to breed`;
-  }
-  const name = PROFESSIONS[profession] ?? "Villager";
-  if (profession === FARMER) return describeFarmer(name, kinds, slots.length);
-  return describeBreeder(name, kinds);
+  const name = villagerLabel(profession, baby, nameTag);
+  const suffix = linkSuffix(links, profession, baby);
+  if (baby) return `${GREY}${name} · ${breadText(kinds)} · too young to breed${suffix}`;
+  if (profession === FARMER) return describeFarmer(name, kinds, slots.length) + suffix;
+  return describeBreeder(name, kinds) + suffix;
+}
+
+/**
+ * The line for a bed or job block. `owner` is undefined when no villager has
+ * been seen using it, { loaded: false } when the owner is out of range, or
+ * { profession, baby, nameTag, distance } for a live owner.
+ */
+export function describeBlock(blockName, owner) {
+  if (!owner) return `${GREY}${blockName} · not seen in use yet`;
+  if (!owner.loaded) return `${YELLOW}${blockName} · owner not nearby`;
+  const blocks = Math.round(owner.distance);
+  const label = villagerLabel(owner.profession, owner.baby, owner.nameTag);
+  return `${GREEN}${blockName} · ${label} · ${blocks} block${blocks === 1 ? "" : "s"}`;
 }

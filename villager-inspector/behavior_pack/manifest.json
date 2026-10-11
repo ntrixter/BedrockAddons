@@ -2,7 +2,7 @@
   "format_version": 3,
   "header": {
     "name": "Villager Inspector",
-    "description": "v1.0.0 - Look at a villager to see what it is carrying: its bread and breeding food, and whether a farmer is locked to one crop.",
+    "description": "v1.0.0 - Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager.",
     "uuid": "cad53067-31cd-48f8-b83b-d37df7e7ec51",
     "version": "1.0.0",
     "min_engine_version": "1.26.30"
@@ -57,6 +57,16 @@
       "max": 16,
       "step": 1,
       "default": 8
+    },
+    {
+      "type": "toggle",
+      "text": "Show particles on linked beds, workstations and villagers",
+      "name": "villager_inspector:particles",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Look at a villager and its bed and workstation sparkle. Look at a bed or workstation and the villager using it sparkles. The line above the hotbar still shows with this off.§r"
     }
   ]
 }

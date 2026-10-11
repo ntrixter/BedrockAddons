@@ -446,6 +446,27 @@ creeper blasts were not checked.
   `want_amount` 45). They also pick up wheat seeds and beetroot seeds
   (`pickup_only`), which is why a farm farmer is "locked" by filling all eight
   slots with one plantable item.
+- **No API says which bed or workstation a villager has claimed, not even an
+  experimental one.** Stable `EntityComponentTypes` has no dweller or POI
+  component. The experimental `PoiBlockManager` (needs the "Poi" experiment)
+  returns `PoiBlockInstance { position, type, tickets }`. That says whether a
+  block is claimed, never by whom.
+- **The workstation link can be observed instead.** Every work goal in
+  `villager_v2.json` (`work_composter` for farmers, and `behavior.work` for the
+  others) has `on_arrival` → `minecraft:resupply_trades`.
+  `world.afterEvents.dataDrivenEntityTrigger` reports that event with the
+  villager, and the job block next to it at that moment is its own.
+  `villager-inspector` learns links this way. **UNVERIFIED in game**: that
+  the event fires at the job site and not some distance short of it. The pack
+  searches 2 blocks around.
+- **UNVERIFIED: whether `Entity.isSleeping` reports villagers.** It is on the
+  base `Entity`, but the only verified use is players. `villager-inspector`
+  also records a bed when a villager is on the same bed block in two scans,
+  two seconds apart, at night.
+- **UNVERIFIED: bed `direction` is 0 south, 1 west, 2 north, 3 east, pointing
+  from foot to head.** `villager-inspector` uses it to file both halves of a bed
+  under the head. It checks the partner really is the other half, and falls
+  back to the block itself if not.
 - **UNVERIFIED: whether a script can read a villager's inventory.**
   The entity declares `"inventory_size": 8, "private": true`. The stable
   `EntityInventoryComponent.private` doc says only "will not drop its inventory
