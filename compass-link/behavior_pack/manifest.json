@@ -2,9 +2,9 @@
   "format_version": 3,
   "header": {
     "name": "Compass Link",
-    "description": "v1.1.0 - Hold a compass to see your position in the other dimension, for lining up Nether portals.",
+    "description": "v1.2.0 - Hold a compass to see your coordinates in both dimensions and the biome you are in, for lining up Nether portals.",
     "uuid": "a5e66d13-59ba-4e3f-b26d-bac8ccaac290",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "min_engine_version": "1.26.40"
   },
   "modules": [
@@ -12,7 +12,7 @@
       "type": "script",
       "language": "javascript",
       "uuid": "f156080c-afee-4340-a791-5f075e4203ea",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "entry": "scripts/main.js"
     }
   ],
@@ -29,5 +29,43 @@
     "license": "MIT",
     "url": "https://github.com/ntrixter/BedrockAddons",
     "product_type": "addon"
-  }
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "\u00a7lCompass Link\u00a7r - hold a compass to see where you are. Your current dimension is on top, the other dimension underneath."
+    },
+    {
+      "type": "label",
+      "text": "\u00a77Changes here take effect the next time the world loads.\u00a7r"
+    },
+    {
+      "type": "toggle",
+      "text": "Show your coordinates",
+      "name": "compass_link:current_coords",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Show the other dimension's coordinates",
+      "name": "compass_link:other_coords",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Show your biome",
+      "name": "compass_link:current_biome",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Show the other dimension's biome",
+      "name": "compass_link:other_biome",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "\u00a77From the Overworld, the Nether biome is worked out from the world seed, so it shows even where nobody has been. From the Nether, the Overworld biome shows only while that part of the Overworld is loaded, for example when another player is there.\u00a7r"
+    }
+  ]
 }

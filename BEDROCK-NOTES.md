@@ -485,6 +485,33 @@ creeper blasts were not checked.
 
 ---
 
+## Biomes (`@minecraft/server`)
+
+- **Bedrock biome ids are mostly pre-1.18 names.** `minecraft:hell` is Nether
+  Wastes, `soulsand_valley` is Soul Sand Valley (one word), `roofed_forest` is
+  Dark Forest, `mesa` is Badlands, `extreme_hills` is Windswept Hills,
+  `cold_taiga` is Snowy Taiga, `ice_plains` is Snowy Plains, `swampland` is
+  Swamp, `mushroom_island` is Mushroom Fields. Checked against the 89 ids in
+  `bedrock-samples` `metadata/vanilladata_modules/mojang-biomes.json`. Never
+  build an id from the display name.
+- `Dimension.getBiome(location)` is stable since 2.3.0, and **throws for an
+  unloaded chunk**. The other dimension at a player's matching position is
+  almost never loaded.
+- `Dimension.calculateClosestBiomeFromSeed(pos, biome, { boundingSize })` is
+  stable since 2.9.0, and is computed from the seed alone. `compass-link` uses
+  it to name the Nether biome under an Overworld player. It asks for each of
+  the five Nether biomes and takes the nearest. **UNVERIFIED** on three
+  counts:
+  - that it works for a dimension nobody is in;
+  - that "nearest of five" is the biome at the spot rather than a neighbour at
+    a border;
+  - how expensive it really is. The pack runs it at most once a second per
+    player, and only when the matching block changes.
+- **UNVERIFIED: whether `setActionBar` shows a `\n` as a second line.**
+  `compass-link` 1.2.0 relies on it for its two-line readout.
+
+---
+
 ## Script API versioning
 
 - Declaring an **older** stable module version still works on newer engines —
