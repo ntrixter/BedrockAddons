@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11T23:11:00Z",
+  "generated_at": "2026-10-13T04:08:09Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -36,15 +36,15 @@
     },
     "compass-link": {
       "display_name": "Compass Link",
-      "description": "Hold a compass to see your position in the other dimension, for lining up Nether portals.",
+      "description": "Hold a compass to see your coordinates in both dimensions and the biome you are in, for lining up Nether portals.",
       "deprecated": false,
       "latest_stable": {
-        "version": "1.1.0",
-        "tag": "compass-link-v1.1.0",
-        "filename": "compass-link-1.1.0.mcpack",
-        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/compass-link-v1.1.0/compass-link-1.1.0.mcpack",
-        "sha256": "54416a3760f370f15b217af929939bd8ea0d1d88872c0cb066bd1e0faa117d18",
-        "published_at": "2026-10-01T20:21:58Z",
+        "version": "1.2.0",
+        "tag": "compass-link-v1.2.0",
+        "filename": "compass-link-1.2.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/compass-link-v1.2.0/compass-link-1.2.0.mcpack",
+        "sha256": "7e41ef786ae39a59fd709f2394944dda8bd52bbbaca4037b0a5c80a820c52048",
+        "published_at": "2026-10-13T04:07:58Z",
         "min_engine_version": [
           1,
           26,
@@ -56,7 +56,7 @@
             "type": "data",
             "version": [
               1,
-              1,
+              2,
               0
             ],
             "folder": "compass-link_BP"
