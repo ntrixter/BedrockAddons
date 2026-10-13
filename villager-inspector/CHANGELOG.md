@@ -11,6 +11,15 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-11`.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-13
+
+### Changed
+
+- Clearer wording when looking at a bed or workstation. "not seen in use yet"
+  is now "no villager linked", and "owner not nearby" is now "villager not
+  nearby". The old text on a bed read as if it were about the player's own
+  bed or spawn point.
+
 ## [1.0.0] - 2026-10-11
 
 ### Added

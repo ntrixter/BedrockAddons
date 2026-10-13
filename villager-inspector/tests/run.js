@@ -103,8 +103,8 @@ check("owned, named", describeBlock("Bed", { loaded: true, profession: LIBRARIAN
   "§aBed · Librarian \"Bob\" · 6 blocks");
 check("owned, one block", describeBlock("Lectern", { loaded: true, profession: LIBRARIAN, distance: 1.2 }),
   "§aLectern · Librarian · 1 block");
-check("owner away", describeBlock("Bed", { loaded: false }), "§eBed · owner not nearby");
-check("never seen", describeBlock("Lectern", undefined), "§7Lectern · not seen in use yet");
+check("owner away", describeBlock("Bed", { loaded: false }), "§eBed · villager not nearby");
+check("never seen", describeBlock("Lectern", undefined), "§7Lectern · no villager linked");
 
 console.log("Link bookkeeping");
 {

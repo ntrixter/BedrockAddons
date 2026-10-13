@@ -202,8 +202,8 @@ export function describe({ profession, baby, nameTag, slots, links }) {
  * { profession, baby, nameTag, distance } for a live owner.
  */
 export function describeBlock(blockName, owner) {
-  if (!owner) return `${GREY}${blockName} · not seen in use yet`;
-  if (!owner.loaded) return `${YELLOW}${blockName} · owner not nearby`;
+  if (!owner) return `${GREY}${blockName} · no villager linked`;
+  if (!owner.loaded) return `${YELLOW}${blockName} · villager not nearby`;
   const blocks = Math.round(owner.distance);
   const label = villagerLabel(owner.profession, owner.baby, owner.nameTag);
   return `${GREEN}${blockName} · ${label} · ${blocks} block${blocks === 1 ? "" : "s"}`;
