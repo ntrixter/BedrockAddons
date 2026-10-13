@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "uncraft:purpur_block_to_popped_chorus_fruit"
+    },
+    "tags": [
+      "stonecutter"
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:purpur_block"
+      }
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:purpur_block"
+      }
+    ],
+    "result": {
+      "item": "minecraft:popped_chorus_fruit",
+      "count": 1
+    }
+  }
+}

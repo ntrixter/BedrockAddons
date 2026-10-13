@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "uncraft:quartz_block_to_quartz"
+    },
+    "tags": [
+      "stonecutter"
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:quartz_block"
+      }
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:quartz_block"
+      }
+    ],
+    "result": {
+      "item": "minecraft:quartz",
+      "count": 4
+    }
+  }
+}

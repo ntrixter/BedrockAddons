@@ -17,6 +17,7 @@ versioned and released on its own schedule.
 | [nightshare](nightshare/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=nightshare-v*&sort=semver&label=nightshare) | Every player owns an equal share of the night; sleeping spends yours and fast-forwards the night by that slice. |
 | [no-witch-conversion](no-witch-conversion/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=no-witch-conversion-v*&sort=semver&label=no-witch-conversion) | Villagers no longer turn into witches when struck by lightning. |
 | [salvage-smelting](salvage-smelting/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=salvage-smelting-v*&sort=semver&label=salvage-smelting) | Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks. |
+| [stonecutter-decompression](stonecutter-decompression/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=stonecutter-decompression-v*&sort=semver&label=stonecutter-decompression) | Turn compressed blocks like quartz, sandstone and packed ice back into their items at a stonecutter. |
 | [villager-inspector](villager-inspector/) | ![latest](https://img.shields.io/github/v/release/ntrixter/BedrockAddons?filter=villager-inspector-v*&sort=semver&label=villager-inspector) | Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager. |
 
 ## How this repository is laid out

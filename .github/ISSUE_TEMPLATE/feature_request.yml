@@ -22,6 +22,7 @@ body:
         - nightshare
         - no-witch-conversion
         - salvage-smelting
+        - stonecutter-decompression
         - villager-inspector
         - A new add-on
         - Repository tooling (build, CI, catalog)

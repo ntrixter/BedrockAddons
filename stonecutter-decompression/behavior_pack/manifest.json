@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Stonecutter Decompression",
+    "description": "v1.0.0 - Turn compressed blocks like quartz, sandstone and packed ice back into their items at a stonecutter.",
+    "uuid": "c7e4e6af-0b2e-488d-aebc-d1eb72f5224f",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 26, 30]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "description": "17 stonecutter recipes that turn one-way compressed blocks back into the items they were crafted from.",
+      "uuid": "c53e417f-2534-4208-bb91-b5bfe3e15ee0",
+      "version": [1, 0, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["ntrixter"],
+    "url": "https://github.com/ntrixter/BedrockAddons"
+  }
+}

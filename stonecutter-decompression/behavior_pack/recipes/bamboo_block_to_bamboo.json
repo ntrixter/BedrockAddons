@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "uncraft:bamboo_block_to_bamboo"
+    },
+    "tags": [
+      "stonecutter"
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:bamboo_block"
+      }
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:bamboo_block"
+      }
+    ],
+    "result": {
+      "item": "minecraft:bamboo",
+      "count": 9
+    }
+  }
+}
