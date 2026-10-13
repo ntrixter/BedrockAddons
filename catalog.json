@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-13T04:08:09Z",
+  "generated_at": "2026-10-13T04:08:31Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -170,12 +170,12 @@
       "description": "Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager.",
       "deprecated": false,
       "latest_stable": {
-        "version": "1.0.0",
-        "tag": "villager-inspector-v1.0.0",
-        "filename": "villager-inspector-1.0.0.mcpack",
-        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/villager-inspector-v1.0.0/villager-inspector-1.0.0.mcpack",
-        "sha256": "dd57789a5e88b19be254da7ae62d88fe556f0812363c1462b353b8059a03e2e5",
-        "published_at": "2026-10-11T23:10:41Z",
+        "version": "1.0.1",
+        "tag": "villager-inspector-v1.0.1",
+        "filename": "villager-inspector-1.0.1.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/villager-inspector-v1.0.1/villager-inspector-1.0.1.mcpack",
+        "sha256": "9e3657d81f3ee9e96ea4d8abe5e008e69054bc1d01e9f715fdd9be668045b6e0",
+        "published_at": "2026-10-13T04:08:22Z",
         "min_engine_version": [
           1,
           26,
@@ -188,7 +188,7 @@
             "version": [
               1,
               0,
-              0
+              1
             ],
             "folder": "villager-inspector_BP"
           }
