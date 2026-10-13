@@ -2,9 +2,9 @@
   "format_version": 3,
   "header": {
     "name": "Villager Inspector",
-    "description": "v1.0.0 - Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager.",
+    "description": "v1.0.1 - Look at a villager to see what it is carrying and which bed and workstation it uses; look at a bed or workstation to find its villager.",
     "uuid": "cad53067-31cd-48f8-b83b-d37df7e7ec51",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "min_engine_version": "1.26.30"
   },
   "modules": [
@@ -12,7 +12,7 @@
       "type": "script",
       "language": "javascript",
       "uuid": "0319d56b-2697-4657-97b9-a3f406f9e16e",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "entry": "scripts/main.js"
     }
   ],
@@ -33,11 +33,11 @@
   "settings": [
     {
       "type": "label",
-      "text": "§lVillager Inspector§r - look at a villager and the line above your hotbar shows what it is carrying."
+      "text": "\u00a7lVillager Inspector\u00a7r - look at a villager and the line above your hotbar shows what it is carrying."
     },
     {
       "type": "label",
-      "text": "§7Changes here take effect the next time the world loads.§r"
+      "text": "\u00a77Changes here take effect the next time the world loads.\u00a7r"
     },
     {
       "type": "toggle",
@@ -47,7 +47,7 @@
     },
     {
       "type": "label",
-      "text": "§7Breeders and farms are usually behind glass, fences or trapdoors, and any block stops the line of sight. With this on, the nearest villager you are pointing at within reach is read even if a block is in the way.§r"
+      "text": "\u00a77Breeders and farms are usually behind glass, fences or trapdoors, and any block stops the line of sight. With this on, the nearest villager you are pointing at within reach is read even if a block is in the way.\u00a7r"
     },
     {
       "type": "slider",
@@ -66,7 +66,7 @@
     },
     {
       "type": "label",
-      "text": "§7Look at a villager and its bed and workstation sparkle. Look at a bed or workstation and the villager using it sparkles. The line above the hotbar still shows with this off.§r"
+      "text": "\u00a77Look at a villager and its bed and workstation sparkle. Look at a bed or workstation and the villager using it sparkles. The line above the hotbar still shows with this off.\u00a7r"
     }
   ]
 }

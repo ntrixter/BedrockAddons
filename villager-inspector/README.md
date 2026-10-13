@@ -88,8 +88,8 @@ it, and that villager sparkles:
 | --- | --- |
 | Owner nearby | `Composter · Farmer · 3 blocks` (green) |
 | Named owner | `Bed · Librarian "Bob" · 6 blocks` (green) |
-| Owner out of range | `Bed · owner not nearby` (yellow) |
-| Not seen in use | `Lectern · not seen in use yet` (grey) |
+| Its villager out of range | `Bed · villager not nearby` (yellow) |
+| No villager seen using it | `Lectern · no villager linked` (grey) |
 
 A bed or workstation right in front of a villager takes priority, so looking
 at a bed with someone asleep on it names the sleeper.
@@ -274,7 +274,7 @@ entry into the existing array rather than overwriting the file.
 [
   {
     "pack_id": "cad53067-31cd-48f8-b83b-d37df7e7ec51",
-    "version": [1, 0, 0]
+    "version": [1, 0, 1]
   }
 ]
 ```
@@ -285,7 +285,7 @@ That is the **header** UUID from the manifest. The module UUID will not work.
 > manifest is `format_version` 3, and it is not yet settled whether
 > `world_behavior_packs.json` must match that form. See
 > [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array is rejected, use
-> `"version": "1.0.0"`.
+> `"version": "1.0.1"`.
 
 ## Updating or removing this add-on
 
