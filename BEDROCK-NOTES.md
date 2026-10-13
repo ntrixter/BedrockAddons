@@ -360,6 +360,12 @@ build, which printed what the game reported after every change it made.
   only the block textures. Verified in game 2026-10-02: a Bottles of XP test
   build's packing placeholder showed as a gilded blackstone block in the
   crafting output, with its own name in the tooltip.
+- **One bad line makes Bedrock drop a whole `.mcfunction`.** The function then
+  reports "function not found" rather than running the lines that were fine.
+  Seen 2026-10-13: `stonecutter-decompression`'s test kit said `give @s
+  stonecutter 1`, but the stonecutter's item id is **`stonecutter_block`**
+  (`minecraft:stonecutter` does not exist). Check every id in a function
+  against `mojang-items.json`.
 - **UNVERIFIED: a shapeless recipe tagged only `stonecutter` appears in the
   stonecutter and nowhere else.** Each `stonecutter-decompression` recipe has
   one ingredient and the single tag `stonecutter`, and is expected to stay out
