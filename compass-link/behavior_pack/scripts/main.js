@@ -1,5 +1,5 @@
 import { system, world } from "@minecraft/server";
-import { NETHER_BIOMES, otherDimension, otherPosition, readout } from "./readout.js";
+import { readout } from "./readout.js";
 
 const TICKS_PER_UPDATE = 5;
 // Matched by id rather than by the word "compass", so another pack's custom item
@@ -9,10 +9,6 @@ const COMPASS_IDS = new Set([
   "minecraft:lodestone_compass",
   "minecraft:recovery_compass",
 ]);
-// The seed-based Nether biome lookup is the expensive part, so it runs at most
-// this often per player, and only when the matching Nether block changes.
-const SEED_LOOKUP_TICKS = 20;
-const SEED_SEARCH = { boundingSize: { x: 32, y: 32, z: 32 } };
 
 /** Read once at load: there is no stable settings-change event yet. */
 function readSettings() {
@@ -26,8 +22,7 @@ function readSettings() {
   return {
     currentCoords: on("current_coords"),
     otherCoords: on("other_coords"),
-    currentBiome: on("current_biome"),
-    otherBiome: on("other_biome"),
+    biome: on("current_biome"),
   };
 }
 
@@ -49,48 +44,6 @@ function biomeAt(dimension, location) {
   }
 }
 
-// player id -> { key, biome, tick } for the other dimension's biome.
-const otherBiomeCache = new Map();
-
-/**
- * The other dimension's biome at the matching position. Read directly when
- * that chunk happens to be loaded. Otherwise, for the Nether only, worked out
- * from the world seed: with five candidates, the nearest one is the biome
- * there. The Overworld has too many biomes to search that way, so from the
- * Nether it shows only when the Overworld chunk is loaded.
- */
-function otherBiome(player, otherId, pos) {
-  const dimension = world.getDimension(otherId);
-  const direct = biomeAt(dimension, pos);
-  if (direct) return direct;
-  if (otherId !== "minecraft:nether") return undefined;
-
-  const key = `${pos.x},${pos.y},${pos.z}`;
-  const cached = otherBiomeCache.get(player.id);
-  const now = system.currentTick;
-  if (cached && (cached.key === key || now - cached.tick < SEED_LOOKUP_TICKS)) return cached.biome;
-
-  let best;
-  let bestDist = Infinity;
-  const at = { x: pos.x, y: Math.min(Math.max(pos.y, 1), 126), z: pos.z };
-  for (const id of NETHER_BIOMES) {
-    let found;
-    try {
-      found = dimension.calculateClosestBiomeFromSeed(at, id, SEED_SEARCH);
-    } catch {
-      continue;
-    }
-    if (!found) continue;
-    const d = (found.x - at.x) ** 2 + (found.y - at.y) ** 2 + (found.z - at.z) ** 2;
-    if (d < bestDist) {
-      best = id;
-      bestDist = d;
-    }
-  }
-  otherBiomeCache.set(player.id, { key, biome: best, tick: now });
-  return best;
-}
-
 const showing = new Set();
 
 function clear(player) {
@@ -104,17 +57,9 @@ system.runInterval(() => {
         clear(player);
         continue;
       }
-      const dimensionId = player.dimension.id;
       const location = player.location;
-      const otherId = otherDimension(dimensionId);
-      const biomes = {
-        current: options.currentBiome ? biomeAt(player.dimension, location) : undefined,
-        other:
-          options.otherBiome && otherId
-            ? otherBiome(player, otherId, otherPosition(dimensionId, location))
-            : undefined,
-      };
-      const text = readout(dimensionId, location, biomes, options);
+      const biome = options.biome ? biomeAt(player.dimension, location) : undefined;
+      const text = readout(player.dimension.id, location, biome, options);
       if (!text) {
         clear(player);
         continue;
@@ -128,6 +73,5 @@ system.runInterval(() => {
 }, TICKS_PER_UPDATE);
 
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
-  otherBiomeCache.delete(playerId);
   showing.delete(playerId);
 });

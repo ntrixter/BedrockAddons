@@ -17,17 +17,13 @@ version, so the heading has to match exactly: `## [1.1.0] - 2026-10-01`.
 
 - The readout now shows both dimensions: your current one on top, the other
   underneath in grey.
-- Biomes. The biome you are standing in follows your coordinates, and the
-  biome at the matching spot follows the other dimension's. From the
-  Overworld, the Nether biome is worked out from the world seed, so it shows
-  even where nobody has been. From the Nether, the Overworld biome shows only
-  while that part of the Overworld is loaded.
+- The biome you are standing in, after your coordinates on the top line.
 - In the End or a custom dimension, the top line now shows your coordinates
   and biome. It used to show nothing there.
-- Settings, under the gear icon beside the pack: four toggles for your
-  coordinates, the other dimension's coordinates, your biome and the other
-  dimension's biome. All are on by default. Turn off all but the other
-  dimension's coordinates for the 1.1.0 readout.
+- Settings, under the gear icon beside the pack: three toggles for your
+  coordinates, the other dimension's coordinates and your biome. All are on
+  by default. Turn off all but the other dimension's coordinates for the 1.1.0
+  readout.
 
 ## [1.1.0] - 2026-10-01
 

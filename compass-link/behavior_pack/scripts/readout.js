@@ -16,16 +16,6 @@ const OTHER = {
   "minecraft:nether": "minecraft:overworld",
 };
 
-// The five Nether biomes, by their Bedrock ids. Checked against
-// bedrock-samples metadata/vanilladata_modules/mojang-biomes.json.
-export const NETHER_BIOMES = [
-  "minecraft:hell",
-  "minecraft:crimson_forest",
-  "minecraft:warped_forest",
-  "minecraft:soulsand_valley",
-  "minecraft:basalt_deltas",
-];
-
 // Bedrock still uses pre-1.18 ids for many biomes. These are the names the
 // game shows today; anything not listed is title-cased from its id.
 const BIOME_NAMES = {
@@ -89,19 +79,19 @@ function line(dimensionId, pos, biomeId, showCoords, showBiome) {
 /**
  * The readout text, or "" when every enabled part is empty.
  *
- * `options` are the four settings: currentCoords, otherCoords, currentBiome,
- * otherBiome. `biomes` holds { current, other } ids, either possibly undefined
- * when the game could not tell.
+ * `options` are the three settings: currentCoords, otherCoords and biome.
+ * `biomeId` is the biome you are standing in, or undefined if the game could
+ * not tell. Only your own dimension's line carries a biome.
  */
-export function readout(dimensionId, location, biomes, options) {
+export function readout(dimensionId, location, biomeId, options) {
   const here = { x: Math.floor(location.x), y: Math.floor(location.y), z: Math.floor(location.z) };
   const lines = [];
-  const top = line(dimensionId, here, biomes.current, options.currentCoords, options.currentBiome);
+  const top = line(dimensionId, here, biomeId, options.currentCoords, options.biome);
   if (top) lines.push(top);
   const otherId = otherDimension(dimensionId);
   if (otherId) {
     const there = otherPosition(dimensionId, location);
-    const bottom = line(otherId, there, biomes.other, options.otherCoords, options.otherBiome);
+    const bottom = line(otherId, there, undefined, options.otherCoords, false);
     // The other dimension's line is dimmed, so the current one reads first.
     if (bottom) lines.push(`§7${bottom}§r`);
   }

@@ -56,16 +56,6 @@
       "text": "Show your biome",
       "name": "compass_link:current_biome",
       "default": true
-    },
-    {
-      "type": "toggle",
-      "text": "Show the other dimension's biome",
-      "name": "compass_link:other_biome",
-      "default": true
-    },
-    {
-      "type": "label",
-      "text": "\u00a77From the Overworld, the Nether biome is worked out from the world seed, so it shows even where nobody has been. From the Nether, the Overworld biome shows only while that part of the Overworld is loaded, for example when another player is there.\u00a7r"
     }
   ]
 }
