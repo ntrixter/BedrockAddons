@@ -1,0 +1,5 @@
+{
+  "display_name": "Stonecutter Decompression",
+  "description": "Turn compressed blocks like quartz, sandstone and packed ice back into their items at a stonecutter.",
+  "deprecated": false
+}

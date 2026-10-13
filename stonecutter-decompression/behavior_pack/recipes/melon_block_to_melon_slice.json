@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "uncraft:melon_block_to_melon_slice"
+    },
+    "tags": [
+      "stonecutter"
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:melon_block"
+      }
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:melon_block"
+      }
+    ],
+    "result": {
+      "item": "minecraft:melon_slice",
+      "count": 9
+    }
+  }
+}

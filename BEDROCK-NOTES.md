@@ -360,6 +360,18 @@ build, which printed what the game reported after every change it made.
   only the block textures. Verified in game 2026-10-02: a Bottles of XP test
   build's packing placeholder showed as a gilded blackstone block in the
   crafting output, with its own name in the tooltip.
+- **One bad line makes Bedrock drop a whole `.mcfunction`.** The function then
+  reports "function not found" rather than running the lines that were fine.
+  Seen 2026-10-13: `stonecutter-decompression`'s test kit said `give @s
+  stonecutter 1`, but the stonecutter's item id is **`stonecutter_block`**
+  (`minecraft:stonecutter` does not exist). Check every id in a function
+  against `mojang-items.json`.
+- **A shapeless recipe tagged only `stonecutter` appears in the stonecutter
+  and nowhere else.** One ingredient, a `result` with a `count` above 1, and
+  the single tag `stonecutter` is enough. Vanilla's own stonecutter recipes
+  have the same shape. It stays out of both the 2x2 grid and the crafting
+  table. Verified in game 2026-10-13 with all 18 `stonecutter-decompression`
+  recipes.
 - **A recipe tagged only `crafting_table` also works in the 2x2 inventory grid**
   if it fits there. No other tag is needed. Verified in game 2026-10-02 with
   Bottles of XP's one-item shapeless recipes.
