@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-13T04:08:31Z",
+  "generated_at": "2026-10-13T05:51:21Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -163,6 +163,37 @@
       "description": "Smelt gear and crafted goods back into half their crafting cost, and raw ore blocks straight into ingot blocks.",
       "deprecated": false,
       "latest_stable": null,
+      "latest_prerelease": null
+    },
+    "stonecutter-decompression": {
+      "display_name": "Stonecutter Decompression",
+      "description": "Turn compressed blocks like quartz, sandstone and packed ice back into their items at a stonecutter.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "stonecutter-decompression-v1.0.0",
+        "filename": "stonecutter-decompression-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/stonecutter-decompression-v1.0.0/stonecutter-decompression-1.0.0.mcpack",
+        "sha256": "d1ffb2736cecd67330a5dc24f03a60c280ebd466535165d58155979d3fd301d6",
+        "published_at": "2026-10-13T05:51:05Z",
+        "min_engine_version": [
+          1,
+          26,
+          30
+        ],
+        "packs": [
+          {
+            "uuid": "c7e4e6af-0b2e-488d-aebc-d1eb72f5224f",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "stonecutter-decompression_BP"
+          }
+        ]
+      },
       "latest_prerelease": null
     },
     "villager-inspector": {
