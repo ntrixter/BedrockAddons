@@ -366,11 +366,12 @@ build, which printed what the game reported after every change it made.
   stonecutter 1`, but the stonecutter's item id is **`stonecutter_block`**
   (`minecraft:stonecutter` does not exist). Check every id in a function
   against `mojang-items.json`.
-- **UNVERIFIED: a shapeless recipe tagged only `stonecutter` appears in the
-  stonecutter and nowhere else.** Each `stonecutter-decompression` recipe has
-  one ingredient and the single tag `stonecutter`, and is expected to stay out
-  of both the 2x2 grid and the crafting table. Confirm with its test kit, then
-  replace this line.
+- **A shapeless recipe tagged only `stonecutter` appears in the stonecutter
+  and nowhere else.** One ingredient, a `result` with a `count` above 1, and
+  the single tag `stonecutter` is enough. Vanilla's own stonecutter recipes
+  have the same shape. It stays out of both the 2x2 grid and the crafting
+  table. Verified in game 2026-10-13 with all 18 `stonecutter-decompression`
+  recipes.
 - **A recipe tagged only `crafting_table` also works in the 2x2 inventory grid**
   if it fits there. No other tag is needed. Verified in game 2026-10-02 with
   Bottles of XP's one-item shapeless recipes.
