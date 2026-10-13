@@ -11,9 +11,12 @@ table, rerun, commit the diff.
 
 THE RULE
   A block returns exactly what it cost to craft: the vanilla recipe's
-  ingredient count divided by its output count. Purpur is the case that makes
-  this matter: 4 popped chorus fruit craft into FOUR purpur blocks, so one
-  block gives back one fruit, not four.
+  ingredient count divided by its output count.
+
+  One exception is allowed per row: an extra ingredient that is used up and
+  not returned. Dark prismarine is 8 shards plus a black dye; it gives back
+  the 8 shards and the dye is lost. NOT_RETURNED names those extras, so the
+  vanilla check still knows exactly which recipe it is comparing against.
 
 --vanilla points at a checkout of Mojang's bedrock-samples. With it, --check
 also confirms every id exists in metadata/vanilladata_modules/mojang-items.json
@@ -21,8 +24,7 @@ and that every count matches the shipped crafting recipe in
 behavior_pack/recipes/. That needs the checkout, so CI does not run it; run it
 by hand whenever the table changes.
 
-Deliberately absent: nether_wart_block, amethyst_block, prismarine and
-dripstone_block, which spawn naturally in bulk and would become farms for
+Deliberately absent: nether_wart_block, amethyst_block and dripstone_block, which spawn naturally in bulk and would become farms for
 their items; magma, for the same reason with magma cream; and resin_block,
 which vanilla already uncrafts in a crafting grid.
 """
@@ -44,9 +46,10 @@ FORMAT_VERSION = "1.20.10"
 TABLE = [
     ("bamboo_block", "bamboo", 9),
     ("prismarine_bricks", "prismarine_shard", 9),
+    ("prismarine", "prismarine_shard", 4),
+    ("dark_prismarine", "prismarine_shard", 8),
     ("honeycomb_block", "honeycomb", 4),
     ("quartz_block", "quartz", 4),
-    ("purpur_block", "popped_chorus_fruit", 1),
     ("sandstone", "sand", 4),
     ("red_sandstone", "red_sand", 4),
     ("white_wool", "string", 4),
@@ -60,6 +63,11 @@ TABLE = [
     ("packed_ice", "ice", 9),
     ("blue_ice", "packed_ice", 9),
 ]
+
+# Input block -> ingredients its vanilla recipe uses up that are not returned.
+NOT_RETURNED = {
+    "dark_prismarine": {"black_dye"},
+}
 
 # The test kit hands out the station too. Its item id is not "stonecutter": that
 # id does not exist, and one bad line makes Bedrock discard the whole function.
@@ -159,12 +167,14 @@ def check_vanilla(root: Path) -> list[str]:
         for name in (block, item):
             if f"minecraft:{name}" not in items:
                 problems.append(f"minecraft:{name} is not in mojang-items.json")
+        lost = {f"minecraft:{x}" for x in NOT_RETURNED.get(block, ())}
         matches = [
             (f, c, n) for f, c, n in costs.get(f"minecraft:{block}", [])
-            if set(c) == {f"minecraft:{item}"}
+            if set(c) == {f"minecraft:{item}"} | lost
         ]
         if not matches:
-            problems.append(f"no vanilla recipe crafts {block} from {item} alone")
+            extra = f" plus {', '.join(sorted(lost))}" if lost else " alone"
+            problems.append(f"no vanilla recipe crafts {block} from {item}{extra}")
             continue
         f, c, n = matches[0]
         used = c[f"minecraft:{item}"]

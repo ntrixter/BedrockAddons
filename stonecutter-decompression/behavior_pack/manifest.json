@@ -10,7 +10,7 @@
   "modules": [
     {
       "type": "data",
-      "description": "17 stonecutter recipes that turn one-way compressed blocks back into the items they were crafted from.",
+      "description": "18 stonecutter recipes that turn one-way compressed blocks back into the items they were crafted from.",
       "uuid": "c53e417f-2534-4208-bb91-b5bfe3e15ee0",
       "version": [1, 0, 0]
     }

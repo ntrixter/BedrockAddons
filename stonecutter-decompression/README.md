@@ -23,6 +23,8 @@ ingredients divided by how many blocks the recipe makes.
 | --- | --- |
 | Bamboo Block | 9 Bamboo |
 | Prismarine Bricks | 9 Prismarine Shards |
+| Dark Prismarine | 8 Prismarine Shards |
+| Prismarine | 4 Prismarine Shards |
 | Melon | 9 Melon Slices |
 | Packed Ice | 9 Ice |
 | Blue Ice | 9 Packed Ice |
@@ -37,22 +39,21 @@ ingredients divided by how many blocks the recipe makes.
 | Glowstone | 4 Glowstone Dust |
 | Clay | 4 Clay Ball |
 | Snow Block | 4 Snowball |
-| Purpur Block | **1** Popped Chorus Fruit |
 
-**Why purpur gives back only one:** vanilla crafts 4 popped chorus fruit into
-**4** purpur blocks, so each block costs one fruit. Giving back four would turn
-every purpur block into four fruit, and a stack of purpur into an endless
-supply.
+**Dark prismarine keeps its dye.** It is crafted from 8 prismarine shards and
+a black dye; you get the 8 shards back and the dye is used up.
 
 Only the plain blocks count. Chiseled, cut, smooth and pillar variants, and
 wool in other colours, have no recipe here.
 
 ## What is left out, and why
 
-- **Nether Wart Block, Amethyst Block, Prismarine and Dripstone Block.** All
-  four generate naturally in bulk: crimson forests, geodes, ocean monuments
-  and dripstone caves. Decompressing them would turn those places into farms
-  for nether wart, amethyst shards, prismarine shards and pointed dripstone.
+- **Nether Wart Block, Amethyst Block and Dripstone Block.** All three
+  generate naturally in bulk: crimson forests, geodes and dripstone caves.
+  Decompressing them would turn those places into farms for nether wart,
+  amethyst shards and pointed dripstone.
+- **Purpur Block.** Vanilla crafts 4 popped chorus fruit into 4 purpur blocks,
+  so a block is worth a single fruit.
 - **Magma Block**, for the same reason with magma cream.
 - **Block of Resin**, because vanilla already turns it back into 9 resin clumps
   in a crafting grid.
@@ -77,7 +78,7 @@ It does nothing without cheats or operator rights.
 
 ## Changing the recipes
 
-The 17 recipe files and the test kit are generated from one table:
+The 18 recipe files and the test kit are generated from one table:
 
 ```sh
 python3 stonecutter-decompression/tools/gen_recipes.py           # rewrite them all
@@ -86,15 +87,14 @@ python3 stonecutter-decompression/tools/gen_recipes.py --check   # verify, write
 
 Add `--vanilla <path to a bedrock-samples checkout>` to `--check` and it also
 confirms that every item exists in Mojang's item list, and that every count
-matches the shipped crafting recipe. Do that whenever the table changes; it is
-what caught the purpur ratio. Edit the table in `tools/gen_recipes.py`, never
+matches the shipped crafting recipe. Do that whenever the table changes. Edit the table in `tools/gen_recipes.py`, never
 the generated files.
 
 ## Confirm in-game
 
 1. Bamboo Block appears in the stonecutter and gives 9 bamboo.
 2. It does **not** appear in the inventory grid or a crafting table.
-3. Purpur gives 1 popped chorus fruit, Blue Ice gives 9 packed ice, and Nether
+3. Dark Prismarine gives 8 prismarine shards, Blue Ice gives 9 packed ice, and Nether
    Bricks give 4 nether brick items.
 
 Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
@@ -193,7 +193,7 @@ remove the world's own copy. That means all three of:
 
 On a dedicated server, replace the folder under `behavior_packs/` and restart.
 
-Removing the pack removes the 17 recipes and nothing else. Nothing is stored in
+Removing the pack removes the 18 recipes and nothing else. Nothing is stored in
 the world, so there is nothing left behind.
 
 ## Changelog
