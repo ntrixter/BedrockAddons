@@ -21,12 +21,13 @@ hotbar slot is a compass, it writes on the action bar, the text that appears
 just above the hotbar. That means the plain compass, the lodestone compass and
 the recovery compass.
 
-Your current dimension is on top. The other dimension is underneath, in grey:
+Your current dimension is on top, followed by the biome you are standing in.
+The other dimension is underneath, in grey, with coordinates only:
 
 | You are in | The action bar shows |
 | --- | --- |
-| The Overworld | `Overworld: 800, 64, -1600 · Plains`<br>`Nether: 100, 64, -200 · Crimson Forest` |
-| The Nether | `Nether: 100, 64, -200 · Nether Wastes`<br>`Overworld: 800, 64, -1600 · Cherry Grove` |
+| The Overworld | `Overworld: 800, 64, -1600 · Plains`<br>`Nether: 100, 64, -200` |
+| The Nether | `Nether: 100, 64, -200 · Nether Wastes`<br>`Overworld: 800, 64, -1600` |
 | The End, or a custom dimension | `The End: 5, 60, 5 · The End` (one line, as there is no equivalent) |
 
 Standing at 800, 64, -1600 in the Overworld, the second line says
@@ -36,18 +37,6 @@ height is passed through unchanged, because the 8-to-1 scale applies to x and z
 only. Every number is rounded down to a whole block.
 
 Put the compass away and the text disappears.
-
-### The other dimension's biome
-
-- **From the Overworld**, the Nether biome under the matching spot is worked
-  out from the world seed, so it shows even where nobody has been. This is
-  what generation would put there. If that part of the Nether is loaded, the
-  game is asked directly instead.
-- **From the Nether**, the Overworld biome shows only while that part of the
-  Overworld is loaded, for example when another player is standing there. The
-  Overworld has around eighty biomes, too many to work out from the seed four
-  times a second, so otherwise the biome is left off and only the coordinates
-  show.
 
 ## Settings
 
@@ -59,7 +48,6 @@ No experimental toggle is needed. Everything is on by default.
 | Show your coordinates | Coordinates on the top line |
 | Show the other dimension's coordinates | Coordinates on the second line: the original Compass Link readout |
 | Show your biome | The biome you are standing in, after your coordinates |
-| Show the other dimension's biome | The biome at the matching spot, after the other coordinates |
 
 A line with nothing switched on is left out, and with everything off the
 compass shows nothing. Turn off everything but **Show the other dimension's
@@ -77,7 +65,7 @@ icon, so write the values into
     "settings": [
       {
         "pack_id": "a5e66d13-59ba-4e3f-b26d-bac8ccaac290",
-        "values": { "compass_link:other_biome": false }
+        "values": { "compass_link:current_biome": false }
       }
     ]
   }
@@ -114,11 +102,7 @@ The unit tests cover the sums and the wording. These need the real game:
 
 1. The action bar shows **two lines**, the current dimension on top.
 2. Your biome is right: stand either side of a biome border.
-3. From the Overworld, the Nether biome matches what you find when you go
-   through the portal.
-4. From the Nether, the Overworld biome is left off unless someone is in that
-   part of the Overworld.
-5. Each setting hides its part after a reload.
+3. Each setting hides its part after a reload.
 
 Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
 

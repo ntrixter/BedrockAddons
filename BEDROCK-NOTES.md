@@ -498,15 +498,11 @@ creeper blasts were not checked.
   unloaded chunk**. The other dimension at a player's matching position is
   almost never loaded.
 - `Dimension.calculateClosestBiomeFromSeed(pos, biome, { boundingSize })` is
-  stable since 2.9.0, and is computed from the seed alone. `compass-link` uses
-  it to name the Nether biome under an Overworld player. It asks for each of
-  the five Nether biomes and takes the nearest. **UNVERIFIED** on three
-  counts:
-  - that it works for a dimension nobody is in;
-  - that "nearest of five" is the biome at the spot rather than a neighbour at
-    a border;
-  - how expensive it really is. The pack runs it at most once a second per
-    player, and only when the matching block changes.
+  stable since 2.9.0, and is computed from the seed alone. A `compass-link`
+  test build used it to name the Nether biome under an Overworld player. It
+  asked for each of the five Nether biomes and took the nearest. **In game the
+  result was wrong often enough that the feature was dropped.** Do not treat
+  "nearest match from the seed" as "the biome at this spot".
 - **UNVERIFIED: whether `setActionBar` shows a `\n` as a second line.**
   `compass-link` 1.2.0 relies on it for its two-line readout.
 
