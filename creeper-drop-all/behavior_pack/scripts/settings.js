@@ -33,6 +33,10 @@ export const DEFAULTS = {
   tnt: false,
   leaf_blocks: true,
   protect_containers: false,
+  no_break_creepers: false,
+  no_break_ghasts: false,
+  no_break_withers: false,
+  no_break_end_crystals: false,
   merge_grid: 4,
   max_blocks: 4096,
 };
@@ -48,6 +52,21 @@ export const SOURCE_GROUPS = {
   // NOTE: verify what typeId a TNT minecart actually reports from inside the
   // explosion event before relying on it - see TESTING.md T12.
   tnt: ["minecraft:tnt", "minecraft:tnt_minecart"],
+};
+
+/**
+ * Which entity typeIds each "doesn't break blocks" toggle covers, keyed by the
+ * setting name. Mobs only: TNT is not a mob, and mobGriefing never governed it.
+ *
+ * minecraft:wither is here and not in SOURCE_GROUPS because only the wither's
+ * spawn blast reports the wither itself as its source - its skulls cover every
+ * other wither explosion. UNVERIFIED in game; see TESTING.md T14.
+ */
+export const NO_BREAK_GROUPS = {
+  no_break_creepers: SOURCE_GROUPS.creepers,
+  no_break_ghasts: SOURCE_GROUPS.ghasts,
+  no_break_withers: [...SOURCE_GROUPS.withers, "minecraft:wither"],
+  no_break_end_crystals: SOURCE_GROUPS.end_crystals,
 };
 
 function clamp(n, lo, hi) {
@@ -82,4 +101,15 @@ export function buildHandledTypes(settings) {
     }
   }
   return handled;
+}
+
+/** Build the set of entity typeIds whose explosions break no blocks at all. */
+export function buildNoBreakTypes(settings) {
+  const noBreak = new Set();
+  for (const key of Object.keys(NO_BREAK_GROUPS)) {
+    if (settings[key]) {
+      for (const id of NO_BREAK_GROUPS[key]) noBreak.add(id);
+    }
+  }
+  return noBreak;
 }

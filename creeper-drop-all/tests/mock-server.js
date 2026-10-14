@@ -16,6 +16,10 @@ export const control = {
 
   /** Captured output. */
   spawned: [],
+  /** Blocks the pack removed itself in P2. */
+  removed: 0,
+  /** The impacted-block list as the pack left it, i.e. what vanilla destroys. */
+  impacted: null,
   pendingRuns: [],
   jobs: [],
 
@@ -121,16 +125,17 @@ export function makeBlock(index, typeId, colour, states = {}) {
     getComponent: () => undefined,
     north: () => undefined, south: () => undefined,
     east: () => undefined, west: () => undefined,
-    setPermutation() {},
+    setPermutation() { control.removed++; },
     getItemStack(amount, withData) {
       return new ItemStack(typeId, amount, withData ? colour : undefined);
     },
   };
 }
 
-/** Drive one creeper explosion over `blocks` and return what was spawned. */
-export function detonate(blocks) {
+/** Drive one explosion over `blocks` and return what was spawned. */
+export function detonate(blocks, sourceTypeId = "minecraft:creeper") {
   control.spawned = [];
+  control.removed = 0;
   control.pendingRuns = [];
   control.jobs = [];
 
@@ -144,12 +149,14 @@ export function detonate(blocks) {
 
   let impacted = blocks;
   hooks.explosionBefore({
-    source: { typeId: "minecraft:creeper", hasComponent: () => false, location: { x: 0, y: 0, z: 0 } },
+    source: { typeId: sourceTypeId, hasComponent: () => false, location: { x: 0, y: 0, z: 0 } },
     dimension,
     getImpactedBlocks: () => impacted,
     setImpactedBlocks: (a) => { impacted = a; },
     cancel: false,
   });
+
+  control.impacted = impacted;
 
   // P2 runs same-tick, P3 is a job drained over ticks.
   while (control.pendingRuns.length) control.pendingRuns.shift()();
