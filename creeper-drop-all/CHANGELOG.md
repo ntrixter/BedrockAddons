@@ -11,6 +11,8 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-15
+
 ### Added
 
 - **Drop glass**, a new setting, **on by default**. Exploded glass and glass

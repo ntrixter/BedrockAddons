@@ -115,6 +115,8 @@ That is the run that actually proves the no-experimental-toggle requirement was 
 | **T1** Explosion damage preserved | ✅ **PASSED** 2026-09-14 — creeper still damages the player while dropping everything |
 | **T2** Creeper drops | ☑ informally confirmed 2026-09-14 — drops looked complete by eye; not counted against crater size |
 | **T4b** Double chest | ✅ **PASSED** 2026-09-14 — 2 chest items + contents dropped exactly once. No duplication |
+| **T14** Don't break blocks | ☑ passed a player test 2026-10-15 — blast still hurts, breaks nothing. Which mobs were covered was not recorded; the wither spawn blast is still unverified |
+| **T15** Drop glass | ✅ **PASSED** 2026-10-15 — glass and panes drop back in their own colours |
 | everything else | not yet run |
 
 `EXPLOSION_MODE = "suppress"` is therefore the confirmed-correct path. The `"recreate"` fallback is
@@ -385,7 +387,7 @@ event fires, in which case the guard needs the real id.
 
 - [ ] Actual `typeId` reported by a TNT minecart explosion: `________________`
 
-### ☐ T14 — Don't break blocks, per mob
+### ◑ T14 — Don't break blocks, per mob — player test passed 2026-10-15, per-mob boxes unticked
 Turn on one *don't break blocks* toggle at a time, reload the world, and detonate that source on
 flat stone next to a dropped item and an unarmored Survival player.
 - [ ] Creeper (and a charged creeper): no blocks broken, nothing dropped, player still damaged
@@ -398,7 +400,7 @@ flat stone next to a dropped item and an unarmored Survival player.
 - [ ] With only the creeper toggle on, a ghast fireball still breaks blocks and drops all of them
 - [ ] `mobGriefing` left true throughout: an enderman still picks up blocks
 
-### ☐ T15 — Drop glass
+### ☑ T15 — Drop glass — PASSED 2026-10-15
 - [ ] Setting on (default): a creeper blast through plain glass, a plain pane, and at least two
       stained colours of each drops every block back as its own kind and colour
 - [ ] Tinted glass drops itself
