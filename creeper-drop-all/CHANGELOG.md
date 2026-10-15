@@ -13,6 +13,11 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ### Added
 
+- **Drop glass**, a new setting, **on by default**. Exploded glass and glass
+  panes now drop themselves instead of nothing — plain, tinted and all sixteen
+  stained colours, each as its own kind. Vanilla glass drops nothing without
+  Silk Touch, and this pack mines unenchanted, so until now every window a
+  creeper took out was simply gone.
 - **Don't break blocks**, four new settings, one each for creepers, ghast
   fireballs, withers and end crystals, all **off by default**. With one on, that
   mob's explosions still hurt and knock back but leave every block in place.
