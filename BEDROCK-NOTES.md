@@ -245,6 +245,12 @@ tooling originally conflated the two and rejected the first script pack outright
   explosions are the only blasts that still lose a fraction of their blocks.
   `tntExplosionDropDecay` exists and already defaults to `false`, which is why
   TNT needs no help.
+- **`beforeEvents.entityHurt` is stable in `@minecraft/server` 2.8.0 and
+  cancellable**, with engine-side filters for damage cause and entity type.
+  **UNVERIFIED in game:** that a dropped item entity reports explosion damage
+  through it, so that `cancel = true` keeps the item alive.
+  `creeper-drop-all`'s "Protect dropped items" setting depends on it; see its
+  TESTING.md T16 and replace this line with the result.
 - **Every before-event in a tick fires before any `system.run` callback.** Two
   explosions in the same tick each snapshot the shared region while it is still
   intact, so anything derived from the blocks has to track ownership across the

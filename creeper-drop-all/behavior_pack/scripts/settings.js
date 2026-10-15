@@ -34,6 +34,7 @@ export const DEFAULTS = {
   leaf_blocks: true,
   glass_blocks: true,
   protect_containers: false,
+  protect_items: true,
   no_break_creepers: false,
   no_break_ghasts: false,
   no_break_withers: false,

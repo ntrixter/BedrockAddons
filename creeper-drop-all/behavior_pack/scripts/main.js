@@ -21,6 +21,10 @@
  *
  * Items spawn after the blast has resolved, so the explosion cannot destroy
  * its own drops.
+ *
+ * Separately, "Protect dropped items" cancels explosion damage to item entities
+ * through world.beforeEvents.entityHurt. That is independent of everything
+ * above: it covers every explosion, handled source or not.
  */
 
 import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
@@ -231,6 +235,7 @@ function init() {
   handledTypes = buildHandledTypes(settings);
   noBreakTypes = buildNoBreakTypes(settings);
   ensureRuntime();
+  if (settings.protect_items) subscribeItemProtection();
 
   // This line is the canary. If it does NOT appear in the content log (or in
   // BDS stdout), the script never loaded at all - on a dedicated server the
@@ -244,6 +249,7 @@ function init() {
       "] leafBlocks=" + settings.leaf_blocks +
       " glassBlocks=" + settings.glass_blocks +
       " protectContainers=" + settings.protect_containers +
+      " protectItems=" + settings.protect_items +
       " mergeGrid=" + settings.merge_grid +
       " maxBlocks=" + settings.max_blocks +
       " mode=" + EXPLOSION_MODE
@@ -281,6 +287,50 @@ function ensureRuntime() {
 
 function warn(msg) {
   if (DEBUG) console.warn("[CreeperDropAll] " + msg);
+}
+
+/* ------------------------------------------------------------------ *
+ * Dropped items survive explosions
+ * ------------------------------------------------------------------ */
+
+/**
+ * Explosion damage causes, as EntityDamageCause string values. blockExplosion is
+ * a blast with no entity behind it (a bed in the Nether, a respawn anchor);
+ * entityExplosion is everything with one (creepers, TNT, fireballs, crystals).
+ */
+const EXPLOSION_CAUSES = ["blockExplosion", "entityExplosion"];
+
+/**
+ * A dropped item is an entity with a few points of health, and vanilla
+ * explosions kill it like any other entity. Cancelling the hurt event is the
+ * whole fix: stable in @minecraft/server 2.8.0, no experiment, and nothing to
+ * snapshot or respawn, so there is no way for it to duplicate an item.
+ *
+ * Both filters are applied by the engine, so the callback only ever sees item
+ * entities taking explosion damage. Knockback is not damage and still applies.
+ *
+ * Subscribed only when the setting is on. Subscribing is not legal in
+ * restricted execution, so this runs from worldLoad, never from a before-event.
+ */
+function subscribeItemProtection() {
+  try {
+    world.beforeEvents.entityHurt.subscribe(onItemHurtBefore, {
+      allowedDamageCauses: EXPLOSION_CAUSES,
+      entityFilter: { type: "minecraft:item" },
+    });
+  } catch (e) {
+    // Engine without the event: the pack still runs, items behave as vanilla.
+    console.warn("[CreeperDropAll] item protection unavailable: " + e);
+  }
+}
+
+/** RESTRICTED execution. Setting `cancel` is the one thing it does. */
+function onItemHurtBefore(ev) {
+  // Re-check rather than trust the filters alone: they are the engine's to
+  // honour, and an over-broad delivery must never cancel damage to a mob.
+  if (ev.hurtEntity.typeId !== "minecraft:item") return;
+  if (EXPLOSION_CAUSES.indexOf(ev.damageSource.cause) === -1) return;
+  ev.cancel = true;
 }
 
 /* ------------------------------------------------------------------ *

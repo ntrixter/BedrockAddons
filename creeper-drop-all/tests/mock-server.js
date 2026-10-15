@@ -34,7 +34,13 @@ export const control = {
   bedLootHalves: "foot",
 };
 
-export const hooks = { explosionBefore: null, worldLoad: null };
+export const hooks = {
+  explosionBefore: null,
+  worldLoad: null,
+  /** Set only if the pack subscribed, with the options it passed. */
+  entityHurtBefore: null,
+  entityHurtOptions: null,
+};
 
 export class ItemStack {
   constructor(typeId, amount = 1, data = undefined) {
@@ -100,7 +106,12 @@ const lootManager = {
 };
 
 export const world = {
-  beforeEvents: { explosion: { subscribe(fn) { hooks.explosionBefore = fn; } } },
+  beforeEvents: {
+    explosion: { subscribe(fn) { hooks.explosionBefore = fn; } },
+    entityHurt: {
+      subscribe(fn, options) { hooks.entityHurtBefore = fn; hooks.entityHurtOptions = options; },
+    },
+  },
   afterEvents: { worldLoad: { subscribe(fn) { hooks.worldLoad = fn; } } },
   getPackSettings() { return control.packSettings; },
   getLootTableManager() { return lootManager; },
@@ -163,4 +174,21 @@ export function detonate(blocks, sourceTypeId = "minecraft:creeper") {
   for (const job of control.jobs) { while (!job.next().done) { /* tick */ } }
 
   return control.spawned;
+}
+
+/**
+ * Deliver one entityHurt before-event as the pack would see it, IGNORING the
+ * subscription filters, and report whether the pack cancelled it. Returns
+ * undefined when the pack never subscribed.
+ */
+export function hurt(entityTypeId, cause) {
+  if (!hooks.entityHurtBefore) return undefined;
+  const ev = {
+    hurtEntity: { typeId: entityTypeId },
+    damageSource: { cause },
+    damage: 5,
+    cancel: false,
+  };
+  hooks.entityHurtBefore(ev);
+  return ev.cancel;
 }

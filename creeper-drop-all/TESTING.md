@@ -406,6 +406,16 @@ flat stone next to a dropped item and an unarmored Survival player.
 - [ ] Tinted glass drops itself
 - [ ] Setting off: the same blast drops no glass at all
 
+### ☐ T16 — Protect dropped items
+Drop a stack of cobblestone and a stack of something burnable on flat stone, then detonate beside
+them. **Unverified:** the pack assumes an item entity fires `beforeEvents.entityHurt` when an
+explosion damages it. If items still vanish with the setting on, that assumption is wrong.
+- [ ] Setting on (default), creeper: both stacks are still on the ground afterwards
+- [ ] Same with TNT, and with a bed in the Nether (a `blockExplosion`, no entity behind it)
+- [ ] An unarmored Survival player in the same blast is still damaged
+- [ ] Setting off: the same creeper blast destroys both stacks, as vanilla
+- [ ] Setting on, an item dropped into lava still burns
+
 ---
 
 ## ☐ T13 — Bedrock Dedicated Server smoke test
