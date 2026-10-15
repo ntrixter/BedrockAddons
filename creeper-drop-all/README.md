@@ -125,7 +125,7 @@ disables every other pack on that world.
 [
   {
     "pack_id": "c60c1a0f-5864-4695-a2b5-07999da64790",
-    "version": [1, 1, 1]
+    "version": [1, 2, 0]
   }
 ]
 ```
@@ -137,7 +137,7 @@ Every release's notes carry this same block with the version already filled in.
 > is `format_version` 3, where versions are SemVer strings, and it is not yet
 > settled whether `world_behavior_packs.json` must match that form — see the
 > UNVERIFIED note in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md). If the array above
-> is rejected, use `"version": "1.1.1"` instead. The two files have to agree.
+> is rejected, use `"version": "1.2.0"` instead. The two files have to agree.
 
 ## Settings
 
