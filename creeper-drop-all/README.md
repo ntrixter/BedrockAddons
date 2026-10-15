@@ -36,7 +36,12 @@ blasted canopy can be rebuilt. Every leaf type counts, poplar and pale oak
 included, and each drops its own kind. See [Settings](#settings) to turn that
 off.
 
-Beds and banners are a second exception, for a different reason. Their colour
+Glass is a second exception. Vanilla glass and glass panes drop nothing unless
+mined with Silk Touch, so by default the pack hands back the block itself
+instead — plain, tinted and all sixteen stained colours, each as its own kind.
+See [Settings](#settings) to turn that off too.
+
+Beds and banners are a third exception, for a different reason. Their colour
 lives in block entity data rather than in the block itself, so the loot tables
 cannot see it — the pack reads the block's own item instead, and a blue bed
 drops a blue bed.
@@ -144,6 +149,7 @@ stay enabled.
 | Creepers / Ghast fireballs / Wither skulls / End crystals | on | Which explosions hand their blocks back |
 | TNT | off | Redundant in vanilla; see above |
 | Drop leaf blocks | on | Exploded leaves drop the leaf block itself, so the canopy can be put back. Off: saplings, sticks and apples at vanilla rates, which is nothing at all most of the time |
+| Drop glass | on | Exploded glass and glass panes drop themselves, every colour its own kind. Off: they drop nothing, as vanilla glass does without Silk Touch |
 | Protect containers from explosions | off | Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them |
 | Merge drops within (blocks) | 4 | Groups nearby drops into fewer item entities. `1` spawns a pile at every block — most faithful, hardest on the game |
 | Max blocks per explosion | 4096 | Safety limit. A bigger explosion is handed back to Minecraft untouched rather than half-processed |

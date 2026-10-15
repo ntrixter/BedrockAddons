@@ -238,6 +238,7 @@ function init() {
     "[CreeperDropAll] loaded. sources=[" +
       Array.from(handledTypes).join(", ") +
       "] leafBlocks=" + settings.leaf_blocks +
+      " glassBlocks=" + settings.glass_blocks +
       " protectContainers=" + settings.protect_containers +
       " mergeGrid=" + settings.merge_grid +
       " maxBlocks=" + settings.max_blocks +
@@ -635,6 +636,12 @@ function generateLoot(perm) {
     // sapling roll rather than a leaf that drops nothing at all.
   }
 
+  if (settings.glass_blocks && isGlassBlock(perm.type.id)) {
+    const glass = glassBlockLoot(perm);
+    if (glass) return glass;
+    // Item unbuildable: fall through to the ladder, i.e. vanilla's nothing.
+  }
+
   for (let i = 0; i < toolLadder.length; i++) {
     let out;
     try {
@@ -695,6 +702,36 @@ function leafBlockLoot(perm) {
     return [new ItemStack(perm.type.id, 1)];
   } catch (err) {
     warn("leaf item " + perm.type.id + ": " + err);
+    return undefined;
+  }
+}
+
+/**
+ * Glass and glass panes drop nothing unless mined with Silk Touch, and this
+ * pack mines unenchanted on purpose - so without this, every window a creeper
+ * takes out is simply gone.
+ *
+ * Matched by substring, like leaves. Stained glass is flattened to one id per
+ * colour (minecraft:red_stained_glass, minecraft:red_stained_glass_pane), so
+ * the id alone carries the colour and every colour drops its own kind. Checked
+ * against the whole 1,463-block palette at 1.26.50, "glass" matches all 69
+ * glass and pane ids and nothing else: plain, the 16 stained colours, tinted
+ * glass (which already drops itself), and Education Edition's hard_ variants.
+ */
+function isGlassBlock(typeId) {
+  return typeId.indexOf("glass") !== -1;
+}
+
+/**
+ * "Drop glass" ON: hand the block itself back. No block states feed into a
+ * glass item, so building it from the id is exact. Returns undefined if the
+ * item cannot be built, so the caller falls back to the ordinary ladder.
+ */
+function glassBlockLoot(perm) {
+  try {
+    return [new ItemStack(perm.type.id, 1)];
+  } catch (err) {
+    warn("glass item " + perm.type.id + ": " + err);
     return undefined;
   }
 }

@@ -88,6 +88,16 @@
       "text": "§7On: exploded leaves drop the leaf block itself, so you can put the canopy back the way it was. Off: leaves roll for saplings, sticks and apples at the ordinary vanilla rates, which means most of them drop nothing at all.§r"
     },
     {
+      "type": "toggle",
+      "text": "Drop glass",
+      "name": "creeperdropall:glass_blocks",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7On: exploded glass and glass panes drop themselves, every colour its own kind. Off: they drop nothing, as vanilla glass does without Silk Touch.§r"
+    },
+    {
       "type": "label",
       "text": "§7Protection§r"
     },

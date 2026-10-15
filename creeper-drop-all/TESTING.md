@@ -385,6 +385,12 @@ event fires, in which case the guard needs the real id.
 
 - [ ] Actual `typeId` reported by a TNT minecart explosion: `________________`
 
+### ☐ T15 — Drop glass
+- [ ] Setting on (default): a creeper blast through plain glass, a plain pane, and at least two
+      stained colours of each drops every block back as its own kind and colour
+- [ ] Tinted glass drops itself
+- [ ] Setting off: the same blast drops no glass at all
+
 ---
 
 ## ☐ T13 — Bedrock Dedicated Server smoke test

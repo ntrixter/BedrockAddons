@@ -32,6 +32,7 @@ export const DEFAULTS = {
   end_crystals: true,
   tnt: false,
   leaf_blocks: true,
+  glass_blocks: true,
   protect_containers: false,
   merge_grid: 4,
   max_blocks: 4096,

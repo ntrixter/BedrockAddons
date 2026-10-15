@@ -11,6 +11,14 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+### Added
+
+- **Drop glass**, a new setting, **on by default**. Exploded glass and glass
+  panes now drop themselves instead of nothing — plain, tinted and all sixteen
+  stained colours, each as its own kind. Vanilla glass drops nothing without
+  Silk Touch, and this pack mines unenchanted, so until now every window a
+  creeper took out was simply gone.
+
 ## [1.1.1] - 2026-09-20
 
 ### Fixed

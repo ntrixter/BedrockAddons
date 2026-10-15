@@ -166,5 +166,42 @@ console.log("6. A lone bed half");
   }
 }
 
+console.log("");
+console.log("8. Drop glass: every glass and pane id, every colour");
+{
+  // All 69 ids containing "glass" in the 1.26.50 palette, from
+  // metadata/vanilladata_modules/mojang-blocks.json. Built from the colour list
+  // rather than typed out, but the count is asserted so a missed colour shows.
+  const COLOURS = ["white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+    "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"];
+  const GLASS = ["minecraft:glass", "minecraft:glass_pane", "minecraft:tinted_glass",
+    "minecraft:hard_glass", "minecraft:hard_glass_pane"];
+  for (const c of COLOURS) {
+    GLASS.push(`minecraft:${c}_stained_glass`, `minecraft:${c}_stained_glass_pane`,
+      `minecraft:hard_${c}_stained_glass`, `minecraft:hard_${c}_stained_glass_pane`);
+  }
+  check("the list covers all 69 palette ids", GLASS.length, 69);
+
+  await load({ "creeperdropall:merge_grid": 1 });
+  let spawned = detonate(GLASS.map((id, i) => makeBlock(i, id)));
+  let wrong = 0;
+  for (let i = 0; i < GLASS.length; i++) {
+    const got = spawned.filter((s) => s.x === i);
+    if (got.length !== 1 || got[0].typeId !== GLASS[i]) wrong++;
+  }
+  check("on by default: each drops exactly itself, colour intact", wrong, 0);
+
+  await load({ "creeperdropall:glass_blocks": false, "creeperdropall:merge_grid": 1 });
+  spawned = detonate([makeBlock(0, "minecraft:glass"), makeBlock(1, "minecraft:red_stained_glass_pane"), makeBlock(2, "minecraft:stone")]);
+  check("off: glass drops nothing, as vanilla", countOf(spawned, (s) => s.typeId.includes("glass")), 0);
+  check("off: stone is unaffected", countOf(spawned, (s) => s.typeId === "minecraft:cobblestone"), 1);
+
+  await load({ "creeperdropall:merge_grid": 1 });
+  control.itemStackFailures = new Set(["minecraft:glass"]);
+  spawned = detonate([makeBlock(0, "minecraft:glass"), makeBlock(1, "minecraft:stone")]);
+  check("item unbuildable: falls through to vanilla, does not crash", countOf(spawned, (s) => s.typeId === "minecraft:glass"), 0);
+  check("stone still handled afterwards", countOf(spawned, (s) => s.typeId === "minecraft:cobblestone"), 1);
+}
+
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : `${failures} CHECK(S) FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);
