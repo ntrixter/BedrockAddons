@@ -24,7 +24,7 @@
  */
 
 import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
-import { DEFAULTS, loadSettings, buildHandledTypes } from "./settings.js";
+import { DEFAULTS, loadSettings, buildHandledTypes, buildNoBreakTypes } from "./settings.js";
 
 /* ------------------------------------------------------------------ *
  * Tuning constants - troubleshooting knobs, not player-facing options.
@@ -170,6 +170,7 @@ const MULTIBLOCK_SPARE_HALF = {
 
 let settings;
 let handledTypes;
+let noBreakTypes;
 let lootManager;
 let toolLadder;
 let shears;
@@ -228,6 +229,7 @@ world.afterEvents.worldLoad.subscribe(init);
 function init() {
   settings = loadSettings();
   handledTypes = buildHandledTypes(settings);
+  noBreakTypes = buildNoBreakTypes(settings);
   ensureRuntime();
 
   // This line is the canary. If it does NOT appear in the content log (or in
@@ -237,6 +239,8 @@ function init() {
   console.warn(
     "[CreeperDropAll] loaded. sources=[" +
       Array.from(handledTypes).join(", ") +
+      "] noBreak=[" +
+      Array.from(noBreakTypes).join(", ") +
       "] leafBlocks=" + settings.leaf_blocks +
       " protectContainers=" + settings.protect_containers +
       " mergeGrid=" + settings.merge_grid +
@@ -250,6 +254,7 @@ function ensureSettings() {
   if (!settings) {
     settings = Object.assign({}, DEFAULTS);
     handledTypes = buildHandledTypes(settings);
+    noBreakTypes = buildNoBreakTypes(settings);
   }
 }
 
@@ -288,6 +293,21 @@ function onExplosionBefore(ev) {
   if (!source) return; // no owning entity (e.g. dimension.createExplosion)
 
   ensureSettings();
+
+  // "Doesn't break blocks" for this mob: empty the block list and stop. Checked
+  // before the drop toggles, so it works whether or not drops are on for the
+  // same source. Damage, knockback, sound and particles survive an empty list
+  // (TESTING.md T1), which is what lets mobGriefing stay true for everything
+  // else - endermen, villagers, sheep.
+  if (noBreakTypes.has(source.typeId)) {
+    try {
+      ev.setImpactedBlocks([]);
+    } catch (e) {
+      warn("setImpactedBlocks (noBreak): " + e);
+    }
+    return;
+  }
+
   if (!handledTypes.has(source.typeId)) return;
 
   let blocks;

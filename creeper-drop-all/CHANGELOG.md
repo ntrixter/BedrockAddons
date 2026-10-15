@@ -11,6 +11,14 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+### Added
+
+- **Don't break blocks**, four new settings, one each for creepers, ghast
+  fireballs, withers and end crystals, all **off by default**. With one on, that
+  mob's explosions still hurt and knock back but leave every block in place.
+  This is the per-mob alternative to `mobGriefing false`, which would also stop
+  endermen, villagers and every other mob that changes blocks.
+
 ## [1.1.1] - 2026-09-20
 
 ### Fixed
