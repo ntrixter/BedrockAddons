@@ -1,0 +1,63 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Netherite No Despawn",
+    "description": "v1.0.0 - Dropped netherite tools, weapons and armour never despawn, and optionally neither do items you have renamed.",
+    "uuid": "8a0e40f4-750a-45fc-9975-96382613e356",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "45f7c97e-0ab5-45e1-b9eb-ea14b023a82b",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "§l§aNetherite No Despawn§r - dropped items that would normally vanish after five minutes stay where they fell."
+    },
+    {
+      "type": "label",
+      "text": "§7Changes here take effect the next time the world loads.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Netherite tools, weapons and armour",
+      "name": "netherite_no_despawn:netherite",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Swords, spears, pickaxes, axes, shovels, hoes, the four armour pieces, and netherite horse and nautilus armour. Ingots, scrap, blocks and upgrade templates are not covered.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Renamed items",
+      "name": "netherite_no_despawn:named_items",
+      "default": false
+    },
+    {
+      "type": "label",
+      "text": "§7Any item given a name at an anvil, whatever it is made of. Off by default: a renamed stack of dirt would never go away either.§r"
+    }
+  ]
+}
