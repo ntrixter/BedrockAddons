@@ -11,6 +11,14 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
 
 ## [Unreleased]
 
+### Added
+
+- **Protect dropped items from explosions**, a new setting, **on by default**.
+  Items lying on the ground now survive every explosion instead of being
+  destroyed: creepers, TNT, fireballs, end crystals, beds and respawn anchors
+  alike, whether or not that source is handed its blocks back. The blast can
+  still knock them about, and fire and lava still burn them.
+
 ## [1.2.0] - 2026-10-15
 
 ### Added

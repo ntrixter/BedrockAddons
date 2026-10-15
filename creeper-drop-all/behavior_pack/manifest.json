@@ -112,6 +112,16 @@
       "text": "§7Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them. Off by default, because blast-proofing storage is a bigger change than handing your blocks back.§r"
     },
     {
+      "type": "toggle",
+      "text": "Protect dropped items from explosions",
+      "name": "creeperdropall:protect_items",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Items lying on the ground survive every explosion - creepers, TNT, beds, anything - instead of being destroyed. The blast can still knock them about. Fire and lava burn them as usual.§r"
+    },
+    {
       "type": "label",
       "text": "§7Block damage§r"
     },

@@ -16,7 +16,7 @@
 // where the engine's behaviour is not established, the suite runs under EVERY
 // possibility rather than the one that seemed likely. See control.bedLootHalves.
 
-import { control, hooks, makeBlock, detonate } from "@minecraft/server";
+import { control, hooks, makeBlock, detonate, hurt } from "@minecraft/server";
 
 let failures = 0;
 function check(label, actual, expected) {
@@ -29,6 +29,8 @@ function check(label, actual, expected) {
 let generation = 0;
 async function load(packSettings = {}) {
   control.packSettings = packSettings;
+  hooks.entityHurtBefore = null;
+  hooks.entityHurtOptions = null;
   control.itemStackFailures = new Set();
   await import(`../behavior_pack/scripts/main.js?case=${generation++}`);
   hooks.worldLoad();
@@ -248,6 +250,28 @@ console.log("8. Drop glass: every glass and pane id, every colour");
   spawned = detonate([makeBlock(0, "minecraft:glass"), makeBlock(1, "minecraft:stone")]);
   check("item unbuildable: falls through to vanilla, does not crash", countOf(spawned, (s) => s.typeId === "minecraft:glass"), 0);
   check("stone still handled afterwards", countOf(spawned, (s) => s.typeId === "minecraft:cobblestone"), 1);
+}
+
+console.log("");
+console.log("9. Protect dropped items from explosions");
+{
+  await load();
+  check("on by default: subscribed to entityHurt", hooks.entityHurtBefore !== null, true);
+  const opts = hooks.entityHurtOptions || {};
+  check("filter asks the engine for items only", opts.entityFilter && opts.entityFilter.type, "minecraft:item");
+  check("filter asks for both explosion causes",
+    JSON.stringify((opts.allowedDamageCauses || []).slice().sort()),
+    JSON.stringify(["blockExplosion", "entityExplosion"]));
+  check("item, creeper/TNT blast: cancelled", hurt("minecraft:item", "entityExplosion"), true);
+  check("item, bed/anchor blast: cancelled", hurt("minecraft:item", "blockExplosion"), true);
+  // The callback must not lean on the filters alone.
+  check("item in lava: left alone", hurt("minecraft:item", "lava"), false);
+  check("item in fire: left alone", hurt("minecraft:item", "fire"), false);
+  check("player in a blast: still hurt", hurt("minecraft:player", "entityExplosion"), false);
+  check("mob in a blast: still hurt", hurt("minecraft:zombie", "blockExplosion"), false);
+
+  await load({ "creeperdropall:protect_items": false });
+  check("off: never subscribes, so items behave as vanilla", hooks.entityHurtBefore, null);
 }
 
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : `${failures} CHECK(S) FAILED`}`);

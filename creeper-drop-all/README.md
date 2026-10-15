@@ -152,6 +152,7 @@ stay enabled.
 | Drop leaf blocks | on | Exploded leaves drop the leaf block itself, so the canopy can be put back. Off: saplings, sticks and apples at vanilla rates, which is nothing at all most of the time |
 | Drop glass | on | Exploded glass and glass panes drop themselves, every colour its own kind. Off: they drop nothing, as vanilla glass does without Silk Touch |
 | Protect containers from explosions | off | Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them |
+| Protect dropped items from explosions | on | Items lying on the ground survive every explosion, whatever caused it, instead of being destroyed. They can still be knocked about, and fire and lava still burn them |
 | Creepers / Ghast fireballs / Withers / End crystals don't break blocks | off | That mob's explosions leave every block in place. The blast still hurts and knocks back. See [Stopping block damage](#stopping-block-damage) |
 | Merge drops within (blocks) | 4 | Groups nearby drops into fewer item entities. `1` spawns a pile at every block — most faithful, hardest on the game |
 | Max blocks per explosion | 4096 | Safety limit. A bigger explosion is handed back to Minecraft untouched rather than half-processed |
