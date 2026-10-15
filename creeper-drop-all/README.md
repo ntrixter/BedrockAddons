@@ -5,7 +5,8 @@ destroys the blocks but only drops a fraction of them. Java fixed this in 1.19.3
 with the `mobExplosionDropDecay` game rule. **Bedrock never got it**, and still
 has no equivalent, so the only way to get those blocks back is a script. This
 add-on hands back every block a mob explosion destroys, and can optionally make
-storage survive the blast entirely.
+storage survive the blast entirely, or stop chosen mobs' explosions from breaking
+blocks at all.
 
 - **Add-on ID:** `creeper-drop-all` (kebab-case; also the tag prefix, the issue
   label and the artifact filename)
@@ -151,11 +152,32 @@ stay enabled.
 | Drop leaf blocks | on | Exploded leaves drop the leaf block itself, so the canopy can be put back. Off: saplings, sticks and apples at vanilla rates, which is nothing at all most of the time |
 | Drop glass | on | Exploded glass and glass panes drop themselves, every colour its own kind. Off: they drop nothing, as vanilla glass does without Silk Touch |
 | Protect containers from explosions | off | Chests, barrels, shulker boxes, furnaces, hoppers, droppers, dispensers, brewing stands and ender chests survive the blast untouched, contents and all. The crater still forms around them |
+| Creepers / Ghast fireballs / Withers / End crystals don't break blocks | off | That mob's explosions leave every block in place. The blast still hurts and knocks back. See [Stopping block damage](#stopping-block-damage) |
 | Merge drops within (blocks) | 4 | Groups nearby drops into fewer item entities. `1` spawns a pile at every block — most faithful, hardest on the game |
 | Max blocks per explosion | 4096 | Safety limit. A bigger explosion is handed back to Minecraft untouched rather than half-processed |
 
 Settings are per world, editable by the world or server owner, and read when the
 world loads — **a change applies on the next load**.
+
+### Stopping block damage
+
+The usual way to stop creepers wrecking a base is `/gamerule mobGriefing false`,
+but that rule is a blunt instrument: it also stops endermen picking up blocks,
+villagers farming, sheep eating grass and every other mob that changes the
+world. The four *don't break blocks* toggles stop explosion damage one mob at a
+time and leave `mobGriefing` on for everything else.
+
+| Toggle | Covers |
+| --- | --- |
+| Creepers don't break blocks | Creepers, charged ones included |
+| Ghast fireballs don't break blocks | Ghast fireballs |
+| Withers don't break blocks | Both kinds of wither skull, and the blast a wither makes when it spawns |
+| End crystals don't break blocks | End crystals |
+
+A toggle here wins over the drop toggle for the same mob: with both on, nothing
+breaks and so nothing drops. Only explosions are covered — anything a wither
+breaks without exploding is not. TNT has no toggle: it is not a mob, and
+`mobGriefing` never applied to it.
 
 ### On a dedicated server
 
@@ -210,13 +232,16 @@ drops.
 - **Sign text and banner patterns are lost**, exactly as in a vanilla explosion.
 - **`mobGriefing false` disables everything.** With that rule off, mob
   explosions destroy no blocks at all, so there is nothing to hand back. The
-  pack detects this and stays out of the way entirely.
+  pack detects this and stays out of the way entirely. To stop explosions
+  without turning off other mobs, use the
+  [don't break blocks](#stopping-block-damage) toggles instead.
 - **Conflicts with other explosion add-ons.** If another pack also hooks
   `beforeEvents.explosion` and edits the impacted-block list, the result depends
   on which handler runs first, and Bedrock does not define that order.
-- **Not an anti-grief pack on its own.** Blocks are still destroyed; you just
-  get all of them back. Turn on *Protect containers* if you want storage itself
-  to survive.
+- **Not an anti-grief pack by default.** Out of the box, blocks are still
+  destroyed; you just get all of them back. Turn on *Protect containers* if you
+  want storage itself to survive, or a *don't break blocks* toggle to stop a
+  mob's explosions breaking anything.
 
 ## Tests
 

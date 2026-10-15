@@ -113,6 +113,38 @@
     },
     {
       "type": "label",
+      "text": "§7Block damage§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Creepers don't break blocks",
+      "name": "creeperdropall:no_break_creepers",
+      "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "Ghast fireballs don't break blocks",
+      "name": "creeperdropall:no_break_ghasts",
+      "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "Withers don't break blocks",
+      "name": "creeperdropall:no_break_withers",
+      "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "End crystals don't break blocks",
+      "name": "creeperdropall:no_break_end_crystals",
+      "default": false
+    },
+    {
+      "type": "label",
+      "text": "§7The blast still hurts and knocks back, but leaves every block where it was. Use these instead of turning §omobGriefing§r§7 off, which would also stop endermen, villagers and other mobs that change blocks. Only explosions are covered: anything a wither breaks without exploding is not.§r"
+    },
+    {
+      "type": "label",
       "text": "§7Advanced§r"
     },
     {

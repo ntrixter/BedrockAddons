@@ -167,6 +167,53 @@ console.log("6. A lone bed half");
 }
 
 console.log("");
+console.log("7. Doesn't break blocks, per mob");
+{
+  // The point of these toggles is to stand in for mobGriefing=false on
+  // explosions only, so a covered blast must leave vanilla nothing to destroy,
+  // remove nothing itself and drop nothing - and an uncovered one must be
+  // untouched.
+  const blast = () => [makeBlock(0, "minecraft:stone"), makeBlock(1, "minecraft:oak_leaves")];
+  const cases = [
+    ["creepers", "minecraft:creeper"],
+    ["ghasts", "minecraft:fireball"],
+    ["withers", "minecraft:wither_skull"],
+    ["withers", "minecraft:wither_skull_dangerous"],
+    ["withers", "minecraft:wither"],
+    ["end_crystals", "minecraft:ender_crystal"],
+  ];
+  for (const [key, source] of cases) {
+    // With drops on and off for the same source: no-break must win either way.
+    for (const drops of [true, false]) {
+      await load({ ["creeperdropall:no_break_" + key]: true, ["creeperdropall:" + key]: drops, "creeperdropall:merge_grid": 1 });
+      const spawned = detonate(blast(), source);
+      const tag = `[${source}, drops ${drops ? "on" : "off"}]`;
+      check(`${tag} vanilla is left no blocks to destroy`, control.impacted.length, 0);
+      check(`${tag} the pack removes none itself`, control.removed, 0);
+      check(`${tag} nothing drops`, spawned.length, 0);
+    }
+  }
+
+  // Off by default: a plain creeper still blows a hole and drops it all.
+  await load({ "creeperdropall:merge_grid": 1 });
+  let spawned = detonate(blast());
+  check("default: creeper still removes its blocks", control.removed, 2);
+  check("default: and drops them", spawned.length, 2);
+
+  // One mob's toggle leaves the others alone.
+  await load({ "creeperdropall:no_break_creepers": true, "creeperdropall:merge_grid": 1 });
+  spawned = detonate(blast(), "minecraft:fireball");
+  check("creepers-only: a ghast fireball still removes its blocks", control.removed, 2);
+  check("creepers-only: and drops them", spawned.length, 2);
+
+  // TNT is not a mob and has no toggle: with drops off for it, it stays vanilla.
+  await load({ "creeperdropall:no_break_creepers": true, "creeperdropall:no_break_ghasts": true,
+    "creeperdropall:no_break_withers": true, "creeperdropall:no_break_end_crystals": true });
+  detonate(blast(), "minecraft:tnt");
+  check("all four on: TNT is still handed to vanilla untouched", control.impacted.length, 2);
+}
+
+console.log("");
 console.log("8. Drop glass: every glass and pane id, every colour");
 {
   // All 69 ids containing "glass" in the 1.26.50 palette, from

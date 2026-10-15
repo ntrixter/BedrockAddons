@@ -385,6 +385,19 @@ event fires, in which case the guard needs the real id.
 
 - [ ] Actual `typeId` reported by a TNT minecart explosion: `________________`
 
+### ☐ T14 — Don't break blocks, per mob
+Turn on one *don't break blocks* toggle at a time, reload the world, and detonate that source on
+flat stone next to a dropped item and an unarmored Survival player.
+- [ ] Creeper (and a charged creeper): no blocks broken, nothing dropped, player still damaged
+- [ ] Ghast fireball: same
+- [ ] Wither skull, both kinds: same
+- [ ] End crystal: same
+- [ ] Wither spawn blast. **Unverified:** the pack assumes it reports `minecraft:wither` as its
+      source. If blocks still break, log `source?.typeId` at the top of `onExplosionBefore` and
+      record what arrives: `________________`
+- [ ] With only the creeper toggle on, a ghast fireball still breaks blocks and drops all of them
+- [ ] `mobGriefing` left true throughout: an enderman still picks up blocks
+
 ### ☐ T15 — Drop glass
 - [ ] Setting on (default): a creeper blast through plain glass, a plain pane, and at least two
       stained colours of each drops every block back as its own kind and colour
