@@ -1,23 +1,22 @@
-# Netherite No Despawn
+# Never Lost
 
 A dropped item vanishes after five minutes on the ground. Lose a fight in the
 Nether and walk back too slowly, and your netherite gear is gone for good. With
-this pack, dropped netherite tools, weapons and armour stay where they fell
-until someone picks them up. A setting extends the same protection to any item
-you have renamed at an anvil.
+this pack, dropped netherite and anything enchanted with Mending stay where
+they fell until someone picks them up. A setting extends the same protection to
+any item you have renamed at an anvil.
 
-- **Add-on ID:** `netherite-no-despawn` (kebab-case; also the tag prefix, the
+- **Add-on ID:** `never-lost` (kebab-case; also the tag prefix, the
   issue label and the artifact filename)
 - **Minimum Minecraft version:** 1.26.30 (`min_engine_version` in the manifest)
 - **Packs:** behaviour pack only
 - **Author:** ntrixter
-- **No experiments and no resource pack.** Both kinds of protection can be
+- **No experiments and no resource pack.** Each kind of protection can be
   switched on or off under the gear icon.
 
 ## What is kept
 
-With the default settings, every netherite item that is a tool, a weapon or
-armour:
+With the default settings, every netherite item:
 
 | Kind | Items |
 | --- | --- |
@@ -25,12 +24,13 @@ armour:
 | Tools | pickaxe, axe, shovel, hoe |
 | Armour | helmet, chestplate, leggings, boots |
 | Mount armour | netherite horse armour, netherite nautilus armour |
+| Materials | ancient debris, netherite scrap, netherite ingot, block of netherite |
+| Smithing | netherite upgrade template |
 
-Netherite ingots, scrap, blocks and upgrade templates are materials, not gear,
-and despawn as usual.
+and any item enchanted with **Mending**, whatever it is made of: a diamond
+pickaxe, a bow, an elytra, a fishing rod.
 
-With **Renamed items** on, anything with a custom name is kept too, whatever it
-is made of.
+With **Renamed items** on, anything with a custom name is kept too.
 
 ## How it works
 
@@ -50,12 +50,13 @@ away to be safe.
 
 ## Settings
 
-Open the **gear icon** beside Netherite No Despawn in the world's Behaviour
+Open the **gear icon** beside Never Lost in the world's Behaviour
 Packs list. No experimental toggle is needed.
 
 | Control | Default | What it does |
 | --- | --- | --- |
-| Netherite tools, weapons and armour | On | Keeps the items in the table above |
+| Netherite | On | Keeps the netherite items in the table above |
+| Items with Mending | On | Keeps any item enchanted with Mending |
 | Renamed items | Off | Keeps any item given a name at an anvil |
 
 **Renamed items** is off by default because it covers everything: a renamed
@@ -73,7 +74,7 @@ icon, so write the values into
     "settings": [
       {
         "pack_id": "8a0e40f4-750a-45fc-9975-96382613e356",
-        "values": { "netherite_no_despawn:named_items": true }
+        "values": { "never_lost:named_items": true }
       }
     ]
   }
@@ -84,8 +85,8 @@ icon, so write the values into
 
 **Kept items still die the usual ways.** The pack stops the five-minute timer
 and nothing else. An item that falls into the void or onto a cactus is still
-destroyed. Netherite already survives fire and lava; a renamed item that is
-not netherite does not.
+destroyed. Netherite already survives fire and lava; a Mending or renamed item
+that is not netherite does not.
 
 **Only items on the ground are covered.** Items in a chest, a hopper or a
 player's inventory never despawn anyway.
@@ -96,7 +97,12 @@ you are unlikely to notice.
 
 **Many kept items in one place is not free.** Each one is swapped once every
 four minutes. A handful is nothing; a renamed-item farm leaving thousands on
-the ground would be work for the game.
+the ground would be work for the game. Ancient debris and netherite scrap are
+rare enough that a pile of them never gets that big.
+
+**An enchanted book with Mending is not confirmed.** Books store their
+enchantments differently from tools, and whether the script sees Mending on a
+book has not been checked in the game yet.
 
 **Removing the pack lets the timers run again.** Anything still on the ground
 despawns five minutes later, as normal.
@@ -108,10 +114,17 @@ real game:
 
 1. A dropped netherite sword is still on the ground after six minutes, while a
    diamond sword dropped beside it at the same time has gone.
-2. An enchanted, damaged netherite item keeps its enchantments and durability.
-3. With **Renamed items** on, an anvil-named item is still there after six
+2. Ancient debris, netherite scrap, an ingot, a block of netherite and an
+   upgrade template are all still there after six minutes.
+3. A diamond pickaxe with Mending is still there after six minutes; one
+   without it, dropped at the same time, has gone. With **Items with Mending**
+   off, both despawn.
+4. An enchanted book carrying Mending: record whether it is kept.
+5. A trimmed, enchanted, damaged and renamed netherite chestplate comes back
+   identical: trim, enchantments, durability and name.
+6. With **Renamed items** on, an anvil-named item is still there after six
    minutes; with it off, it despawns.
-4. Netherite dropped before saving and quitting is still there six minutes
+7. Netherite dropped before saving and quitting is still there six minutes
    after the world is reloaded.
 
 Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
@@ -119,7 +132,7 @@ Record what you find in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md).
 ## Tests
 
 ```sh
-cd netherite-no-despawn/tests && node run.js
+cd never-lost/tests && node run.js
 ```
 
 This drives `keeper.js` with plain objects; it never imports
@@ -128,10 +141,10 @@ it.
 
 ## Download
 
-Grab the latest `netherite-no-despawn-<version>.mcpack` from the
-[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=netherite-no-despawn).
+Grab the latest `never-lost-<version>.mcpack` from the
+[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=never-lost).
 Releases in this repository are shared across every add-on, so filter by the
-`netherite-no-despawn-v` tag prefix.
+`never-lost-v` tag prefix.
 
 ## Install on a client
 
@@ -143,7 +156,7 @@ Releases in this repository are shared across every add-on, so filter by the
 
 1. Rename the downloaded file to `.zip` and extract it. A single-pack `.mcpack`
    extracts loose, with `manifest.json` at the top level, so create a
-   `netherite-no-despawn_BP` folder yourself inside the server's `behavior_packs/`
+   `never-lost_BP` folder yourself inside the server's `behavior_packs/`
    directory and put the extracted files in it.
 2. Register the pack in the world (below).
 3. Restart the server.
@@ -180,8 +193,8 @@ and `resource_packs/`. The download uses neither shape, because the client
 import path decided the layout, so wrap it once:
 
 ```sh
-mkdir -p packs/behavior_packs/netherite-no-despawn_BP
-unzip -q netherite-no-despawn-<version>.mcpack -d packs/behavior_packs/netherite-no-despawn_BP
+mkdir -p packs/behavior_packs/never-lost_BP
+unzip -q never-lost-<version>.mcpack -d packs/behavior_packs/never-lost_BP
 ```
 
 Mount `packs/` into the container and point `MC_PACK` at its in-container path.

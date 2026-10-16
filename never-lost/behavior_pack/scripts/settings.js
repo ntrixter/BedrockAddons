@@ -1,5 +1,5 @@
 /**
- * Netherite No Despawn - settings
+ * Never Lost - settings
  *
  * Values come from the native pack settings screen (the gear icon next to the
  * pack in world settings), which is driven by the "settings" block in
@@ -9,7 +9,7 @@
 
 import { world } from "@minecraft/server";
 
-const NS = "netherite_no_despawn";
+const NS = "never_lost";
 
 /**
  * Mirrors the "settings" block in manifest.json exactly, and is what a
@@ -18,6 +18,7 @@ const NS = "netherite_no_despawn";
  */
 export const DEFAULTS = {
   netherite: true,
+  mending: true,
   named_items: false,
 };
 

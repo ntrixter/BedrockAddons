@@ -1,8 +1,8 @@
 /**
- * Netherite No Despawn
+ * Never Lost
  *
- * Dropped netherite gear, and optionally any renamed item, stays on the ground
- * indefinitely. See keeper.js for how.
+ * Dropped netherite, anything enchanted with Mending, and optionally any
+ * renamed item, stays on the ground indefinitely. See keeper.js for how.
  */
 
 import { system, world } from "@minecraft/server";
@@ -83,7 +83,7 @@ function sweep() {
   }
 }
 
-if (settings.netherite || settings.named_items) {
+if (settings.netherite || settings.mending || settings.named_items) {
   world.afterEvents.entitySpawn.subscribe((event) => {
     // "Loaded" is a chunk load: the item may already be old.
     consider(event.entity, event.cause !== "Loaded");

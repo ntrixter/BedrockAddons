@@ -1,8 +1,8 @@
 {
   "format_version": 3,
   "header": {
-    "name": "Netherite No Despawn",
-    "description": "v1.0.0 - Dropped netherite tools, weapons and armour never despawn, and optionally neither do items you have renamed.",
+    "name": "Never Lost",
+    "description": "v1.0.0 - Dropped netherite and anything enchanted with Mending never despawn, and optionally neither do items you have renamed.",
     "uuid": "8a0e40f4-750a-45fc-9975-96382613e356",
     "version": "1.0.0",
     "min_engine_version": "1.26.30"
@@ -33,7 +33,7 @@
   "settings": [
     {
       "type": "label",
-      "text": "§l§aNetherite No Despawn§r - dropped items that would normally vanish after five minutes stay where they fell."
+      "text": "§l§aNever Lost§r - dropped items that would normally vanish after five minutes stay where they fell."
     },
     {
       "type": "label",
@@ -41,18 +41,28 @@
     },
     {
       "type": "toggle",
-      "text": "Netherite tools, weapons and armour",
-      "name": "netherite_no_despawn:netherite",
+      "text": "Netherite",
+      "name": "never_lost:netherite",
       "default": true
     },
     {
       "type": "label",
-      "text": "§7Swords, spears, pickaxes, axes, shovels, hoes, the four armour pieces, and netherite horse and nautilus armour. Ingots, scrap, blocks and upgrade templates are not covered.§r"
+      "text": "§7Every netherite item: tools, weapons, armour, horse and nautilus armour, ancient debris, scrap, ingots, blocks and the upgrade template.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Items with Mending",
+      "name": "never_lost:mending",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Any item enchanted with Mending, whatever it is made of.§r"
     },
     {
       "type": "toggle",
       "text": "Renamed items",
-      "name": "netherite_no_despawn:named_items",
+      "name": "never_lost:named_items",
       "default": false
     },
     {

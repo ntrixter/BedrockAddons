@@ -1,5 +1,5 @@
 /**
- * Netherite No Despawn - which items to keep, and when each is due a refresh.
+ * Never Lost - which items to keep, and when each is due a refresh.
  *
  * Nothing here imports @minecraft/server, so the tests drive it with plain
  * objects.
@@ -11,12 +11,13 @@
  */
 
 /**
- * Every netherite item with durability or an armour slot, from
- * metadata/vanilladata_modules/mojang-items.json at 1.26.50. A list rather
- * than a "netherite_" prefix, so that a future netherite material is not
- * swept up with the gear.
+ * Every netherite item, from metadata/vanilladata_modules/mojang-items.json at
+ * 1.26.50: the gear (everything with durability or an armour slot), the
+ * materials it is made from, and the upgrade template that turns diamond gear
+ * into it. A list rather than a "netherite_" prefix, so that a future item
+ * with the word in its name is not swept up without a look.
  */
-export const NETHERITE_GEAR = new Set([
+export const NETHERITE = new Set([
   "minecraft:netherite_sword",
   "minecraft:netherite_spear",
   "minecraft:netherite_pickaxe",
@@ -29,7 +30,24 @@ export const NETHERITE_GEAR = new Set([
   "minecraft:netherite_boots",
   "minecraft:netherite_horse_armor",
   "minecraft:netherite_nautilus_armor",
+  "minecraft:ancient_debris",
+  "minecraft:netherite_scrap",
+  "minecraft:netherite_ingot",
+  "minecraft:netherite_block",
+  "minecraft:netherite_upgrade_smithing_template",
 ]);
+
+/**
+ * Does this stack carry Mending? The enchantable component is absent on items
+ * that cannot be enchanted, and reading it can throw, so either is a no.
+ */
+export function hasMending(stack) {
+  try {
+    return stack.getComponent("minecraft:enchantable")?.hasEnchantment("mending") === true;
+  } catch {
+    return false;
+  }
+}
 
 /** Vanilla's despawn age for an item on the ground, in ticks. */
 export const DESPAWN_TICKS = 6000;
@@ -43,7 +61,8 @@ export const REFRESH_AT = 4800;
 /** Should this stack outlive the despawn timer, under these settings? */
 export function shouldKeep(stack, settings) {
   if (!stack) return false;
-  if (settings.netherite && NETHERITE_GEAR.has(stack.typeId)) return true;
+  if (settings.netherite && NETHERITE.has(stack.typeId)) return true;
+  if (settings.mending && hasMending(stack)) return true;
   if (settings.named_items && typeof stack.nameTag === "string" && stack.nameTag.length > 0) {
     return true;
   }
