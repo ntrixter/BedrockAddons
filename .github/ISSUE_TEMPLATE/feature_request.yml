@@ -21,6 +21,7 @@ body:
         - creeper-drop-all
         - nightshare
         - no-witch-conversion
+        - pet-tools
         - salvage-smelting
         - stonecutter-decompression
         - villager-inspector

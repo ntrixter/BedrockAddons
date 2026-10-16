@@ -1,0 +1,72 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Pet Tools",
+    "description": "v1.0.0 - Look at a tamed pet to see who owns it, and stop tamed dogs from hurting players.",
+    "uuid": "c44c8588-f966-44ac-a1c1-353fb85a35ae",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "a466fadc-1b77-43e7-9a6e-3cfc69f5187d",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "§lPet Tools§r - see who owns a pet, and keep tamed dogs off your friends."
+    },
+    {
+      "type": "label",
+      "text": "§7Changes here take effect the next time the world loads.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Show a pet's owner when you look at it",
+      "name": "pet_tools:show_owner",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Look at a tamed dog, cat, parrot, horse or other tamed animal and the line above your hotbar names its owner.§r"
+    },
+    {
+      "type": "slider",
+      "text": "Reach (blocks)",
+      "name": "pet_tools:reach",
+      "min": 3,
+      "max": 16,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "toggle",
+      "text": "Tamed dogs can't hurt players",
+      "name": "pet_tools:protect_players",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7A tamed dog joins any fight its owner is in, so one stray hit between friends sets the dog on them. With this on, a tamed dog's bite does no damage to any player. The dog may still chase and snap at them until it loses interest. Wild wolves are not affected.§r"
+    }
+  ]
+}
