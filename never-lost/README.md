@@ -28,7 +28,7 @@ With the default settings, every netherite item:
 | Smithing | netherite upgrade template |
 
 and any item enchanted with **Mending**, whatever it is made of: a diamond
-pickaxe, a bow, an elytra, a fishing rod.
+pickaxe, a bow, an elytra, a fishing rod, or an enchanted book carrying it.
 
 With **Renamed items** on, anything with a custom name is kept too.
 
@@ -100,10 +100,6 @@ four minutes. A handful is nothing; a renamed-item farm leaving thousands on
 the ground would be work for the game. Ancient debris and netherite scrap are
 rare enough that a pile of them never gets that big.
 
-**An enchanted book with Mending is not confirmed.** Books store their
-enchantments differently from tools, and whether the script sees Mending on a
-book has not been checked in the game yet.
-
 **Removing the pack lets the timers run again.** Anything still on the ground
 despawns five minutes later, as normal.
 
@@ -119,7 +115,7 @@ real game:
 3. A diamond pickaxe with Mending is still there after six minutes; one
    without it, dropped at the same time, has gone. With **Items with Mending**
    off, both despawn.
-4. An enchanted book carrying Mending: record whether it is kept.
+4. An enchanted book carrying Mending is still there after six minutes.
 5. A trimmed, enchanted, damaged and renamed netherite chestplate comes back
    identical: trim, enchantments, durability and name.
 6. With **Renamed items** on, an anvil-named item is still there after six
