@@ -416,6 +416,27 @@ explosion damages it. If items still vanish with the setting on, that assumption
 - [ ] Setting off: the same creeper blast destroys both stacks, as vanilla
 - [ ] Setting on, an item dropped into lava still burns
 
+### ☐ T17 — Zones
+Cheats **off**, as an operator. Build a 5x5 stone floor, then
+`creeperzone new test` standing on one corner and `creeperzone new test pos2` standing on the
+opposite one. **Unverified:** that a custom command with `cheatsRequired: false` runs with cheats
+off, that its returned message prints on the BDS console, and that `minecraft:villager_happy` is a
+valid particle id.
+- [ ] `/creeperzone` is offered in chat autocomplete, and `list` shows the zone, "Zones are off"
+- [ ] Zones off: a creeper on the floor breaks it as usual
+- [ ] `creeperzone enable`, then a creeper at the floor's edge: blocks inside stay, blocks outside
+      break and drop, an unarmored Survival player is still damaged
+- [ ] TNT on the floor: nothing inside breaks
+- [ ] `creeperzone allow test creepers`: a creeper now breaks the floor, TNT still does not
+- [ ] With *Creepers don't break blocks* on, the same allowing zone still lets creepers break it,
+      and a creeper outside the zone breaks nothing
+- [ ] `creeperzone show test true`: green sparkles trace the edges; `false` stops them
+- [ ] Restart the world: `creeperzone list` still shows the zone and its settings
+- [ ] BDS console: `creeperzone list` prints there; `creeperzone new c2 pos1 0 64 0 nether` adds a
+      Nether zone; `creeperzone new c3` is refused with "The console must give x y z."
+- [ ] A non-operator gets the usual permission error
+- [ ] Achievements stay enabled
+
 ---
 
 ## ☐ T13 — Bedrock Dedicated Server smoke test

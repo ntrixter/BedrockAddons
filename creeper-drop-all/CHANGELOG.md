@@ -18,6 +18,11 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-09-14`.
   destroyed: creepers, TNT, fireballs, end crystals, beds and respawn anchors
   alike, whether or not that source is handed its blocks back. The blast can
   still knock them about, and fire and lava still burn them.
+- **Zones**, managed with the new `creeperzone` command: named boxes, each with
+  its own list of explosion sources that may not break blocks inside it -
+  creepers, ghasts, withers, end crystals and TNT. Outside every zone the
+  existing settings apply unchanged. Off until `creeperzone enable`. Works
+  without cheats, for operators and from the server console.
 
 ## [1.2.0] - 2026-10-15
 
