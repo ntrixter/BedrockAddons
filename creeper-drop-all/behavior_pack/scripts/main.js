@@ -25,10 +25,15 @@
  * Separately, "Protect dropped items" cancels explosion damage to item entities
  * through world.beforeEvents.entityHurt. That is independent of everything
  * above: it covers every explosion, handled source or not.
+ *
+ * Zones (zones.js, the creeperzone command) narrow which blocks an explosion
+ * may break before P1 snapshots anything: inside a zone the zone's own list
+ * decides, outside every zone the "doesn't break blocks" settings do.
  */
 
 import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
 import { DEFAULTS, loadSettings, buildHandledTypes, buildNoBreakTypes } from "./settings.js";
+import { createZones } from "./zones.js";
 
 /* ------------------------------------------------------------------ *
  * Tuning constants - troubleshooting knobs, not player-facing options.
@@ -227,8 +232,12 @@ function posKey(dimensionId, x, y, z) {
  * ------------------------------------------------------------------ */
 
 // Subscribing is legal in early-execution mode; nothing here touches world state.
+const zones = createZones();
+
 world.beforeEvents.explosion.subscribe(onExplosionBefore);
 world.afterEvents.worldLoad.subscribe(init);
+// Custom commands can only be registered during startup.
+system.beforeEvents.startup.subscribe((ev) => zones.register(ev));
 
 function init() {
   settings = loadSettings();
@@ -236,6 +245,8 @@ function init() {
   noBreakTypes = buildNoBreakTypes(settings);
   ensureRuntime();
   if (settings.protect_items) subscribeItemProtection();
+  zones.load();
+  zones.startOutlines();
 
   // This line is the canary. If it does NOT appear in the content log (or in
   // BDS stdout), the script never loaded at all - on a dedicated server the
@@ -250,6 +261,7 @@ function init() {
       " glassBlocks=" + settings.glass_blocks +
       " protectContainers=" + settings.protect_containers +
       " protectItems=" + settings.protect_items +
+      " zones=" + zones.count + (zones.active() ? " on" : " off") +
       " mergeGrid=" + settings.merge_grid +
       " maxBlocks=" + settings.max_blocks +
       " mode=" + EXPLOSION_MODE
@@ -345,12 +357,17 @@ function onExplosionBefore(ev) {
 
   ensureSettings();
 
+  const dimension = ev.dimension;
+  const noBreak = noBreakTypes.has(source.typeId);
+  const zoned = zones.active();
+
   // "Doesn't break blocks" for this mob: empty the block list and stop. Checked
   // before the drop toggles, so it works whether or not drops are on for the
   // same source. Damage, knockback, sound and particles survive an empty list
   // (TESTING.md T1), which is what lets mobGriefing stay true for everything
-  // else - endermen, villagers, sheep.
-  if (noBreakTypes.has(source.typeId)) {
+  // else - endermen, villagers, sheep. With zones on, the zones decide per
+  // block below instead, since a zone can let this mob through.
+  if (noBreak && !zoned) {
     try {
       ev.setImpactedBlocks([]);
     } catch (e) {
@@ -359,7 +376,8 @@ function onExplosionBefore(ev) {
     return;
   }
 
-  if (!handledTypes.has(source.typeId)) return;
+  const handled = handledTypes.has(source.typeId);
+  if (!handled && !zoned) return;
 
   let blocks;
   try {
@@ -373,6 +391,21 @@ function onExplosionBefore(ev) {
   // touching setImpactedBlocks, so we stay perfectly transparent.
   if (!blocks || blocks.length === 0) return;
 
+  // Zones first, and committed to the event at once: every path below that
+  // hands the blast back to vanilla must hand back only what may break.
+  if (zoned) {
+    const keep = zones.keepBlocks(dimension.id, blocks, source.typeId, noBreak);
+    if (keep !== blocks) {
+      try {
+        ev.setImpactedBlocks(keep);
+      } catch (e) {
+        warn("setImpactedBlocks (zones): " + e);
+      }
+    }
+    if (!handled || keep.length === 0) return;
+    blocks = keep;
+  }
+
   // Fail open rather than half-process: a degraded-but-vanilla explosion beats
   // a partially handled one.
   if (blocks.length > settings.max_blocks) {
@@ -384,7 +417,6 @@ function onExplosionBefore(ev) {
     return;
   }
 
-  const dimension = ev.dimension;
   const dimensionId = dimension.id;
   const protect = settings.protect_containers === true;
   const snapshot = [];

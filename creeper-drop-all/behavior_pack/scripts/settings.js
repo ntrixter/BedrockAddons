@@ -71,6 +71,19 @@ export const NO_BREAK_GROUPS = {
   no_break_end_crystals: SOURCE_GROUPS.end_crystals,
 };
 
+/**
+ * The sources a zone can protect against, by the word the creeperzone command
+ * takes. Withers include the spawn blast, as in NO_BREAK_GROUPS; TNT is here
+ * because blast-proofing an area is exactly when TNT matters.
+ */
+export const ZONE_SOURCES = {
+  creepers: SOURCE_GROUPS.creepers,
+  ghasts: SOURCE_GROUPS.ghasts,
+  withers: NO_BREAK_GROUPS.no_break_withers,
+  end_crystals: SOURCE_GROUPS.end_crystals,
+  tnt: SOURCE_GROUPS.tnt,
+};
+
 function clamp(n, lo, hi) {
   if (typeof n !== "number" || !Number.isFinite(n)) return lo;
   return Math.min(hi, Math.max(lo, Math.round(n)));

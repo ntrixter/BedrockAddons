@@ -618,6 +618,26 @@ nightly.
 
 ---
 
+## Custom commands (`@minecraft/server`)
+
+- **The custom command registry is stable in 2.8.0**, with no experiment:
+  `system.beforeEvents.startup` hands over `customCommandRegistry`, and
+  `registerCommand` / `registerEnum` can only be called there. Checked against
+  the published 2.8.0 typings.
+- `cheatsRequired` **defaults to true**, so a command meant for a world with
+  cheats off must say `false`. `CommandPermissionLevel.GameDirectors` is
+  operators and command blocks; `Admin` drops command blocks.
+- **The callback runs in restricted execution.** Reads are fine and the
+  returned `{ status, message }` is the reply, but world writes - a dynamic
+  property included - go through `system.run`.
+- Field-tested in a companion pack (not in this repo): typed on the BDS console
+  without the slash and with no namespace; a bare number is refused in a String
+  or Enum slot; and **the console does not enforce enum values**, so re-check
+  every enum in script. `creeper-drop-all`'s `creeperzone` follows that pack's
+  command style. **UNVERIFIED in this repo** until its TESTING.md T17 runs.
+
+---
+
 ## Patterns that worked
 
 - Persist state in **one** world dynamic property holding a JSON blob. Keep an

@@ -180,6 +180,54 @@ breaks and so nothing drops. Only explosions are covered — anything a wither
 breaks without exploding is not. TNT has no toggle: it is not a mob, and
 `mobGriefing` never applied to it.
 
+### Zones
+
+Zones are named boxes with their own *don't break blocks* list, managed with
+the `creeperzone` command. Inside a zone the zone decides whether an explosion
+breaks blocks; outside every zone the settings above decide, exactly as before.
+A creeper that goes off at the edge of a zone takes the blocks outside and
+leaves the ones inside.
+
+The command needs no cheats. It is for operators, and it works from the server
+console as well — type it there **without** the leading slash, and give
+coordinates, since the console has no position of its own.
+
+```
+creeperzone list
+creeperzone new <name> [pos1|pos2] [x y z] [overworld|nether|the_end]
+creeperzone update <name> pos1|pos2 [x y z]
+creeperzone show <name> true|false
+creeperzone protect <name> creepers|ghasts|withers|end_crystals|tnt|all
+creeperzone allow <name> creepers|ghasts|withers|end_crystals|tnt|all
+creeperzone remove <name>
+creeperzone enable
+creeperzone disable
+```
+
+- **Zones do nothing until `creeperzone enable`.** `disable` turns them all off
+  again and keeps them.
+- **`new` makes a one-block zone.** Run `new <name> pos2` (or `update`) to set
+  its other corner. On an existing zone, `new <name> pos1|pos2` sets that
+  corner. To give coordinates, name the corner first:
+  `creeperzone new base pos1 100 64 -200`.
+- **With no coordinates, a player's position is the block under their feet.**
+  The console must give `x y z`. A new zone from the console is in the
+  Overworld unless you add `nether` or `the_end` at the end.
+- **A new zone is protected from every explosion source.** `allow <name>
+  <source>` lets one through, `protect` puts it back, and `all` does every
+  source at once. TNT is a source here, unlike the toggles above.
+- **Inside a zone, the zone's own list wins.** A zone that allows creepers
+  lets them break blocks there even with *Creepers don't break blocks* on.
+  Where zones overlap, a block is protected if any of them protects it.
+- **`show <name> true`** draws the zone's edges in particles for players
+  within 32 blocks.
+- Names are case-insensitive, at most 40 characters, with no `|`. Up to 100
+  zones per world. Zones are saved in the world and survive restarts and pack
+  updates.
+
+Explosions with no entity behind them (a bed in the Nether, a respawn anchor)
+are not covered, the same as the toggles above.
+
 ### On a dedicated server
 
 There is no gear icon on a server. Write the values into
@@ -241,8 +289,8 @@ drops.
   on which handler runs first, and Bedrock does not define that order.
 - **Not an anti-grief pack by default.** Out of the box, blocks are still
   destroyed; you just get all of them back. Turn on *Protect containers* if you
-  want storage itself to survive, or a *don't break blocks* toggle to stop a
-  mob's explosions breaking anything.
+  want storage itself to survive, a *don't break blocks* toggle to stop a
+  mob's explosions breaking anything, or a [zone](#zones) to protect one area.
 
 ## Tests
 

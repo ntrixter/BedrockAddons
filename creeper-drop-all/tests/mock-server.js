@@ -40,7 +40,36 @@ export const hooks = {
   /** Set only if the pack subscribed, with the options it passed. */
   entityHurtBefore: null,
   entityHurtOptions: null,
+  startup: null,
 };
+
+/** World dynamic properties, kept across loads like a real world's. */
+export const dynamicProperties = new Map();
+
+/** What the pack registered at startup: enums by name, commands by name. */
+export const registry = { enums: new Map(), commands: new Map() };
+
+export const CommandPermissionLevel = { Any: 0, GameDirectors: 1, Admin: 2, Host: 3, Owner: 4 };
+export const CustomCommandStatus = { Success: 0, Failure: 1 };
+export const CustomCommandSource = { Block: "Block", Entity: "Entity", NPCDialogue: "NPCDialogue", Server: "Server" };
+export const CustomCommandParamType = {
+  BlockType: "BlockType", Boolean: "Boolean", EntitySelector: "EntitySelector", EntityType: "EntityType",
+  Enum: "Enum", Float: "Float", Integer: "Integer", ItemType: "ItemType", Location: "Location",
+  PlayerSelector: "PlayerSelector", String: "String",
+};
+
+/** Hand the pack a startup event, as the engine does before worldLoad. */
+export function startup() {
+  registry.enums = new Map();
+  registry.commands = new Map();
+  if (!hooks.startup) return;
+  hooks.startup({
+    customCommandRegistry: {
+      registerEnum(name, values) { registry.enums.set(name, values); },
+      registerCommand(def, fn) { registry.commands.set(def.name, { def, fn }); },
+    },
+  });
+}
 
 export class ItemStack {
   constructor(typeId, amount = 1, data = undefined) {
@@ -114,12 +143,17 @@ export const world = {
   },
   afterEvents: { worldLoad: { subscribe(fn) { hooks.worldLoad = fn; } } },
   getPackSettings() { return control.packSettings; },
+  getDynamicProperty(id) { return dynamicProperties.get(id); },
+  setDynamicProperty(id, v) { if (v === undefined) dynamicProperties.delete(id); else dynamicProperties.set(id, v); },
+  getAllPlayers() { return []; },
   getLootTableManager() { return lootManager; },
 };
 
 export const system = {
   currentTick: 1,
   run(fn) { control.pendingRuns.push(fn); },
+  runInterval() { return 0; },
+  beforeEvents: { startup: { subscribe(fn) { hooks.startup = fn; } } },
   runJob(gen) { control.jobs.push(gen); return control.jobs.length; },
 };
 
@@ -144,15 +178,17 @@ export function makeBlock(index, typeId, colour, states = {}) {
 }
 
 /** Drive one explosion over `blocks` and return what was spawned. */
-export function detonate(blocks, sourceTypeId = "minecraft:creeper") {
+export function detonate(blocks, sourceTypeId = "minecraft:creeper", dimensionId = "minecraft:overworld") {
   control.spawned = [];
   control.removed = 0;
   control.pendingRuns = [];
   control.jobs = [];
+  // Each blast is its own tick, so the pack's tick-scoped ledgers start clean.
+  system.currentTick++;
 
   const dimension = {
-    id: "minecraft:overworld",
-    getBlock: (loc) => blocks[loc.x],
+    id: dimensionId,
+    getBlock: (loc) => blocks.find((b) => b.location.x === loc.x),
     spawnItem: (stack, at) =>
       control.spawned.push({ typeId: stack.typeId, data: stack.data, amount: stack.amount, x: Math.floor(at.x) }),
     playSound() {}, spawnParticle() {},

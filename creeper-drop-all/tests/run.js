@@ -16,7 +16,10 @@
 // where the engine's behaviour is not established, the suite runs under EVERY
 // possibility rather than the one that seemed likely. See control.bedLootHalves.
 
-import { control, hooks, makeBlock, detonate, hurt } from "@minecraft/server";
+import {
+  control, hooks, makeBlock, detonate, hurt, startup, registry, dynamicProperties,
+  CustomCommandStatus, CommandPermissionLevel,
+} from "@minecraft/server";
 
 let failures = 0;
 function check(label, actual, expected) {
@@ -31,8 +34,10 @@ async function load(packSettings = {}) {
   control.packSettings = packSettings;
   hooks.entityHurtBefore = null;
   hooks.entityHurtOptions = null;
+  hooks.startup = null;
   control.itemStackFailures = new Set();
   await import(`../behavior_pack/scripts/main.js?case=${generation++}`);
+  startup();
   hooks.worldLoad();
 }
 
@@ -272,6 +277,135 @@ console.log("9. Protect dropped items from explosions");
 
   await load({ "creeperdropall:protect_items": false });
   check("off: never subscribes, so items behave as vanilla", hooks.entityHurtBefore, null);
+}
+
+
+console.log("");
+console.log("10. Zones: the creeperzone command");
+{
+  dynamicProperties.clear();
+  await load({ "creeperdropall:merge_grid": 1 });
+  const reg = registry.commands.get("creeperdropall:creeperzone");
+  check("registered", !!reg, true);
+  check("no cheats needed", reg && reg.def.cheatsRequired, false);
+  check("operators only", reg && reg.def.permissionLevel, CommandPermissionLevel.GameDirectors);
+  check("action enum registered", (registry.enums.get("creeperdropall:zoneaction") || []).join("|"),
+    "list|new|update|show|protect|allow|remove|enable|disable");
+
+  const CONSOLE = { sourceType: "Server" };
+  const player = (dim, x, y, z) => ({
+    sourceType: "Entity",
+    sourceEntity: { typeId: "minecraft:player", dimension: { id: dim }, location: { x, y, z } },
+  });
+  // Every write is deferred with system.run, as command callbacks are restricted.
+  const cmd = (origin, ...args) => {
+    const r = reg.fn(origin, ...args);
+    while (control.pendingRuns.length) control.pendingRuns.shift()();
+    return r;
+  };
+  const okay = (r) => r.status === CustomCommandStatus.Success;
+
+  let r = cmd(CONSOLE, "new", "Base");
+  check("console without x y z is refused", r.message, "The console must give x y z.");
+  check("and nothing was added", okay(cmd(CONSOLE, "list")) && cmd(CONSOLE, "list").message.includes("No zones yet"), true);
+
+  r = cmd(CONSOLE, "new", "Base", "pos1", { x: 2.5, y: 70.5, z: -0.5 });
+  check("console new: floored, one block", r.message.startsWith("Added zone Base in the Overworld at 2 70 -1, one block."), true);
+  r = cmd(CONSOLE, "new", "base", "pos2", { x: 4.5, y: 70.5, z: 0.5 });
+  check("new on an existing zone sets that corner, names case-insensitive", r.message, "Base now runs from 2 70 -1 to 4 70 0, 3x1x2 blocks.");
+
+  check("unknown action re-checked in script", okay(cmd(CONSOLE, "explode", "Base")), false);
+  check("show needs true|false", okay(cmd(CONSOLE, "show", "Base", "pos1")), false);
+  check("protect needs a source", okay(cmd(CONSOLE, "protect", "Base", "true")), false);
+  check("a name with | is refused", okay(cmd(CONSOLE, "new", "a|b", "pos1", { x: 0, y: 0, z: 0 })), false);
+  check("a 41-character name is refused", okay(cmd(CONSOLE, "new", "x".repeat(41), "pos1", { x: 0, y: 0, z: 0 })), false);
+  check("a missing zone is named", cmd(CONSOLE, "show", "Nope", "true").message, "No zone named Nope. creeperzone list names them.");
+  check("show true", cmd(CONSOLE, "show", "Base", "true").message, "Base is shown in game.");
+
+  // Blocks 0..6 at y 70 z 0; the zone covers x 2..4.
+  const row = () => [0, 1, 2, 3, 4, 5, 6].map((i) => makeBlock(i, "minecraft:stone"));
+
+  detonate(row());
+  check("zones off by default: the creeper breaks everything", control.removed, 7);
+
+  check("enable", cmd(CONSOLE, "enable").message, "Zones are on. 1 zone now protects its blocks.");
+  let spawned = detonate(row());
+  check("zones on: the three blocks inside stand", control.removed, 4);
+  check("and only the blocks outside drop", spawned.filter((s) => s.x >= 2 && s.x <= 4).length, 0);
+  check("vanilla is handed nothing", control.impacted.length, 0);
+
+  detonate(row(), "minecraft:tnt");
+  check("TNT (not handled): vanilla gets only the outside blocks", control.impacted.length, 4);
+  check("and none of the protected ones", control.impacted.filter((b) => b.index >= 2 && b.index <= 4).length, 0);
+
+  detonate(row(), "minecraft:creeper", "minecraft:nether");
+  check("a zone in the Overworld does nothing in the Nether", control.removed, 7);
+
+  r = cmd(CONSOLE, "allow", "Base", "creepers");
+  check("allow creepers", r.message, "Base now lets creepers break its blocks. It is protected from ghasts, withers, end_crystals, tnt.");
+  detonate(row());
+  check("creepers allowed: everything breaks", control.removed, 7);
+  detonate(row(), "minecraft:fireball");
+  check("ghasts still kept out", control.removed, 4);
+
+  check("protect all", okay(cmd(CONSOLE, "protect", "Base", "all")), true);
+  detonate(row(), "minecraft:wither");
+  // Not a drop source, so vanilla does the breaking - of the outside blocks only.
+  check("the wither spawn blast counts as withers", control.impacted.length, 4);
+
+  check("update pos2 by console", cmd(CONSOLE, "update", "Base", "pos2", { x: 2, y: 70, z: 0 }).message,
+    "Base now runs from 2 70 -1 to 2 70 0, 1x1x2 blocks.");
+  detonate(row());
+  check("smaller zone: one block stands", control.removed, 6);
+}
+
+console.log("");
+console.log("11. Zones against the per-mob settings, and from a player");
+{
+  dynamicProperties.clear();
+  await load({ "creeperdropall:merge_grid": 1, "creeperdropall:no_break_creepers": true });
+  const reg = registry.commands.get("creeperdropall:creeperzone");
+  const cmd = (origin, ...args) => {
+    const r = reg.fn(origin, ...args);
+    while (control.pendingRuns.length) control.pendingRuns.shift()();
+    return r;
+  };
+  const steve = (dim, x, y, z) => ({
+    sourceType: "Entity",
+    sourceEntity: { typeId: "minecraft:player", dimension: { id: dim }, location: { x, y, z } },
+  });
+
+  let r = cmd(steve("minecraft:overworld", 1.5, 71, 0.5), "new", "Quarry");
+  check("player with no position: the block under their feet", r.message.startsWith("Added zone Quarry in the Overworld at 1 70 0, one block."), true);
+  check("it starts protected from everything", r.message.includes("It protects its blocks from every explosion"), true);
+  check("and says zones are off", r.message.includes("Zones are off"), true);
+  cmd(steve("minecraft:overworld", 0, 0, 0), "new", "Quarry", "pos2", { x: 3, y: 70, z: 0 });
+  cmd(steve("minecraft:overworld", 0, 0, 0), "allow", "Quarry", "all");
+  r = cmd(steve("minecraft:nether", 0, 0, 0), "update", "Quarry", "pos1", { x: 0, y: 70, z: 0 });
+  check("a corner from another dimension is refused", r.message, "Quarry is in the Overworld. Both corners must be in the same dimension.");
+
+  const row = () => [0, 1, 2, 3, 4, 5, 6].map((i) => makeBlock(i, "minecraft:stone"));
+  cmd({ sourceType: "Server" }, "enable");
+  const spawned = detonate(row());
+  check("creepers don't break blocks, but the quarry lets them: x 1..3 break", control.removed, 3);
+  check("and drop", spawned.length, 3);
+
+  // Saved and read back on the next world load, with a bad entry dropped.
+  const saved = JSON.parse(dynamicProperties.get("creeperdropall:zones"));
+  saved.zones.push({ name: "bad", dim: "minecraft:moon", pos1: [0, 0, 0], pos2: [0, 0, 0] });
+  dynamicProperties.set("creeperdropall:zones", JSON.stringify(saved));
+  await load({ "creeperdropall:merge_grid": 1, "creeperdropall:no_break_creepers": true });
+  const reg2 = registry.commands.get("creeperdropall:creeperzone");
+  const list = reg2.fn({ sourceType: "Server" }, "list").message;
+  check("persisted across a reload", list,
+    "Zones are on. 1 zone:\nQuarry: 1 70 0 to 3 70 0 in the Overworld, hidden, protects nothing");
+  detonate(row());
+  check("and still applied after it", control.removed, 3);
+
+  reg2.fn({ sourceType: "Server" }, "remove", "Quarry");
+  detonate(row());
+  check("removed: the pack setting decides everywhere again", control.removed, 0);
+  dynamicProperties.clear();
 }
 
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : `${failures} CHECK(S) FAILED`}`);
