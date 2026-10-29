@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the horse, donkey and mule overrides from Mojang's vanilla files.
+"""Rebuild the horse and mule overrides from Mojang's vanilla files.
 
     python3 champion-lines/tools/sync_entities.py               # fetch upstream
     python3 champion-lines/tools/sync_entities.py horse.json …  # local copies, named after the entity
@@ -16,8 +16,8 @@ uses, then the generated block is inserted as text at the top of
 "component_groups" and of "events". Every vanilla line stays as it was, so a
 diff against upstream shows the two inserted blocks and nothing else.
 
-Donkeys and mules get the health groups only: in vanilla their speed and jump
-are the same for every animal, so there is nothing to set.
+A mule gets the same groups as a horse, since a bred mule's stats come from
+its horse and donkey parents. Donkeys are left vanilla and not overridden.
 
 A bred horse foal's coat and markings are chosen by the engine and cannot be read
 back by a script (the foal carries no variant component), so the script picks
@@ -43,7 +43,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from check_vanilla_drift import fetch_upstream, strip_comments  # noqa: E402
 
-ENTITIES = ["horse", "donkey", "mule"]
+ENTITIES = ["horse", "mule"]
 NS = "horsebreed"
 
 # Vanilla ranges, from horse.json's own components.
@@ -60,8 +60,6 @@ def stats(entity: str):
     """(stat, step id, component name, component body) for every step."""
     for hp in HEALTH:
         yield "health", hp, "minecraft:health", {"value": hp, "max": hp}
-    if entity != "horse":
-        return
     for k in range(SPEED_STEPS):
         yield "speed", k, "minecraft:movement", {"value": speed_value(k)}
     for j in JUMP:

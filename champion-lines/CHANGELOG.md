@@ -41,7 +41,7 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   once a horse has been ridden, and jump shows its best jump seen. Untamed
   horses' stats are hidden unless "Show stats of untamed horses" is on.
   Breeding always uses the true stats.
-- Donkeys and mules are covered: a donkey foal or a mule takes its health by
-  the better-parent rule (their speed and jump are fixed in vanilla), and they
-  get names, registry numbers, generations and books of their own. Overrides
-  vanilla `donkey.json` and `mule.json` as well as `horse.json`.
+- Donkeys and mules are covered (setting, on by default). Donkeys stay
+  vanilla but get names, registry numbers, generations and books. A mule
+  rolls health, speed and jump from its horse and donkey parents by the
+  better-parent rule. Overrides vanilla `mule.json` as well as `horse.json`.

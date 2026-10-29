@@ -3,8 +3,7 @@
 // @minecraft/server so tests/run.js can drive it with plain objects.
 
 // These grids must match tools/sync_entities.py, which writes one component
-// group per step into entities/horse.json (donkey.json and mule.json get the
-// health groups only).
+// group per step into entities/horse.json and entities/mule.json.
 export const HEALTH_MIN = 15;
 export const HEALTH_MAX = 30;
 export const SPEED_MIN = 0.1125;
@@ -17,10 +16,12 @@ export const JUMP_MAX = 100;
 export const KINDS = { "minecraft:horse": "horse", "minecraft:donkey": "donkey", "minecraft:mule": "mule" };
 
 /**
- * Stats a kind does not vary. In vanilla every donkey and every mule has the
- * same speed and jump; only health is rolled.
+ * Donkeys are left vanilla, where every donkey has the same speed and jump and
+ * only health is rolled. A vanilla mule (one from a spawn egg, or from before
+ * the pack) has the same; a bred one takes its stats from its parents.
  */
-export const FIXED = { donkey: { s: 0.175, j: 50 }, mule: { s: 0.175, j: 50 } };
+export const FIXED = { donkey: { s: 0.175, j: 50 } };
+export const VANILLA_MULE = { s: 0.175, j: 50 };
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 

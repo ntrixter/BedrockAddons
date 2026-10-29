@@ -13,6 +13,7 @@ import {
   jumpStep,
   herdName,
   KINDS,
+  VANILLA_MULE,
   shownStats,
   MARKINGS,
   speedOfStep,
@@ -20,10 +21,6 @@ import {
 } from "./genes.js";
 
 const NS = "horsebreed";
-// Horses, donkeys and mules. "Horse" in this file means any of them.
-const EQUINES = Object.keys(KINDS);
-const isEquine = (entity) => entity.typeId in KINDS;
-const kindOf = (entity) => KINDS[entity.typeId];
 const DATA = `${NS}:data`;
 const BREED_ITEMS = new Set(["minecraft:golden_carrot", "minecraft:golden_apple", "minecraft:enchanted_golden_apple"]);
 // A fed horse stays in love for 30 seconds; allow for the walk to its partner.
@@ -52,11 +49,18 @@ function readSettings() {
     parents: values[`${NS}:show_parents`] === true,
     wild: values[`${NS}:wild_stats`] === true,
     learn: values[`${NS}:learn_by_riding`] !== false,
+    donkeys: values[`${NS}:donkeys_mules`] !== false,
     chance: Number.isFinite(chance) ? Math.min(100, Math.max(50, chance)) / 100 : 0.6,
   };
 }
 
 const settings = readSettings();
+
+// Horses, plus donkeys and mules when that setting is on. "Horse" in this
+// file means any of them.
+const EQUINES = Object.keys(KINDS).filter((t) => settings.donkeys || KINDS[t] === "horse");
+const isEquine = (entity) => EQUINES.includes(entity.typeId);
+const kindOf = (entity) => KINDS[entity.typeId];
 
 // ---- per-horse record -----------------------------------------------------
 // { rn, h, s, j, origin: "bred" | "wild", day, by, tb, g, c, m, p: [{ id, name, first, origin, g }] }
@@ -125,10 +129,12 @@ function liveJump(horse) {
 function statsOf(horse, data = readData(horse)) {
   const fixed = FIXED[kindOf(horse)];
   if (fixed) return { h: data?.h ?? liveHealth(horse) ?? 15, s: fixed.s, j: fixed.j, jEst: false, fixed: true };
+  // A mule the pack did not breed has vanilla's fixed speed and jump.
+  const vanilla = kindOf(horse) === "mule" ? VANILLA_MULE : {};
   return {
     h: data?.h ?? liveHealth(horse) ?? 15,
-    s: data?.s ?? liveSpeed(horse) ?? 0.1125,
-    j: data?.j ?? liveJump(horse) ?? null,
+    s: data?.s ?? liveSpeed(horse) ?? vanilla.s ?? 0.1125,
+    j: data?.j ?? liveJump(horse) ?? vanilla.j ?? null,
     jEst: data?.jEst === true,
   };
 }
@@ -209,13 +215,15 @@ function findParents(foal) {
 function onBorn(foal) {
   const parents = findParents(foal);
   const day = world.getDay();
-  const isHorse = kindOf(foal) === "horse";
+  const kind = kindOf(foal);
+  const isHorse = kind === "horse";
+  if (kind === "donkey") return onDonkeyBorn(foal, parents, day);
   if (parents.length < 2) {
     // No fed pair nearby: keep what vanilla gave it, and give it a known jump.
     console.warn(`[Champion Lines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
     const g = generationOf(...parents.map(genOf));
     if (!isHorse) {
-      writeData(foal, { h: liveHealth(foal), origin: "bred", day, g });
+      writeData(foal, { h: liveHealth(foal), s: VANILLA_MULE.s, j: VANILLA_MULE.j, origin: "bred", day, g });
       return;
     }
     const j = wildJump(Math.random);
@@ -227,10 +235,11 @@ function onBorn(foal) {
   const [a, b] = parents;
   const child = inherit(statsOf(a), statsOf(b), settings.chance, Math.random);
   const breeders = [...new Set(parents.map((p) => recentlyFed(p.id)?.player).filter(Boolean))];
-  // A donkey foal or a mule takes only health; its speed and jump are fixed.
+  // A mule rolls every stat like a horse, from its horse and donkey parents.
   writeData(foal, {
     h: child.h,
-    ...(isHorse ? { s: speedOfStep(child.s), j: child.j } : {}),
+    s: speedOfStep(child.s),
+    j: child.j,
     origin: "bred",
     day,
     g: generationOf(genOf(a), genOf(b)),
@@ -238,11 +247,9 @@ function onBorn(foal) {
     p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
   });
   applyStat(foal, "health", child.h);
-  if (isHorse) {
-    applyStat(foal, "speed", child.s);
-    applyStat(foal, "jump", child.j);
-    writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
-  }
+  applyStat(foal, "speed", child.s);
+  applyStat(foal, "jump", child.j);
+  if (isHorse) writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -251,7 +258,27 @@ function onBorn(foal) {
   }, 20);
 }
 
+/**
+ * Donkeys are bred the vanilla way; the pack only records the foal's family,
+ * so it gets a name, a generation and papers like any other.
+ */
+function onDonkeyBorn(foal, parents, day) {
+  const breeders = [...new Set(parents.map((p) => recentlyFed(p.id)?.player).filter(Boolean))];
+  writeData(foal, {
+    h: liveHealth(foal),
+    origin: "bred",
+    day,
+    g: generationOf(...parents.map(genOf)),
+    by: breeders.length ? breeders.join(" & ") : undefined,
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
+  });
+  for (const p of parents) fed.delete(p.id);
+  debug(`donkey born, health ${liveHealth(foal)} (vanilla)`);
+}
+
 function onSpawned(horse) {
+  // Donkeys and mules from the wild or a spawn egg are vanilla: their speed
+  // and jump are the same for every animal, and health is read as it is.
   if (kindOf(horse) !== "horse") {
     writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay() });
     return;
@@ -331,8 +358,8 @@ function markRidden(horse) {
 function recordJump(rider, horse, rise) {
   if (rise < MIN_RISE) return;
   const data = readData(horse) ?? {};
-  const j = statsOf(horse, data).j;
-  const known = FIXED[kindOf(horse)] !== undefined || (data.j != null && !data.jEst);
+  const { j, jEst } = statsOf(horse, data);
+  const known = j != null && !jEst;
   if (known) debug(`jump rose ${rise.toFixed(2)}; set strength ${j} predicts ${jumpBlocks(j).toFixed(2)} at full charge`);
   else debug(`jump rose ${rise.toFixed(2)} -> strength ~${jumpFromHeight(rise)} (best so far ${data.jm?.toFixed(2) ?? "none"})`);
   if (data.jm != null && rise <= data.jm) return;

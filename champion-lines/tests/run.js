@@ -30,6 +30,7 @@ import {
   statParts,
   speedOfStep,
   speedStep,
+  VANILLA_MULE,
   wildJump,
 } from "../behavior_pack/scripts/genes.js";
 
@@ -111,19 +112,26 @@ check("every event adds its group", ours.every((e) => {
 }), true);
 
 console.log("Donkeys and mules");
-for (const kind of ["donkey", "mule"]) {
-  const other = JSON.parse(readFileSync(new URL(`../behavior_pack/entities/${kind}.json`, import.meta.url), "utf8"))["minecraft:entity"];
-  const ev = Object.keys(other.events).filter((e) => e.startsWith("horsebreed:"));
-  check(`${kind}: health events only`, ev.length, 16);
-  check(`${kind}: each adds its health group`, ev.every((e) => {
-    const g = other.events[e].add.component_groups[0];
-    return e.replace(":set_", ":") === g && other.component_groups[g]?.["minecraft:health"]?.max === Number(g.split("_")[1]);
-  }), true);
-  check(`${kind}: vanilla speed and jump match FIXED`, [
-    other.components["minecraft:movement"].value,
-    other.components["minecraft:horse.jump_strength"].value * 100,
-  ], [FIXED[kind].s, FIXED[kind].j]);
-}
+const mule = JSON.parse(readFileSync(new URL("../behavior_pack/entities/mule.json", import.meta.url), "utf8"))["minecraft:entity"];
+const muleEvents = Object.keys(mule.events).filter((e) => e.startsWith("horsebreed:"));
+check("mule: same stat events as the horse", muleEvents.sort(), ours.slice().sort());
+check("mule: each adds its group", muleEvents.every((e) => {
+  const g = mule.events[e].add.component_groups[0];
+  return JSON.stringify(mule.component_groups[g]) === JSON.stringify(groups[g]);
+}), true);
+check("vanilla mule speed and jump", [
+  mule.components["minecraft:movement"].value,
+  mule.components["minecraft:horse.jump_strength"].value * 100,
+], [VANILLA_MULE.s, VANILLA_MULE.j]);
+check("vanilla mule speed is on the grid", speedOfStep(speedStep(VANILLA_MULE.s)), VANILLA_MULE.s);
+check("donkey speed and jump match vanilla mule's", FIXED.donkey, VANILLA_MULE);
+check("no donkey override: donkeys stay vanilla", (() => {
+  try { readFileSync(new URL("../behavior_pack/entities/donkey.json", import.meta.url)); return true; } catch { return false; }
+})(), false);
+const perfect = { h: 30, s: 0.3375, j: 100 };
+const donkey = { h: 15, ...FIXED.donkey };
+check("mule: perfect horse x donkey, all rolls won", inherit(perfect, donkey, 0.6, seq(0.1, 0.1, 0.1)), { h: 30, s: 90, j: 100 });
+check("mule: a lost roll takes the donkey's", inherit(perfect, donkey, 0.6, seq(0.1, 0.9, 0.1)).s, speedStep(0.175));
 check("donkey name", /^\S+ \S+ #4$/.test(herdName("9", undefined, undefined, 4, "donkey")), true);
 check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "donkey") !== herdName("9", 2, 1, 0, "mule"), true);
 const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });

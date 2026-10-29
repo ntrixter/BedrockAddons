@@ -10,7 +10,7 @@
   "modules": [
     {
       "type": "data",
-      "description": "Overrides the horse, donkey and mule with one component group per stat value, so a script can set a foal's exact stats.",
+      "description": "Overrides the horse and mule with one component group per stat value, so a script can set a foal's exact stats.",
       "uuid": "dfc65e28-ec9d-4694-9536-21d19cd6d40a",
       "version": "1.0.0"
     },
@@ -72,6 +72,16 @@
       "text": "Show stats of untamed horses",
       "name": "horsebreed:wild_stats",
       "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "Include donkeys and mules",
+      "name": "horsebreed:donkeys_mules",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Donkeys stay vanilla but get names and papers. A mule takes each stat from its horse or donkey parent by the same chance.§r"
     },
     {
       "type": "slider",

@@ -1,15 +1,11 @@
 {
   "display_name": "Champion Lines",
-  "description": "Foals keep their parents' best stats, ARK style: each of health, speed and jump has a 60% chance to come from the better parent. Donkeys and mules too. Look at a horse to see its stats and parents, and use a book on it for its papers.",
+  "description": "Foals keep their parents' best stats, ARK style: each of health, speed and jump has a 60% chance to come from the better parent. Mules too, bred from a horse and a donkey. Look at a horse to see its stats and parents, and use a book on it for its papers.",
   "deprecated": false,
   "vanilla_overrides": [
     {
       "path": "behavior_pack/entities/horse.json",
       "upstream_sha256": "225258c8f4d9c88ddf32b33e7d16227fea1ddf318ebc8513c337b86e3501a09c"
-    },
-    {
-      "path": "behavior_pack/entities/donkey.json",
-      "upstream_sha256": "a13fda8353cc5d0b7d4587210294ca5f292ba9fc7745efc5cfa6981bf00d61bb"
     },
     {
       "path": "behavior_pack/entities/mule.json",
