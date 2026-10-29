@@ -232,7 +232,7 @@ const pages = bookPages({
   name: "Spirit", stats, origin: "bred", breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40, reg: 27,
   parentEntries: [{ name: "Thunder", first: "Copper Blaze #3", origin: "wild" }, { name: "Raven Pepper #8" }],
 });
-check("three pages for a bred horse", pages.length, 3);
+check("four pages for a bred horse: one per parent", pages.length, 4);
 check("page 1", plain(pages[0]),
   "Horse\nName: > Spirit\n\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
 check("colour word keeps its colour", pages[0].includes("§6Chestnut§r"), true);
@@ -240,8 +240,9 @@ check("values reach the right edge", pages[0].split("\n").filter((l) => / {2,}/.
   .every((l) => textWidth(l) <= LINE_WIDTH && textWidth(l) > LINE_WIDTH - 4), true);
 check("a long pair puts its value on the next line", plain(bookPages({ name: "T", stats, origin: "wild", tamer: "Sir_Longname_3rd", today: 1 })[0]).includes("\nTamed by:\n> Sir_Longname_3rd"), true);
 check("a value too long to pad is left as it is", rightAlign("W".repeat(30)), "W".repeat(30));
-check("page 3: lineage, renamed one with its first name", pages[2],
-  "§lLineage§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
+check("page 3: parent A, renamed, with its first name", pages[2],
+  "§lLineage, parent A§r\n\nThunder\n§7 wild name: Copper Blaze #3§r");
+check("page 4: parent B", pages[3], "§lLineage, parent B§r\n\nRaven Pepper §8#8§r");
 check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2\n§7 blocks/s§r", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[1].includes(t)), true);
 check("no maximums", /of 30|of 1\.00|best is/.test(pages[1]), false);
@@ -252,8 +253,9 @@ const differ = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", ta
 check("different breeder and tamer", plain(differ[0]).includes("\nBred by: > Alex\nTamed by: > Steve"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
   .split("\n")[1].endsWith("§lOak Dancer §8#1§r"), true);
-check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[2],
-  "§lLineage§r\n\nX\n\nY");
+check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 }).slice(2),
+  ["§lLineage, parent A§r\n\nX", "§lLineage, parent B§r\n\nY"]);
+check("unknown parents: one Lineage page", bookPages({ name: "A", stats, origin: "bred", today: 1 })[2], "§lLineage§r\n\nunknown");
 check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
@@ -275,14 +277,14 @@ check("a full horse fits its page", [full.length, full.every((p) => p.split("\n"
 check("its stats follow", full[1].startsWith("§lStats"), true);
 const statPages = bookPages({ name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1, stats: { h: 28, s: 0.29, j: 90, jEst: true } }, { name: "Coal", gen: 0, stats: null }] });
-check("parents' stats on the Lineage page", plain(statPages[2]).includes("\n> Health: 28\n> Speed: 12.2\n> Jump: ~4.4\n"), true);
-check("a parent's hidden stats", plain(statPages[2]).endsWith("\n> Health: ?\n> Speed: ?\n> Jump: ?"), true);
+check("parents' stats on the Lineage page", plain(statPages[2]).endsWith("\n> Health: 28\n> Speed: 12.2\n> Jump: ~4.4"), true);
+check("a parent's hidden stats", plain(statPages[3]).endsWith("\n> Health: ?\n> Speed: ?\n> Jump: ?"), true);
 const crowded = bookPages({ name: "C", stats, origin: "bred", day: 1, today: 2, parentEntries: [
   { name: "Thunder", first: "Copper Blaze #3", origin: "wild", gen: 0, stats },
   { name: "Storm", first: "Ash Dash #1", origin: "wild", gen: 0, stats }] });
 check("two full parents get a Lineage page each", [crowded.length, crowded.every((p) => p.split("\n").length <= PAGE_LINES), crowded[2].startsWith("§lLineage, parent A§r"), crowded[3].startsWith("§lLineage, parent B§r")], [4, true, true, true]);
 check("parents show their generation", genPages[2].includes("Swan Boots §8#1§r\n§7 generation 1§r"), true);
-check("wild parent is generation 0", genPages[2].includes("§7 generation 0§r"), true);
+check("wild parent is generation 0", genPages[3].includes("§7 generation 0§r"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");
