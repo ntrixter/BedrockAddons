@@ -321,7 +321,7 @@ export function bookPages(info) {
     ...(info.firstName ? [`§7${firstNameLabel(info.origin)}: ${info.firstName}§r`] : []),
     "",
     ...(info.kind && info.kind !== "horse"
-      ? [KIND_NAMES[info.kind]]
+      ? [KIND_NAMES[info.kind], ...(info.mark > 0 ? [`Markings: ${markingName(info.mark)}`] : [])]
       : [`Color: ${coloredColorName(info.variant)}`, `Markings: ${markingName(info.mark)}`]),
     ...(info.reg ? [`§8Registry No. ${info.reg}§r`] : []),
     "",

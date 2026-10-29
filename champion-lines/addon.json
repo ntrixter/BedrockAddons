@@ -10,6 +10,10 @@
     {
       "path": "behavior_pack/entities/mule.json",
       "upstream_sha256": "acbf355fd342c4107cb0dc1ec3b2dcbd3a4015638ba346d66bd00c0cb80ab074"
+    },
+    {
+      "path": "resource_pack/entity/mule_v3.entity.json",
+      "upstream_sha256": "e416e837fc3dc347f672e07c38d9f40aceed50119eda3610453caff987cef884"
     }
   ]
 }

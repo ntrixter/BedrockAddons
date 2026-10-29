@@ -17,7 +17,11 @@ uses, then the generated block is inserted as text at the top of
 diff against upstream shows the two inserted blocks and nothing else.
 
 A mule gets the same groups as a horse, since a bred mule's stats come from
-its horse and donkey parents. Donkeys are left vanilla and not overridden.
+its horse and donkey parents, plus a markings group per marking. Vanilla's
+mule client entity always draws "no markings", so this also rewrites it into
+the resource pack: the horse's marking textures are added, and it points at a
+render controller of the pack's own that draws the marking an adult mule has.
+Donkeys are left vanilla and not overridden.
 
 A bred horse foal's coat and markings are chosen by the engine and cannot be read
 back by a script (the foal carries no variant component), so the script picks
@@ -92,6 +96,12 @@ def build(entity: str, upstream: str) -> str:
         group = f"{NS}:{stat}_{step}"
         groups.append(f'"{group}": {compact({component: body})}')
         events.append(f'"{NS}:set_{stat}_{step}": {compact({"add": {"component_groups": [group]}})}')
+    if entity == "mule":
+        names = [f"{NS}:mark_{i}" for i in range(len(MARKS))]
+        for i, group in enumerate(names):
+            groups.append(f'"{group}": {compact({"minecraft:mark_variant": {"value": i}})}')
+            others = [g for g in names if g != group]
+            events.append(f'"{NS}:set_mark_{i}": {compact({"remove": {"component_groups": others}, "add": {"component_groups": [group]}})}')
     if entity == "horse":
         for i, coat in enumerate(COATS):
             events.append(f'"{NS}:set_coat_{i}": {compact({"add": {"component_groups": [f"minecraft:base_{coat}"]}})}')
@@ -100,6 +110,29 @@ def build(entity: str, upstream: str) -> str:
     text = insert_after(text, '"component_groups": {', block(groups, " " * 6))
     text = insert_after(text, '"events": {', block(events, " " * 6))
     json.loads(text)  # must stay strict JSON
+    return text
+
+
+# Resource pack: the vanilla mule client entity, pointed at the pack's render
+# controller, which needs the horse's marking textures by these names.
+MULE_CLIENT = "resource_pack/entity/mule_v3.entity.json"
+MULE_CONTROLLER = "controller.render.champion_lines.mule"
+MARK_TEXTURES = {
+    "markings_white": "textures/entity/horse2/horse_markings_white",
+    "markings_whitefield": "textures/entity/horse2/horse_markings_whitefield",
+    "markings_whitedots": "textures/entity/horse2/horse_markings_whitedots",
+    "markings_blackdots": "textures/entity/horse2/horse_markings_blackdots",
+}
+
+
+def build_mule_client(upstream: str) -> str:
+    text = strip_comments(upstream)
+    textures = "".join(f'        "{k}": "{v}",\n' for k, v in MARK_TEXTURES.items())
+    text = insert_after(text, '"markings_none":', textures)
+    if text.count('"controller.render.mule.v4"') != 1:
+        raise RuntimeError(f"{MULE_CLIENT}: vanilla no longer uses controller.render.mule.v4; re-check the render controller")
+    text = text.replace('"controller.render.mule.v4"', f'"{MULE_CONTROLLER}"')
+    json.loads(text)
     return text
 
 
@@ -112,6 +145,11 @@ def main(argv: list[str]) -> int:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(build(entity, upstream), encoding="utf-8", newline="\n")
         print(f"wrote {out.relative_to(REPO_ROOT)}")
+    upstream = local["mule_v3.entity"].read_text(encoding="utf-8") if "mule_v3.entity" in local else fetch_upstream(MULE_CLIENT)
+    out = ADDON / MULE_CLIENT
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(build_mule_client(upstream), encoding="utf-8", newline="\n")
+    print(f"wrote {out.relative_to(REPO_ROOT)}")
     return 0
 
 

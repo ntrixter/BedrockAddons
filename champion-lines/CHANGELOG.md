@@ -45,3 +45,5 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   vanilla but get names, registry numbers, generations and books. A mule
   rolls health, speed and jump from its horse and donkey parents by the
   better-parent rule. Overrides vanilla `mule.json` as well as `horse.json`.
+- Bred mules wear their horse parent's markings (setting, on by default). This
+  adds a small resource pack, so the add-on now downloads as an `.mcaddon`.

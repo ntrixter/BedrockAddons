@@ -1,0 +1,33 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.champion_lines.mule": {
+      "part_visibility": [
+        { "Saddle": "query.is_saddled" },
+        { "Bit*": "query.is_saddled" },
+        { "Bridle": "query.is_saddled" },
+        { "Reins*": "query.is_saddled && query.has_rider" },
+        { "Bag*": "query.is_chested" },
+        { "Ear*": false }
+      ],
+      "arrays": {
+        "textures": {
+          "Array.markings": [
+            "Texture.markings_none",
+            "Texture.markings_white",
+            "Texture.markings_whitefield",
+            "Texture.markings_whitedots",
+            "Texture.markings_blackdots"
+          ]
+        }
+      },
+      "geometry": "query.is_baby ? Geometry.baby : Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": [
+        "query.is_baby ? Texture.baby_mule : Texture.mule",
+        "query.is_baby ? Texture.markings_none : Array.markings[query.mark_variant]",
+        "Texture.armor_none"
+      ]
+    }
+  }
+}

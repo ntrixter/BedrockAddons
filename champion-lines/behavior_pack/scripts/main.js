@@ -50,6 +50,7 @@ function readSettings() {
     wild: values[`${NS}:wild_stats`] === true,
     learn: values[`${NS}:learn_by_riding`] !== false,
     donkeys: values[`${NS}:donkeys_mules`] !== false,
+    muleMarks: values[`${NS}:mule_markings`] !== false,
     chance: Number.isFinite(chance) ? Math.min(100, Math.max(50, chance)) / 100 : 0.6,
   };
 }
@@ -178,6 +179,18 @@ function firstNameOf(horse) {
   return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.rn, kindOf(horse));
 }
 
+/**
+ * Shows a mule's recorded markings, or none with the setting off. The record
+ * is kept either way, so turning the setting back on, or re-adding the pack
+ * after the game dropped the markings, restores them.
+ */
+function syncMuleLook(mule) {
+  if (kindOf(mule) !== "mule") return;
+  const want = settings.muleMarks ? (readData(mule)?.m ?? 0) : 0;
+  const have = mule.getComponent("minecraft:mark_variant")?.value ?? 0;
+  if (want !== have) mule.triggerEvent(`${NS}:set_mark_${want}`);
+}
+
 function applyStat(horse, stat, step) {
   horse.triggerEvent(`${NS}:set_${stat}_${step}`);
 }
@@ -245,11 +258,14 @@ function onBorn(foal) {
     g: generationOf(genOf(a), genOf(b)),
     by: breeders.length ? breeders.join(" & ") : undefined,
     p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
+    // A mule wears its horse parent's markings over its own coat.
+    ...(kind === "mule" ? { m: markOf(parents.find((p) => kindOf(p) === "horse") ?? a) ?? 0 } : {}),
   });
   applyStat(foal, "health", child.h);
   applyStat(foal, "speed", child.s);
   applyStat(foal, "jump", child.j);
   if (isHorse) writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
+  else syncMuleLook(foal);
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -301,6 +317,14 @@ world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
     else if (cause === "Spawned" || cause === "Event") onSpawned(entity);
   } catch (err) {
     if (entity.isValid) console.warn(`[Champion Lines] ${err}`);
+  }
+});
+
+world.afterEvents.entityLoad.subscribe(({ entity }) => {
+  try {
+    if (isEquine(entity)) syncMuleLook(entity);
+  } catch {
+    // The entity can unload again before this runs.
   }
 });
 

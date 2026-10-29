@@ -113,7 +113,7 @@ check("every event adds its group", ours.every((e) => {
 
 console.log("Donkeys and mules");
 const mule = JSON.parse(readFileSync(new URL("../behavior_pack/entities/mule.json", import.meta.url), "utf8"))["minecraft:entity"];
-const muleEvents = Object.keys(mule.events).filter((e) => e.startsWith("horsebreed:"));
+const muleEvents = Object.keys(mule.events).filter((e) => e.startsWith("horsebreed:") && !e.includes("_mark_"));
 check("mule: same stat events as the horse", muleEvents.sort(), ours.slice().sort());
 check("mule: each adds its group", muleEvents.every((e) => {
   const g = mule.events[e].add.component_groups[0];
@@ -136,6 +136,20 @@ check("donkey name", /^\S+ \S+ #4$/.test(herdName("9", undefined, undefined, 4, 
 check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "donkey") !== herdName("9", 2, 1, 0, "mule"), true);
 const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });
 check("donkey book says Donkey, no colour", donkeyBook[0].includes("\nDonkey\n") && !donkeyBook[0].includes("Color"), true);
+const muleBook = bookPages({ name: "Russet Packer #5", kind: "mule", mark: 3, stats: { h: 22, s: 0.2, j: 60 }, origin: "bred", today: 1 });
+check("mule book shows its markings", muleBook[0].includes("\nMule\nMarkings: White spots\n"), true);
+check("plain mule book has no markings line", !bookPages({ name: "M", kind: "mule", mark: 0, stats: { h: 22, s: 0.2, j: 60 }, origin: "wild", today: 1 })[0].includes("Markings"), true);
+check("mule: one marking event per marking, each clearing the others", MARKINGS.every((_, i) => {
+  const ev = mule.events[`horsebreed:set_mark_${i}`];
+  return ev.add.component_groups[0] === `horsebreed:mark_${i}` && ev.remove.component_groups.length === MARKINGS.length - 1
+    && mule.component_groups[`horsebreed:mark_${i}`]["minecraft:mark_variant"].value === i;
+}), true);
+const client = JSON.parse(readFileSync(new URL("../resource_pack/entity/mule_v3.entity.json", import.meta.url), "utf8"))["minecraft:client_entity"].description;
+const controllers = JSON.parse(readFileSync(new URL("../resource_pack/render_controllers/champion_lines_mule.render_controllers.json", import.meta.url), "utf8")).render_controllers;
+check("mule client entity uses the pack's controller", client.render_controllers.every((c) => c in controllers), true);
+check("every marking texture the controller names is defined", Object.values(controllers)[0].arrays.textures["Array.markings"]
+  .every((t) => t.replace("Texture.", "") in client.textures), true);
+check("controller lists one texture per marking", Object.values(controllers)[0].arrays.textures["Array.markings"].length, MARKINGS.length);
 check("fixed stats shown plain", statParts({ h: 30, s: 0.175, j: 50, fixed: true }).slice(1).every((p) => p.startsWith("§f")), true);
 
 console.log("Coat, markings and generation");
