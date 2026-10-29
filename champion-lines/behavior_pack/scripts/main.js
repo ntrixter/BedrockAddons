@@ -4,6 +4,7 @@ import {
   bookTitle,
   COLORS,
   describe,
+  FIXED,
   generationOf,
   inherit,
   inheritLook,
@@ -11,6 +12,7 @@ import {
   jumpFromHeight,
   jumpStep,
   herdName,
+  KINDS,
   shownStats,
   MARKINGS,
   speedOfStep,
@@ -18,7 +20,10 @@ import {
 } from "./genes.js";
 
 const NS = "horsebreed";
-const HORSE = "minecraft:horse";
+// Horses, donkeys and mules. "Horse" in this file means any of them.
+const EQUINES = Object.keys(KINDS);
+const isEquine = (entity) => entity.typeId in KINDS;
+const kindOf = (entity) => KINDS[entity.typeId];
 const DATA = `${NS}:data`;
 const BREED_ITEMS = new Set(["minecraft:golden_carrot", "minecraft:golden_apple", "minecraft:enchanted_golden_apple"]);
 // A fed horse stays in love for 30 seconds; allow for the walk to its partner.
@@ -118,6 +123,8 @@ function liveJump(horse) {
 }
 
 function statsOf(horse, data = readData(horse)) {
+  const fixed = FIXED[kindOf(horse)];
+  if (fixed) return { h: data?.h ?? liveHealth(horse) ?? 15, s: fixed.s, j: fixed.j, jEst: false, fixed: true };
   return {
     h: data?.h ?? liveHealth(horse) ?? 15,
     s: data?.s ?? liveSpeed(horse) ?? 0.1125,
@@ -162,7 +169,7 @@ function displayName(horse) {
 
 /** The generated name the horse was given in the wild or at birth. */
 function firstNameOf(horse) {
-  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.rn);
+  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.rn, kindOf(horse));
 }
 
 function applyStat(horse, stat, step) {
@@ -175,7 +182,7 @@ function applyStat(horse, stat, step) {
 const fed = new Map();
 
 world.afterEvents.playerInteractWithEntity.subscribe(({ player, target, beforeItemStack }) => {
-  if (target.typeId !== HORSE || !beforeItemStack || !BREED_ITEMS.has(beforeItemStack.typeId)) return;
+  if (!isEquine(target) || !beforeItemStack || !BREED_ITEMS.has(beforeItemStack.typeId)) return;
   fed.set(target.id, { tick: system.currentTick, player: player.name });
 });
 
@@ -193,8 +200,8 @@ function findParents(foal) {
   const at = foal.location;
   const dist = (h) => (h.location.x - at.x) ** 2 + (h.location.y - at.y) ** 2 + (h.location.z - at.z) ** 2;
   return foal.dimension
-    .getEntities({ type: HORSE, location: at, maxDistance: PARENT_SEARCH })
-    .filter((h) => h.id !== foal.id && !h.hasComponent("minecraft:is_baby") && recentlyFed(h.id))
+    .getEntities({ location: at, maxDistance: PARENT_SEARCH })
+    .filter((h) => isEquine(h) && h.id !== foal.id && !h.hasComponent("minecraft:is_baby") && recentlyFed(h.id))
     .sort((a, b) => dist(a) - dist(b))
     .slice(0, 2);
 }
@@ -202,11 +209,16 @@ function findParents(foal) {
 function onBorn(foal) {
   const parents = findParents(foal);
   const day = world.getDay();
+  const isHorse = kindOf(foal) === "horse";
   if (parents.length < 2) {
     // No fed pair nearby: keep what vanilla gave it, and give it a known jump.
     console.warn(`[Champion Lines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
-    const j = wildJump(Math.random);
     const g = generationOf(...parents.map(genOf));
+    if (!isHorse) {
+      writeData(foal, { h: liveHealth(foal), origin: "bred", day, g });
+      return;
+    }
+    const j = wildJump(Math.random);
     writeData(foal, { h: liveHealth(foal), s: liveSpeed(foal), j, origin: "bred", day, g });
     applyStat(foal, "jump", j);
     writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
@@ -215,10 +227,10 @@ function onBorn(foal) {
   const [a, b] = parents;
   const child = inherit(statsOf(a), statsOf(b), settings.chance, Math.random);
   const breeders = [...new Set(parents.map((p) => recentlyFed(p.id)?.player).filter(Boolean))];
+  // A donkey foal or a mule takes only health; its speed and jump are fixed.
   writeData(foal, {
     h: child.h,
-    s: speedOfStep(child.s),
-    j: child.j,
+    ...(isHorse ? { s: speedOfStep(child.s), j: child.j } : {}),
     origin: "bred",
     day,
     g: generationOf(genOf(a), genOf(b)),
@@ -226,9 +238,11 @@ function onBorn(foal) {
     p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
   });
   applyStat(foal, "health", child.h);
-  applyStat(foal, "speed", child.s);
-  applyStat(foal, "jump", child.j);
-  writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
+  if (isHorse) {
+    applyStat(foal, "speed", child.s);
+    applyStat(foal, "jump", child.j);
+    writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
+  }
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -238,6 +252,10 @@ function onBorn(foal) {
 }
 
 function onSpawned(horse) {
+  if (kindOf(horse) !== "horse") {
+    writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay() });
+    return;
+  }
   // Vanilla's jump cannot be read back, so roll it here, the same way vanilla
   // does, and remember it. Health and speed are vanilla's own rolls.
   const j = wildJump(Math.random);
@@ -251,7 +269,7 @@ function onSpawned(horse) {
 world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
   try {
     // A record without an origin is only a registry number; still record the spawn.
-    if (entity.typeId !== HORSE || readData(entity)?.origin) return;
+    if (!isEquine(entity) || readData(entity)?.origin) return;
     if (cause === "Born") onBorn(entity);
     else if (cause === "Spawned" || cause === "Event") onSpawned(entity);
   } catch (err) {
@@ -313,8 +331,9 @@ function markRidden(horse) {
 function recordJump(rider, horse, rise) {
   if (rise < MIN_RISE) return;
   const data = readData(horse) ?? {};
-  const known = data.j != null && !data.jEst;
-  if (known) debug(`jump rose ${rise.toFixed(2)}; set strength ${data.j} predicts ${jumpBlocks(data.j).toFixed(2)} at full charge`);
+  const j = statsOf(horse, data).j;
+  const known = FIXED[kindOf(horse)] !== undefined || (data.j != null && !data.jEst);
+  if (known) debug(`jump rose ${rise.toFixed(2)}; set strength ${j} predicts ${jumpBlocks(j).toFixed(2)} at full charge`);
   else debug(`jump rose ${rise.toFixed(2)} -> strength ~${jumpFromHeight(rise)} (best so far ${data.jm?.toFixed(2) ?? "none"})`);
   if (data.jm != null && rise <= data.jm) return;
   writeData(horse, known ? { ...data, jm: rise } : { ...data, j: jumpFromHeight(rise), jEst: true, jm: rise });
@@ -326,7 +345,7 @@ system.runInterval(() => {
   for (const player of world.getPlayers()) {
     try {
       const horse = player.getComponent("minecraft:riding")?.entityRidingOn;
-      if (horse?.typeId !== HORSE) continue;
+      if (!horse || !isEquine(horse)) continue;
       riding.add(horse.id);
       markRidden(horse);
       trackJump(player, horse);
@@ -371,6 +390,7 @@ function infoOf(horse) {
   return {
     data,
     name,
+    kind: kindOf(horse),
     firstName: firstName !== name ? firstName : undefined,
     reg: data?.rn,
     gen: data?.g,
@@ -393,11 +413,10 @@ function targetHorse(player) {
   const mount = player.getComponent("minecraft:riding")?.entityRidingOn;
   let nearest;
   for (const hit of player.getEntitiesFromViewDirection({
-    type: HORSE,
     maxDistance: REACH,
     ignoreBlockCollision: true,
   })) {
-    if (hit.entity.id === mount?.id) continue;
+    if (!isEquine(hit.entity) || hit.entity.id === mount?.id) continue;
     if (!nearest || hit.distance < nearest.distance) nearest = hit;
   }
   return nearest?.entity;
@@ -441,7 +460,7 @@ world.afterEvents.dataDrivenEntityTrigger.subscribe(
       if (entity.isValid) console.warn(`[Champion Lines] recording a tame failed: ${err}`);
     }
   },
-  { entityTypes: [HORSE], eventTypes: ["minecraft:on_tame"] },
+  { entityTypes: EQUINES, eventTypes: ["minecraft:on_tame"] },
 );
 
 // ---- the book -----------------------------------------------------------------
@@ -466,7 +485,7 @@ function isPapersFor(book, horse) {
 
 world.beforeEvents.playerInteractWithEntity.subscribe((ev) => {
   const { player, target, itemStack } = ev;
-  if (target.typeId !== HORSE || !itemStack) return;
+  if (!isEquine(target) || !itemStack) return;
   let mode;
   if (itemStack.typeId === "minecraft:book") mode = "new";
   else if (itemStack.typeId === "minecraft:written_book" && player.isSneaking && isPapersFor(itemStack, target)) mode = "update";

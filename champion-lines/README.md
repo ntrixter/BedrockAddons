@@ -16,9 +16,9 @@ values can be stacked into one horse over a few generations.
 - **No experiments and no cheats needed.** Everything runs from the pack's
   script, so it works on a survival world with cheats off and keeps
   achievements.
-- **Overrides the vanilla horse** (`entities/horse.json`). Another add-on that
-  also replaces the horse will conflict with this one; whichever is higher in
-  the pack list wins.
+- **Overrides the vanilla horse, donkey and mule** (`entities/horse.json`,
+  `donkey.json`, `mule.json`). Another add-on that also replaces one of them
+  will conflict with this one; whichever is higher in the pack list wins.
 
 ## What you get
 
@@ -34,7 +34,15 @@ stat separately:
 | Speed 9.1 and 12.8 blocks/s | 12.8 (60%) or 9.1 (40%) |
 | Jump 2.4 and 4.1 blocks | 4.1 (60%) or 2.4 (40%) |
 
-The chance is a setting (50 to 100%). Donkeys and mules are not affected.
+The chance is a setting (50 to 100%).
+
+**Donkeys and mules** are covered too. In vanilla their only varying stat is
+health (15 to 30); every donkey and mule has the same speed (about 7.4
+blocks/s) and jump (about 1.6 blocks). So a donkey foal, or a mule bred from a
+horse and a donkey, takes its health by the same rule, and its speed and jump
+stay vanilla. They get names, registry numbers, generations and books like
+horses, with name words of their own (Dusty Jack, Russet Packer), and their
+book says Donkey or Mule in place of colour and markings.
 
 The foal's coat and markings are picked the way Java Edition does it: each
 comes from one parent or the other (4 in 9 each), or is random (1 in 9).
@@ -170,7 +178,7 @@ cd champion-lines/tests && node run.js
 ```
 
 They cover the inheritance roll, the text of the action bar and the book, and
-check that the stat grids in the script match the groups in `horse.json`.
+check that the stat grids in the script match the groups in the entity files.
 Nothing needs installing. Anything that needs the game is in
 [TESTING.md](TESTING.md).
 
@@ -268,25 +276,26 @@ back to vanilla's blend.
 
 ## Re-syncing after a Minecraft update
 
-The monthly `vanilla-drift` workflow reports when Mojang changes `horse.json`.
+The monthly `vanilla-drift` workflow reports when Mojang changes `horse.json`,
+`donkey.json` or `mule.json`.
 The pack's additions are generated, so a re-sync is two commands from the
 repository root:
 
 ```sh
-python3 champion-lines/tools/sync_horse.py
+python3 champion-lines/tools/sync_entities.py
 python3 scripts/check_vanilla_drift.py champion-lines --print-hash
 ```
 
-The first fetches the vanilla horse, strips its `//` comments and inserts this
+The first fetches the three vanilla files, strips its `//` comments and inserts this
 pack's component groups and events at the top of `component_groups` and
-`events`. Every vanilla line is left as it was. Put the printed hash into
+`events`. Every vanilla line is left as it was. Put the printed hashes into
 `upstream_sha256` in `addon.json`, raise `min_engine_version` if the new file's
 `format_version` needs it, and run the tests, which check that the groups
 still match the script.
 
 If Mojang renames `minecraft:health`, `minecraft:movement` or
 `minecraft:horse.jump_strength`, or changes their ranges, update the grids in
-both `tools/sync_horse.py` and `behavior_pack/scripts/genes.js`.
+both `tools/sync_entities.py` and `behavior_pack/scripts/genes.js`.
 
 ## Changelog
 

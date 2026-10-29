@@ -16,6 +16,7 @@ import {
   bookTitle,
   COLORS,
   describe,
+  FIXED,
   generationOf,
   herdName,
   inherit,
@@ -108,6 +109,26 @@ check("every event adds its group", ours.every((e) => {
   const g = events[e].add.component_groups[0];
   return e.replace(":set_", ":") === g && g in groups;
 }), true);
+
+console.log("Donkeys and mules");
+for (const kind of ["donkey", "mule"]) {
+  const other = JSON.parse(readFileSync(new URL(`../behavior_pack/entities/${kind}.json`, import.meta.url), "utf8"))["minecraft:entity"];
+  const ev = Object.keys(other.events).filter((e) => e.startsWith("horsebreed:"));
+  check(`${kind}: health events only`, ev.length, 16);
+  check(`${kind}: each adds its health group`, ev.every((e) => {
+    const g = other.events[e].add.component_groups[0];
+    return e.replace(":set_", ":") === g && other.component_groups[g]?.["minecraft:health"]?.max === Number(g.split("_")[1]);
+  }), true);
+  check(`${kind}: vanilla speed and jump match FIXED`, [
+    other.components["minecraft:movement"].value,
+    other.components["minecraft:horse.jump_strength"].value * 100,
+  ], [FIXED[kind].s, FIXED[kind].j]);
+}
+check("donkey name", /^\S+ \S+ #4$/.test(herdName("9", undefined, undefined, 4, "donkey")), true);
+check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "donkey") !== herdName("9", 2, 1, 0, "mule"), true);
+const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });
+check("donkey book says Donkey, no colour", donkeyBook[0].includes("\nDonkey\n") && !donkeyBook[0].includes("Color"), true);
+check("fixed stats shown plain", statParts({ h: 30, s: 0.175, j: 50, fixed: true }).slice(1).every((p) => p.startsWith("§f")), true);
 
 console.log("Coat, markings and generation");
 check("look from parent A", inheritLook(2, 5, 7, seq(0.1)), 2);

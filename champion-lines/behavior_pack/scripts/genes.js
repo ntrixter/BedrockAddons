@@ -2,8 +2,9 @@
 // inheritance roll, and the text for the action bar and the book. Kept free of
 // @minecraft/server so tests/run.js can drive it with plain objects.
 
-// These grids must match tools/sync_horse.py, which writes one component group
-// per step into entities/horse.json.
+// These grids must match tools/sync_entities.py, which writes one component
+// group per step into entities/horse.json (donkey.json and mule.json get the
+// health groups only).
 export const HEALTH_MIN = 15;
 export const HEALTH_MAX = 30;
 export const SPEED_MIN = 0.1125;
@@ -11,6 +12,15 @@ export const SPEED_STEP = 0.0025;
 export const SPEED_MAX = 0.3375;
 export const JUMP_MIN = 40; // hundredths of jump strength
 export const JUMP_MAX = 100;
+
+/** The animals the pack covers, by entity type. */
+export const KINDS = { "minecraft:horse": "horse", "minecraft:donkey": "donkey", "minecraft:mule": "mule" };
+
+/**
+ * Stats a kind does not vary. In vanilla every donkey and every mule has the
+ * same speed and jump; only health is rolled.
+ */
+export const FIXED = { donkey: { s: 0.175, j: 50 }, mule: { s: 0.175, j: 50 } };
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 
@@ -132,18 +142,21 @@ export function shownStats(stats, horse, opts) {
     s: horse.ridden ? stats.s : null,
     j: horse.jm != null ? jumpFromHeight(horse.jm) : null,
     jEst: true,
+    fixed: stats.fixed,
   };
 }
 
 export function statParts(stats) {
   if (!stats) return [];
+  // A stat every animal of its kind shares is shown plain, not ranked.
+  const tierOr = (q) => (stats.fixed ? "§f" : tier(q));
   const parts = [];
   if (stats.h == null) parts.push("§7Health ?§r");
   else parts.push(`${tier(quality(stats.h, HEALTH_MIN, HEALTH_MAX))}Health ${Math.round(stats.h)}§r`);
   if (stats.s == null) parts.push("§7Speed ?§r");
-  else parts.push(`${tier(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
+  else parts.push(`${tierOr(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
   if (stats.j == null) parts.push("§7Jump ?§r");
-  else parts.push(`${tier(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${stats.jEst ? "~" : ""}${fmt(jumpBlocks(stats.j))}§r`);
+  else parts.push(`${tierOr(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${stats.jEst ? "~" : ""}${fmt(jumpBlocks(stats.j))}§r`);
   return parts;
 }
 
@@ -196,6 +209,21 @@ const MARK_WORDS = [
   ["Pepper", "Dapple", "Domino", "Ink", "Pebble", "Spots"],
 ];
 
+// Donkeys and mules have one look each, so their names come from lists of
+// their own: 36 names per kind before the registry number.
+const OTHER_WORDS = {
+  donkey: [
+    ["Dusty", "Clover", "Barley", "Thistle", "Juniper", "Hickory"],
+    ["Jack", "Burro", "Rambler", "Trotter", "Wanderer", "Bray"],
+  ],
+  mule: [
+    ["Rusty", "Cobble", "Russet", "Nutmeg", "Sorrel", "Fennel"],
+    ["Packer", "Hauler", "Plow", "Kicker", "Trekker", "Drifter"],
+  ],
+};
+
+export const KIND_NAMES = { horse: "Horse", donkey: "Donkey", mule: "Mule" };
+
 function hash(text) {
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
@@ -209,11 +237,17 @@ function hash(text) {
  * The generated name of a horse with no name tag, e.g. "Copper Blaze #27".
  * The words describe the horse; the registry number makes the name unique.
  */
-export function herdName(id, variant, mark, reg) {
-  const colors = COLOR_WORDS[variant];
-  const marks = MARK_WORDS[mark] ?? MARK_WORDS[0];
+export function herdName(id, variant, mark, reg, kind = "horse") {
   const h = hash(String(id));
-  const words = colors ? `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}` : "Horse";
+  let words;
+  if (OTHER_WORDS[kind]) {
+    const [firsts, seconds] = OTHER_WORDS[kind];
+    words = `${firsts[h % firsts.length]} ${seconds[(h >>> 8) % seconds.length]}`;
+  } else {
+    const colors = COLOR_WORDS[variant];
+    const marks = MARK_WORDS[mark] ?? MARK_WORDS[0];
+    words = colors ? `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}` : "Horse";
+  }
   return reg ? `${words} #${reg}` : words;
 }
 
@@ -285,8 +319,9 @@ export function bookPages(info) {
     `§l${grayNumber(info.name ?? "Horse", "")}§r`,
     ...(info.firstName ? [`§7${firstNameLabel(info.origin)}: ${info.firstName}§r`] : []),
     "",
-    `Color: ${coloredColorName(info.variant)}`,
-    `Markings: ${markingName(info.mark)}`,
+    ...(info.kind && info.kind !== "horse"
+      ? [KIND_NAMES[info.kind]]
+      : [`Color: ${coloredColorName(info.variant)}`, `Markings: ${markingName(info.mark)}`]),
     ...(info.reg ? [`§8Registry No. ${info.reg}§r`] : []),
     "",
     ...origin,

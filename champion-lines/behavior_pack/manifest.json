@@ -10,7 +10,7 @@
   "modules": [
     {
       "type": "data",
-      "description": "Overrides the horse with one component group per stat value, so a script can set a foal's exact stats.",
+      "description": "Overrides the horse, donkey and mule with one component group per stat value, so a script can set a foal's exact stats.",
       "uuid": "dfc65e28-ec9d-4694-9536-21d19cd6d40a",
       "version": "1.0.0"
     },
