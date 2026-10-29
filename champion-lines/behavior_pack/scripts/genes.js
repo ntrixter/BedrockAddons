@@ -393,12 +393,12 @@ export function bookPages(info) {
     ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []),
     ...("stats" in p ? parentStatLines(p.stats) : []),
   ]);
-  const lineage = (blocks) => ["§lLineage§r", "", ...(blocks.length ? blocks.flatMap((b) => [...b, ""]) : ["unknown"])].join("\n").trimEnd();
+  const lineage = (blocks, title = "Lineage") => [`§l${title}§r`, "", ...(blocks.length ? blocks.flatMap((b) => [...b, ""]) : ["unknown"])].join("\n").trimEnd();
   // Two parents with all their lines can overrun a page; then each gets one.
   let parentsPage = [];
   if (info.origin === "bred") {
     const together = lineage(parentBlocks);
-    parentsPage = together.split("\n").length <= PAGE_LINES ? [together] : parentBlocks.map((b) => lineage([b]));
+    parentsPage = together.split("\n").length <= PAGE_LINES ? [together] : parentBlocks.map((b, i) => lineage([b], `Lineage, parent ${"AB"[i]}`));
   }
 
   let jump;

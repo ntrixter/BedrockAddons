@@ -280,7 +280,7 @@ check("a parent's hidden stats", plain(statPages[2]).endsWith("\n> Health: ?\n> 
 const crowded = bookPages({ name: "C", stats, origin: "bred", day: 1, today: 2, parentEntries: [
   { name: "Thunder", first: "Copper Blaze #3", origin: "wild", gen: 0, stats },
   { name: "Storm", first: "Ash Dash #1", origin: "wild", gen: 0, stats }] });
-check("two full parents get a Lineage page each", [crowded.length, crowded.every((p) => p.split("\n").length <= PAGE_LINES), crowded[3].startsWith("§lLineage")], [4, true, true]);
+check("two full parents get a Lineage page each", [crowded.length, crowded.every((p) => p.split("\n").length <= PAGE_LINES), crowded[2].startsWith("§lLineage, parent A§r"), crowded[3].startsWith("§lLineage, parent B§r")], [4, true, true, true]);
 check("parents show their generation", genPages[2].includes("Swan Boots §8#1§r\n§7 generation 1§r"), true);
 check("wild parent is generation 0", genPages[2].includes("§7 generation 0§r"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
