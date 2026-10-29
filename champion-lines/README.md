@@ -57,7 +57,7 @@ horse looks like:
 
 | Coat | Words | Markings | Words |
 | --- | --- | --- | --- |
-| White | Snow, Frost, Pearl, Ivory, Ghost, Lily | None | Runner, Dancer, Spirit, Wind, Dash, Song |
+| White | Snow, Frost, Pearl, Ivory, Swan, Lily | None | Runner, Dancer, Spirit, Wind, Dash, Song |
 | Creamy | Honey, Butter, Sand, Biscuit, Maple, Dune | White socks and blaze | Blaze, Socks, Boots, Flash, Stripe, Beacon |
 | Chestnut | Copper, Rust, Amber, Ember, Penny, Ginger | White patches | Patch, Cloud, Paint, Quilt, Pinto, Mist |
 | Brown | Hazel, Cocoa, Oak, Acorn, Toffee, Bramble | White spots | Freckle, Speck, Spark, Flurry, Dot, Comet |

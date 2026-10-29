@@ -141,7 +141,7 @@ export function markingName(mark) {
 // keeps its name for life without storing it. 36 names per look; every one
 // fits the 16-character book title.
 const COLOR_WORDS = [
-  ["Snow", "Frost", "Pearl", "Ivory", "Ghost", "Lily"],
+  ["Snow", "Frost", "Pearl", "Ivory", "Swan", "Lily"],
   ["Honey", "Butter", "Sand", "Biscuit", "Maple", "Dune"],
   ["Copper", "Rust", "Amber", "Ember", "Penny", "Ginger"],
   ["Hazel", "Cocoa", "Oak", "Acorn", "Toffee", "Bramble"],
