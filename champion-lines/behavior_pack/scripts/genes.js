@@ -61,6 +61,23 @@ export function inherit(a, b, chance, rand) {
   };
 }
 
+/**
+ * A foal's coat or markings, as in Java Edition: 4 in 9 from each parent and
+ * 1 in 9 at random. A parent whose look is unknown counts as random.
+ */
+export function inheritLook(a, b, count, rand) {
+  const r = rand() * 9;
+  const random = () => Math.min(count - 1, Math.floor(rand() * count));
+  if (r < 4) return a ?? random();
+  if (r < 8) return b ?? random();
+  return random();
+}
+
+/** One more than the older line: wild horses, and horses of unknown birth, are generation 0. */
+export function generationOf(a, b) {
+  return Math.max(a ?? 0, b ?? 0) + 1;
+}
+
 // Conversions players recognise. Speed in blocks per second uses the factor
 // the Minecraft Wiki gives for horses; jump height uses the wiki's fit of jump
 // strength to blocks. Both are shown as approximate.
@@ -141,7 +158,7 @@ export function markingName(mark) {
 // keeps its name for life without storing it. 36 names per look; every one
 // fits the 16-character book title.
 const COLOR_WORDS = [
-  ["Snow", "Frost", "Pearl", "Ivory", "Swan", "Lily"],
+  ["Swan", "Frost", "Pearl", "Ivory", "Snow", "Lily"],
   ["Honey", "Butter", "Sand", "Biscuit", "Maple", "Dune"],
   ["Copper", "Rust", "Amber", "Ember", "Penny", "Ginger"],
   ["Hazel", "Cocoa", "Oak", "Acorn", "Toffee", "Bramble"],
@@ -151,7 +168,7 @@ const COLOR_WORDS = [
 ];
 const MARK_WORDS = [
   ["Runner", "Dancer", "Spirit", "Wind", "Dash", "Song"],
-  ["Blaze", "Socks", "Boots", "Flash", "Stripe", "Beacon"],
+  ["Blaze", "Socks", "Beacon", "Flash", "Stripe", "Boots"],
   ["Patch", "Cloud", "Paint", "Quilt", "Pinto", "Mist"],
   ["Freckle", "Speck", "Spark", "Flurry", "Dot", "Comet"],
   ["Pepper", "Dapple", "Domino", "Ink", "Pebble", "Spots"],
@@ -225,13 +242,17 @@ export function firstNameLabel(origin) {
 
 /**
  * The pages of the info book.
- * info: { name, firstName, reg, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
+ * info: { name, firstName, reg, gen, tamer, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
  */
 export function bookPages(info) {
   const s = info.stats;
   let origin;
   if (info.origin === "bred") {
-    origin = [`Born: day ${info.day ?? "?"}`, `Bred by: ${info.breeder ?? "unknown"}`];
+    origin = [
+      ...(info.gen ? [`Generation ${info.gen}`] : []),
+      `Born: day ${info.day ?? "?"}`,
+      `Bred by: ${info.breeder ?? "unknown"}`,
+    ];
   } else if (info.origin === "wild") {
     origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
   } else {
@@ -253,10 +274,10 @@ export function bookPages(info) {
   // below, so a book written before the rename can still be matched to it.
   const entries = info.parentEntries ?? (info.parents ?? []).map((name) => ({ name }));
   const parentsPage = info.origin !== "bred" ? [] : [[
-    "§lParents§r",
+    "§lLineage§r",
     "",
     ...(entries.length
-      ? entries.flatMap((p) => [grayNumber(p.name), ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
+      ? entries.flatMap((p) => [grayNumber(p.name), ...(p.gen !== undefined ? [`§7 generation ${p.gen}§r`] : []), ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
       : ["unknown"]),
   ].join("\n").trimEnd()];
 
@@ -276,5 +297,5 @@ export function bookPages(info) {
     "",
     `§7Written on day ${info.today}§r`,
   ].join("\n");
-  return [identity, ...parentsPage, stats];
+  return [identity, stats, ...parentsPage];
 }

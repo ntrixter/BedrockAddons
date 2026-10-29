@@ -14,9 +14,13 @@ import { readFileSync } from "node:fs";
 import {
   bookPages,
   bookTitle,
+  COLORS,
   describe,
+  generationOf,
   herdName,
   inherit,
+  inheritLook,
+  MARKINGS,
   jumpBlocks,
   jumpFromHeight,
   blocksPerSecond,
@@ -90,12 +94,28 @@ for (let j = 40; j <= 100; j++) {
   const g = groups[`horsebreed:jump_${j}`]?.["minecraft:horse.jump_strength"]?.value;
   if (g !== j / 100) check(`jump ${j}`, g, j / 100);
 }
-const ours = Object.keys(events).filter((e) => e.startsWith("horsebreed:"));
+const look = Object.keys(events).filter((e) => /^horsebreed:set_(coat|mark)_/.test(e));
+check("one look event per coat and marking", look.length, COLORS.length + MARKINGS.length);
+check("coat events set the variant in order", COLORS.map((_, i) =>
+  groups[events[`horsebreed:set_coat_${i}`].add.component_groups[0]]["minecraft:variant"].value), COLORS.map((_, i) => i));
+check("marking events set the mark in order", MARKINGS.map((_, i) =>
+  groups[events[`horsebreed:set_mark_${i}`].add.component_groups[0]]["minecraft:mark_variant"].value), MARKINGS.map((_, i) => i));
+const ours = Object.keys(events).filter((e) => e.startsWith("horsebreed:") && !look.includes(e));
 check("one event per group", ours.length, 16 + 91 + 61);
 check("every event adds its group", ours.every((e) => {
   const g = events[e].add.component_groups[0];
   return e.replace(":set_", ":") === g && g in groups;
 }), true);
+
+console.log("Coat, markings and generation");
+check("look from parent A", inheritLook(2, 5, 7, seq(0.1)), 2);
+check("look from parent B", inheritLook(2, 5, 7, seq(0.6)), 5);
+check("look at random", inheritLook(2, 5, 7, seq(0.95, 0.0)), 0);
+check("unknown parent look is random", inheritLook(undefined, 5, 7, seq(0.1, 0.99)), 6);
+check("parent white (0) is kept", inheritLook(0, 5, 7, seq(0.1)), 0);
+check("foal of two wild horses", generationOf(0, 0), 1);
+check("one more than the older line", generationOf(3, 1), 4);
+check("unknown parents", generationOf(undefined, undefined), 1);
 
 console.log("Conversions");
 check("jump 1.00 is about 5.3 blocks", jumpBlocks(100).toFixed(1), "5.3");
@@ -160,16 +180,16 @@ const pages = bookPages({
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", pages[0],
   "§lSpirit§r\n\nColor: §6Chestnut§r\nMarkings: White spots\n§8Registry No. 27§r\n\nBorn: day 12\nBred by: Steve");
-check("page 2: parents, renamed one with its first name", pages[1],
-  "§lParents§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
-check("page 3 has every stat", ["Health: 29\n", "Speed: 14.2\n", "Jump: 1.6 blocks", "day 40"]
-  .every((t) => pages[2].includes(t)), true);
-check("no maximums or speed unit", /of 30|of 1\.00|blocks\/s|best is/.test(pages[2]), false);
+check("page 3: lineage, renamed one with its first name", pages[2],
+  "§lLineage§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
+check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2\n", "Jump: 1.6 blocks", "day 40"]
+  .every((t) => pages[1].includes(t)), true);
+check("no maximums or speed unit", /of 30|of 1\.00|blocks\/s|best is/.test(pages[1]), false);
 check("tamer listed", bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0].includes("\nTamed by: Alex"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
   .startsWith("§lOak Dancer §8#1§r"), true);
-check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[1],
-  "§lParents§r\n\nX\n\nY");
+check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[2],
+  "§lLineage§r\n\nX\n\nY");
 check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
@@ -181,6 +201,13 @@ const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg:
 check("renamed wild horse keeps its wild name", renamed[0].startsWith("§lThunder§r\n§7Wild name: Copper Blaze #27§r\n"), true);
 const renamedFoal = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, stats, origin: "bred", variant: 2, mark: 1, today: 9 });
 check("renamed foal keeps its birth name", renamedFoal[0].startsWith("§lBolt§r\n§7Birth name: Ember Socks #40§r\n"), true);
+const genPages = bookPages({
+  name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
+  parentEntries: [{ name: "Swan Boots #1", gen: 1 }, { name: "Coal Dapple #8", gen: 0 }],
+});
+check("bred horse shows its generation", genPages[0].includes("\nGeneration 2\nBorn: day 5"), true);
+check("parents show their generation", genPages[2].includes("Swan Boots §8#1§r\n§7 generation 1§r"), true);
+check("wild parent is generation 0", genPages[2].includes("§7 generation 0§r"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");

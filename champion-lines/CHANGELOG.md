@@ -34,3 +34,6 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   parent, also shows its birth or wild name, so old books still identify it.
   The papers name the player who tamed the horse, and sneaking with a horse's
   own papers rewrites them with its current details.
+- Foals inherit coat and markings from their parents (4 in 9 each, 1 in 9
+  random), and every bred horse has a generation number, shown in its papers
+  and beside its parents.

@@ -2,12 +2,16 @@ import { GameMode, ItemStack, system, world } from "@minecraft/server";
 import {
   bookPages,
   bookTitle,
+  COLORS,
   describe,
+  generationOf,
   inherit,
+  inheritLook,
   jumpBlocks,
   jumpFromHeight,
   jumpStep,
   herdName,
+  MARKINGS,
   speedOfStep,
   wildJump,
 } from "./genes.js";
@@ -47,9 +51,10 @@ function readSettings() {
 const settings = readSettings();
 
 // ---- per-horse record -----------------------------------------------------
-// { rn, h, s, j, origin: "bred" | "wild", day, by, tb, p: [{ id, name, first }] }
+// { rn, h, s, j, origin: "bred" | "wild", day, by, tb, g, c, m, p: [{ id, name, first, origin, g }] }
 // rn is the registry number, h hit points, s the movement value, j jump
-// strength in hundredths, tb the player who tamed it.
+// strength in hundredths, tb the player who tamed it, g the generation, and
+// c and m a foal's coat and markings.
 
 function readData(horse) {
   try {
@@ -117,12 +122,33 @@ function statsOf(horse, data = readData(horse)) {
   };
 }
 
+// A foal's coat and markings are set by the pack at birth (see setLook) and
+// recorded, so the record covers the tick before the components appear.
 function variantOf(horse) {
-  return horse.getComponent("minecraft:variant")?.value;
+  return horse.getComponent("minecraft:variant")?.value ?? readData(horse)?.c;
 }
 
 function markOf(horse) {
-  return horse.getComponent("minecraft:mark_variant")?.value;
+  return horse.getComponent("minecraft:mark_variant")?.value ?? readData(horse)?.m;
+}
+
+/** A horse's generation: wild horses and horses of unknown birth are 0. */
+function genOf(horse) {
+  return readData(horse)?.g ?? 0;
+}
+
+/**
+ * Picks a foal's coat and markings and applies them. The engine gives a foal
+ * a look of its own, but leaves no component a script can read, so the pack
+ * chooses instead, by the same odds.
+ */
+function setLook(foal, parents) {
+  const [a, b] = parents;
+  const c = inheritLook(a && variantOf(a), b && variantOf(b), COLORS.length, Math.random);
+  const m = inheritLook(a && markOf(a), b && markOf(b), MARKINGS.length, Math.random);
+  foal.triggerEvent(`${NS}:set_coat_${c}`);
+  foal.triggerEvent(`${NS}:set_mark_${m}`);
+  return { c, m };
 }
 
 /** Name tag, or a generated name such as "Copper Blaze #27" when it has none. */
@@ -176,8 +202,10 @@ function onBorn(foal) {
     // No fed pair nearby: keep what vanilla gave it, and give it a known jump.
     console.warn(`[Champion Lines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
     const j = wildJump(Math.random);
-    writeData(foal, { h: liveHealth(foal), s: liveSpeed(foal), j, origin: "bred", day });
+    const g = generationOf(...parents.map(genOf));
+    writeData(foal, { h: liveHealth(foal), s: liveSpeed(foal), j, origin: "bred", day, g });
     applyStat(foal, "jump", j);
+    writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
     return;
   }
   const [a, b] = parents;
@@ -189,12 +217,14 @@ function onBorn(foal) {
     j: child.j,
     origin: "bred",
     day,
+    g: generationOf(genOf(a), genOf(b)),
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
   });
   applyStat(foal, "health", child.h);
   applyStat(foal, "speed", child.s);
   applyStat(foal, "jump", child.j);
+  writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -300,8 +330,6 @@ system.runInterval(() => {
 
 // ---- what the player is looking at ------------------------------------------
 
-/** Names of a bred horse's parents, live name tags first. */
-
 /**
  * A bred horse's parents as { name, first, origin }. A parent that is loaded
  * is read live, so a later name tag or registry number shows; otherwise the
@@ -318,9 +346,9 @@ function parentsOf(data) {
     if (live?.isValid) {
       const name = displayName(live);
       const first = firstNameOf(live);
-      return { name, first: first !== name ? first : undefined, origin: readData(live)?.origin };
+      return { name, first: first !== name ? first : undefined, origin: readData(live)?.origin, gen: genOf(live) };
     }
-    return { name: p.name, first: p.first && p.first !== p.name ? p.first : undefined, origin: p.origin };
+    return { name: p.name, first: p.first && p.first !== p.name ? p.first : undefined, origin: p.origin, gen: p.g };
   });
 }
 
@@ -336,6 +364,7 @@ function infoOf(horse) {
     name,
     firstName: firstName !== name ? firstName : undefined,
     reg: data?.rn,
+    gen: data?.g,
     tamer: data?.tb,
     baby: horse.hasComponent("minecraft:is_baby"),
     stats: statsOf(horse, data),

@@ -36,6 +36,15 @@ stat separately:
 
 The chance is a setting (50 to 100%). Donkeys and mules are not affected.
 
+The foal's coat and markings are picked the way Java Edition does it: each
+comes from one parent or the other (4 in 9 each), or is random (1 in 9).
+Bedrock picks a foal's look too but keeps it where a script cannot read it, so
+the pack makes the choice itself and records it.
+
+Each foal has a **generation**: one more than its older parent's. Wild horses,
+and horses from before the pack, are generation 0, so a foal of two wild
+horses is generation 1.
+
 ### Look at a horse
 
 The line above your hotbar shows the horse you are pointing at, within 8
@@ -57,8 +66,8 @@ horse looks like:
 
 | Coat | Words | Markings | Words |
 | --- | --- | --- | --- |
-| White | Snow, Frost, Pearl, Ivory, Swan, Lily | None | Runner, Dancer, Spirit, Wind, Dash, Song |
-| Creamy | Honey, Butter, Sand, Biscuit, Maple, Dune | White socks and blaze | Blaze, Socks, Boots, Flash, Stripe, Beacon |
+| White | Swan, Frost, Pearl, Ivory, Snow, Lily | None | Runner, Dancer, Spirit, Wind, Dash, Song |
+| Creamy | Honey, Butter, Sand, Biscuit, Maple, Dune | White socks and blaze | Blaze, Socks, Beacon, Flash, Stripe, Boots |
 | Chestnut | Copper, Rust, Amber, Ember, Penny, Ginger | White patches | Patch, Cloud, Paint, Quilt, Pinto, Mist |
 | Brown | Hazel, Cocoa, Oak, Acorn, Toffee, Bramble | White spots | Freckle, Speck, Spark, Flurry, Dot, Comet |
 | Black | Raven, Shadow, Coal, Onyx, Night, Crow | Black spots | Pepper, Dapple, Domino, Ink, Pebble, Spots |
@@ -83,9 +92,9 @@ Right-click (or tap) a horse while holding a plain book. The book is replaced
 by a signed book of the horse's papers:
 
 - name, colour (written in that colour), markings and registry number
-- the day it was born, who bred it and who tamed it
-- its parents (a page of their own, for a bred horse)
+- its generation, the day it was born, who bred it and who tamed it
 - health, speed (blocks per second) and jump (blocks)
+- for a bred horse, a last **Lineage** page: its parents and their generations
 
 It is titled with the horse's current name and signed by you. A book is a
 snapshot: it keeps the name the horse had when it was written. So that an old

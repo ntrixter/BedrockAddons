@@ -974,6 +974,18 @@
       "horsebreed:set_jump_98": {"add": {"component_groups": ["horsebreed:jump_98"]}},
       "horsebreed:set_jump_99": {"add": {"component_groups": ["horsebreed:jump_99"]}},
       "horsebreed:set_jump_100": {"add": {"component_groups": ["horsebreed:jump_100"]}},
+      "horsebreed:set_coat_0": {"add": {"component_groups": ["minecraft:base_white"]}},
+      "horsebreed:set_coat_1": {"add": {"component_groups": ["minecraft:base_creamy"]}},
+      "horsebreed:set_coat_2": {"add": {"component_groups": ["minecraft:base_chestnut"]}},
+      "horsebreed:set_coat_3": {"add": {"component_groups": ["minecraft:base_brown"]}},
+      "horsebreed:set_coat_4": {"add": {"component_groups": ["minecraft:base_black"]}},
+      "horsebreed:set_coat_5": {"add": {"component_groups": ["minecraft:base_gray"]}},
+      "horsebreed:set_coat_6": {"add": {"component_groups": ["minecraft:base_darkbrown"]}},
+      "horsebreed:set_mark_0": {"add": {"component_groups": ["minecraft:markings_none"]}},
+      "horsebreed:set_mark_1": {"add": {"component_groups": ["minecraft:markings_white_details"]}},
+      "horsebreed:set_mark_2": {"add": {"component_groups": ["minecraft:markings_white_fields"]}},
+      "horsebreed:set_mark_3": {"add": {"component_groups": ["minecraft:markings_white_dots"]}},
+      "horsebreed:set_mark_4": {"add": {"component_groups": ["minecraft:markings_black_dots"]}},
       "minecraft:entity_spawned": {
         "sequence": [
           {

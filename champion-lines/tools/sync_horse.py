@@ -16,6 +16,11 @@ uses, then the generated block is inserted as text at the top of
 "component_groups" and of "events". Every vanilla line stays as it was, so a
 diff against upstream shows the two inserted blocks and nothing else.
 
+A bred foal's coat and markings are chosen by the engine and cannot be read
+back by a script (the foal carries no variant component), so the script picks
+them itself and triggers one more event per coat and per marking, which add
+vanilla's own base_* and markings_* groups.
+
 The value grids must match genes.js (HEALTH_*, SPEED_*, JUMP_*). The script
 quantises a stat to the nearest step before triggering its event.
 
@@ -59,6 +64,11 @@ def stats():
         yield "jump", j, "minecraft:horse.jump_strength", {"value": j / 100}
 
 
+# Vanilla's own groups, in variant order (genes.js COLORS and MARKINGS).
+COATS = ["white", "creamy", "chestnut", "brown", "black", "gray", "darkbrown"]
+MARKS = ["none", "white_details", "white_fields", "white_dots", "black_dots"]
+
+
 def compact(obj) -> str:
     return json.dumps(obj, separators=(", ", ": "))
 
@@ -80,6 +90,10 @@ def build(upstream: str) -> str:
         group = f"{NS}:{stat}_{step}"
         groups.append(f'"{group}": {compact({component: body})}')
         events.append(f'"{NS}:set_{stat}_{step}": {compact({"add": {"component_groups": [group]}})}')
+    for i, coat in enumerate(COATS):
+        events.append(f'"{NS}:set_coat_{i}": {compact({"add": {"component_groups": [f"minecraft:base_{coat}"]}})}')
+    for i, mark in enumerate(MARKS):
+        events.append(f'"{NS}:set_mark_{i}": {compact({"add": {"component_groups": [f"minecraft:markings_{mark}"]}})}')
     text = insert_after(text, '"component_groups": {', block(groups, " " * 6))
     text = insert_after(text, '"events": {', block(events, " " * 6))
     json.loads(text)  # must stay strict JSON
