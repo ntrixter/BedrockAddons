@@ -140,6 +140,13 @@ def build_mule_client(upstream: str) -> str:
     if text.count(old) != 1:
         raise RuntimeError(f"{MULE_CLIENT}: vanilla's min_engine_version changed; re-check which copy wins")
     text = text.replace(old, f'"min_engine_version": "{CLIENT_MIN_ENGINE}"')
+    # Vanilla's mule material ("horse") draws only its first texture: the
+    # markings layer vanilla lists after it never shows. The horse's material
+    # draws every layer, so the mule borrows it.
+    material = '"default": "horse"'
+    if text.count(material) != 1:
+        raise RuntimeError(f"{MULE_CLIENT}: vanilla's mule material changed; re-check that markings draw")
+    text = text.replace(material, '"default": "horse_leather_armor"')
     json.loads(text)
     return text
 

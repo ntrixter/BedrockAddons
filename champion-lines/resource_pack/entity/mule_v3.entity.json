@@ -5,7 +5,7 @@
       "identifier": "minecraft:mule",
       "min_engine_version": "1.26.60",
       "materials": {
-        "default": "horse"
+        "default": "horse_leather_armor"
       },
       "textures": {
         "mule": "textures/entity/horse2/mule",
