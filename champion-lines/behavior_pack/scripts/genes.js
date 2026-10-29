@@ -115,6 +115,22 @@ export function colorName(variant) {
   return COLORS[variant] ?? "Unknown";
 }
 
+// Text colour for each coat in the book, picked to stay readable on the cream
+// page: white shows as light gray, and the material colours stand in for the
+// browns, which Minecraft has no plain code for.
+const COLOR_CODES = ["§7", "§p", "§6", "§n", "§0", "§8", "§j"];
+
+/** "Brown" in a brown-ish colour, for the book. */
+export function coloredColorName(variant) {
+  const code = COLOR_CODES[variant];
+  return code ? `${code}${colorName(variant)}§r` : colorName(variant);
+}
+
+/** A name with its registry number in dark gray: "Oak Dancer §8#1§r". */
+export function grayNumber(name, after = "§r") {
+  return name.replace(/ (#\d+)$/, ` §8$1${after}`);
+}
+
 export function markingName(mark) {
   return MARKINGS[mark] ?? "Unknown";
 }
@@ -219,15 +235,16 @@ export function bookPages(info) {
   } else if (info.origin === "wild") {
     origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
   } else {
-    origin = ["Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown."];
+    origin = ["§7Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown.§r"];
   }
+  if (info.tamer) origin.push(`Tamed by: ${info.tamer}`);
   const identity = [
-    `§l${info.name ?? "Horse"}§r`,
+    `§l${grayNumber(info.name ?? "Horse", "")}§r`,
     ...(info.firstName ? [`§7${firstNameLabel(info.origin)}: ${info.firstName}§r`] : []),
     "",
-    `Color: ${colorName(info.variant)}`,
+    `Color: ${coloredColorName(info.variant)}`,
     `Markings: ${markingName(info.mark)}`,
-    ...(info.reg ? [`Registry No. ${info.reg}`] : []),
+    ...(info.reg ? [`§8Registry No. ${info.reg}§r`] : []),
     "",
     ...origin,
   ].join("\n");
@@ -239,22 +256,21 @@ export function bookPages(info) {
     "§lParents§r",
     "",
     ...(entries.length
-      ? entries.flatMap((p) => [p.name, ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
+      ? entries.flatMap((p) => [grayNumber(p.name), ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
       : ["unknown"]),
   ].join("\n").trimEnd()];
 
   let jump;
   if (s.j == null) jump = ["Jump: unknown", "§7 ride it and jump at", " full charge§r"];
   else if (s.jEst) jump = [`Jump: ~${fmt(jumpBlocks(s.j))} blocks`, "§7 from its best jump§r"];
-  else jump = [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)} of 1.00§r`];
+  else jump = [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)}§r`];
   const stats = [
     "§lStats§r",
     "",
-    `Health: ${Math.round(s.h)} of ${HEALTH_MAX}`,
+    `Health: ${Math.round(s.h)}`,
     `§7 ${fmt(s.h / 2)} hearts§r`,
     "",
-    `Speed: ${fmt(blocksPerSecond(s.s))} blocks/s`,
-    `§7 best is ${fmt(blocksPerSecond(SPEED_MAX))}§r`,
+    `Speed: ${fmt(blocksPerSecond(s.s))}`,
     "",
     ...jump,
     "",

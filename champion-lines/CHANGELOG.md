@@ -24,10 +24,13 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
 - Horses that were in the world before the pack get their jump measured:
   ride one and its best jump is turned back into a jump strength, shown as
   `Jump ~4.9` and used for breeding.
-- Every horse gets a registry number, unique in the world. Horses without a
-  name tag get a name built from their coat and markings plus that number,
+- Horses get a registry number, unique in the world, when they are tamed or
+  first written up in a book. Horses without a name tag get a name built from
+  their coat and markings plus that number,
   such as Copper Blaze #27, used on the look-at line, for parents and in the
   book.
 - Use a book on a horse to get a signed book of its papers: name, colour,
   markings, birthday, breeder, parents and stats. A renamed horse, or
   parent, also shows its birth or wild name, so old books still identify it.
+  The papers name the player who tamed the horse, and sneaking with a horse's
+  own papers rewrites them with its current details.

@@ -65,9 +65,10 @@ horse looks like:
 | Gray | Ash, Smoke, Storm, Flint, Slate, Pewter | | |
 | Dark brown | Walnut, Mocha, Umber, Cedar, Bark, Truffle | | |
 
-Then comes a **registry number**, unique in the world: horses are numbered in
-the order the pack first meets them, by spawning, being born, or being looked
-at, ridden or written up. A chestnut with socks and a blaze might be
+Then comes a **registry number**, unique in the world. A horse is registered
+when it is tamed or first written up in a book, whichever comes first, so wild
+horses nobody keeps do not use numbers up; until then it goes by its two words
+alone. A chestnut with socks and a blaze might be
 **Copper Blaze #27**; a black horse with black spots **Raven Pepper #112**. The
 words come from the horse's entity id, which is saved with it, and the number
 is stored on the horse, so a horse keeps its name for life. A name-tagged
@@ -81,10 +82,10 @@ and the number: **Biscuit #1234**.
 Right-click (or tap) a horse while holding a plain book. The book is replaced
 by a signed book of the horse's papers:
 
-- name, colour, markings and registry number
-- the day it was born and who bred it
+- name, colour (written in that colour), markings and registry number
+- the day it was born, who bred it and who tamed it
 - its parents (a page of their own, for a bred horse)
-- health, speed and jump, with how each compares to the best a horse can have
+- health, speed (blocks per second) and jump (blocks)
 
 It is titled with the horse's current name and signed by you. A book is a
 snapshot: it keeps the name the horse had when it was written. So that an old
@@ -95,6 +96,10 @@ or `Wild name: Copper Blaze #27` for one that spawned wild. A horse that
 predates the pack counts as wild. Parents are listed the same way, by their
 current name with their birth or wild name below if they have been renamed. Holding a book no longer
 mounts or feeds a horse. In creative mode the book is not used up.
+
+To bring a book up to date, sneak and right-click the horse while holding its
+papers. Only that horse's own papers are rewritten; another horse's book, or
+any other signed book, is left alone.
 
 ## Things worth knowing
 

@@ -47,9 +47,9 @@ function readSettings() {
 const settings = readSettings();
 
 // ---- per-horse record -----------------------------------------------------
-// { reg, h, s, j, origin: "bred" | "wild", day, by, p: [{ id, name }] }
-// reg is the registry number, h hit points, s the movement value, j jump
-// strength in hundredths.
+// { rn, h, s, j, origin: "bred" | "wild", day, by, tb, p: [{ id, name, first }] }
+// rn is the registry number, h hit points, s the movement value, j jump
+// strength in hundredths, tb the player who tamed it.
 
 function readData(horse) {
   try {
@@ -60,11 +60,14 @@ function readData(horse) {
   }
 }
 
-const NEXT_REG = `${NS}:next_registry`;
+// Test builds before 1.0.0 numbered every horse the pack met, under other
+// keys; those numbers are ignored so the first horse registered is #1.
+const NEXT_REG = `${NS}:registry_next`;
 
 /**
- * The next registry number, world-wide. Horses are numbered in the order the
- * pack first records them, so a generated name never repeats in one world.
+ * The next registry number, world-wide. A horse is registered when it is
+ * tamed or first written up in a book, in that order, so a generated name
+ * never repeats in one world and wild horses do not use numbers up.
  */
 function nextRegistry() {
   const n = world.getDynamicProperty(NEXT_REG);
@@ -73,18 +76,18 @@ function nextRegistry() {
   return reg;
 }
 
-/** Saves a horse's record. A horse keeps its first registry number for life. */
+/** Saves a horse's record. A horse keeps its registry number for life. */
 function writeData(horse, data) {
-  const reg = data.reg ?? readData(horse)?.reg ?? nextRegistry();
-  horse.setDynamicProperty(DATA, JSON.stringify({ ...data, reg }));
+  const rn = data.rn ?? readData(horse)?.rn;
+  horse.setDynamicProperty(DATA, JSON.stringify({ ...data, rn }));
 }
 
-/** The registry number, given out the first time the pack meets the horse. */
-function registryOf(horse) {
-  const data = readData(horse);
-  if (data?.reg) return data.reg;
-  writeData(horse, data ?? {});
-  return readData(horse)?.reg;
+/** Registers the horse if it is not yet registered; returns its number. */
+function register(horse, extra = {}) {
+  const data = readData(horse) ?? {};
+  const rn = data.rn ?? nextRegistry();
+  writeData(horse, { ...data, ...extra, rn });
+  return rn;
 }
 
 function liveHealth(horse) {
@@ -122,10 +125,14 @@ function markOf(horse) {
   return horse.getComponent("minecraft:mark_variant")?.value;
 }
 
-/** Name tag, or a generated name such as "Copper Blaze" when it has none. */
+/** Name tag, or a generated name such as "Copper Blaze #27" when it has none. */
 function displayName(horse) {
-  const reg = registryOf(horse);
-  return horse.nameTag || herdName(horse.id, variantOf(horse), markOf(horse), reg);
+  return horse.nameTag || firstNameOf(horse);
+}
+
+/** The generated name the horse was given in the wild or at birth. */
+function firstNameOf(horse) {
+  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.rn);
 }
 
 function applyStat(horse, stat, step) {
@@ -169,15 +176,12 @@ function onBorn(foal) {
     // No fed pair nearby: keep what vanilla gave it, and give it a known jump.
     console.warn(`[Champion Lines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
     const j = wildJump(Math.random);
-    applyStat(foal, "jump", j);
     writeData(foal, { h: liveHealth(foal), s: liveSpeed(foal), j, origin: "bred", day });
+    applyStat(foal, "jump", j);
     return;
   }
   const [a, b] = parents;
   const child = inherit(statsOf(a), statsOf(b), settings.chance, Math.random);
-  applyStat(foal, "health", child.h);
-  applyStat(foal, "speed", child.s);
-  applyStat(foal, "jump", child.j);
   const breeders = [...new Set(parents.map((p) => recentlyFed(p.id)?.player).filter(Boolean))];
   writeData(foal, {
     h: child.h,
@@ -188,6 +192,9 @@ function onBorn(foal) {
     by: breeders.length ? breeders.join(" & ") : undefined,
     p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin })),
   });
+  applyStat(foal, "health", child.h);
+  applyStat(foal, "speed", child.s);
+  applyStat(foal, "jump", child.j);
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -201,13 +208,16 @@ function onSpawned(horse) {
   // does, and remember it. Health and speed are vanilla's own rolls.
   const j = wildJump(Math.random);
   debug(`spawned: health ${liveHealth(horse)}, speed ${liveSpeed(horse)}, vanilla jump ${liveJump(horse) ?? "unreadable"}, setting ${j}`);
-  applyStat(horse, "jump", j);
+  // Record first, so a failure setting the jump cannot leave the horse
+  // looking as if it predates the pack.
   writeData(horse, { h: liveHealth(horse), s: liveSpeed(horse), j, origin: "wild", day: world.getDay() });
+  applyStat(horse, "jump", j);
 }
 
 world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
   try {
-    if (entity.typeId !== HORSE || readData(entity)) return;
+    // A record without an origin is only a registry number; still record the spawn.
+    if (entity.typeId !== HORSE || readData(entity)?.origin) return;
     if (cause === "Born") onBorn(entity);
     else if (cause === "Spawned" || cause === "Event") onSpawned(entity);
   } catch (err) {
@@ -291,12 +301,12 @@ system.runInterval(() => {
 // ---- what the player is looking at ------------------------------------------
 
 /** Names of a bred horse's parents, live name tags first. */
-/** The generated name a horse was given when the pack first met it. */
-function firstNameOf(horse) {
-  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.reg);
-}
 
-/** A bred horse's parents as { name, first }: live name tags first. */
+/**
+ * A bred horse's parents as { name, first, origin }. A parent that is loaded
+ * is read live, so a later name tag or registry number shows; otherwise the
+ * names recorded at the foal's birth are used.
+ */
 function parentsOf(data) {
   return (data?.p ?? []).map((p) => {
     let live;
@@ -305,13 +315,17 @@ function parentsOf(data) {
     } catch {
       live = undefined;
     }
-    const name = live?.isValid && live.nameTag ? live.nameTag : p.name;
-    return { name, first: p.first && p.first !== name ? p.first : undefined, origin: p.origin };
+    if (live?.isValid) {
+      const name = displayName(live);
+      const first = firstNameOf(live);
+      return { name, first: first !== name ? first : undefined, origin: readData(live)?.origin };
+    }
+    return { name: p.name, first: p.first && p.first !== p.name ? p.first : undefined, origin: p.origin };
   });
 }
 
 function infoOf(horse) {
-  const name = displayName(horse); // first, as it may give out a registry number
+  const name = displayName(horse);
   const data = readData(horse);
   // The generated name is the horse's first name, from the day it spawned or
   // was born; a name tag renames it, and the book keeps both.
@@ -321,7 +335,8 @@ function infoOf(horse) {
     data,
     name,
     firstName: firstName !== name ? firstName : undefined,
-    reg: data?.reg,
+    reg: data?.rn,
+    tamer: data?.tb,
     baby: horse.hasComponent("minecraft:is_baby"),
     stats: statsOf(horse, data),
     origin: data?.origin,
@@ -365,35 +380,83 @@ if (settings.stats || settings.parents) {
   }, TICKS_PER_UPDATE);
 }
 
+// ---- taming -----------------------------------------------------------------
+
+// Taming registers a horse and records who tamed it. The tame-mount component
+// may already be gone by the time this runs, but taming only finishes while a
+// player is riding, so the rider at that moment is the tamer.
+world.afterEvents.dataDrivenEntityTrigger.subscribe(
+  ({ entity, eventId }) => {
+    if (eventId !== "minecraft:on_tame") return;
+    try {
+      const rider =
+        entity.getComponent("minecraft:tamemount")?.tamedToPlayer ??
+        entity.getComponent("minecraft:rideable")?.getRiders().find((r) => r.typeId === "minecraft:player");
+      register(entity, rider ? { tb: rider.name, td: world.getDay() } : {});
+      debug(`tamed ${displayName(entity)} by ${rider?.name ?? "unknown"}`);
+    } catch (err) {
+      if (entity.isValid) console.warn(`[Champion Lines] recording a tame failed: ${err}`);
+    }
+  },
+  { entityTypes: [HORSE], eventTypes: ["minecraft:on_tame"] },
+);
+
 // ---- the book -----------------------------------------------------------------
 
+const BOOK_OF = `${NS}:horse`;
 const lastBook = new Map();
 
+const registryLore = (rn) => `§8Registry No. ${rn}`;
+
+/** Whether a written book is this horse's papers. */
+function isPapersFor(book, horse) {
+  let owner;
+  try {
+    owner = book.getDynamicProperty(BOOK_OF);
+  } catch {
+    owner = undefined;
+  }
+  if (owner !== undefined) return owner === horse.id;
+  const rn = readData(horse)?.rn;
+  return rn !== undefined && book.getLore().includes(registryLore(rn));
+}
+
 world.beforeEvents.playerInteractWithEntity.subscribe((ev) => {
-  if (ev.target.typeId !== HORSE || ev.itemStack?.typeId !== "minecraft:book") return;
-  // Without this a book in hand mounts the horse, or feeds a wild one's temper.
+  const { player, target, itemStack } = ev;
+  if (target.typeId !== HORSE || !itemStack) return;
+  let mode;
+  if (itemStack.typeId === "minecraft:book") mode = "new";
+  else if (itemStack.typeId === "minecraft:written_book" && player.isSneaking && isPapersFor(itemStack, target)) mode = "update";
+  else return;
+  // Without this a book in hand mounts the horse, feeds a wild one's temper,
+  // or (sneaking) opens the horse's inventory.
   ev.cancel = true;
-  const { player, target } = ev;
   const now = system.currentTick;
   if (now - (lastBook.get(player.id) ?? -100) < 10) return;
   lastBook.set(player.id, now);
   system.run(() => {
     try {
-      writeBook(player, target);
+      writeBook(player, target, mode);
     } catch (err) {
       console.warn(`[Champion Lines] could not write the book: ${err}`);
     }
   });
 });
 
-function writeBook(player, horse) {
+/**
+ * "new": turns one plain book in hand into the horse's papers.
+ * "update": rewrites the papers in hand with the horse's current details.
+ */
+function writeBook(player, horse, mode) {
   if (!player.isValid || !horse.isValid) return;
   const inv = player.getComponent("minecraft:inventory")?.container;
   if (!inv) return;
   const slot = player.selectedSlotIndex;
   const held = inv.getItem(slot);
-  if (held?.typeId !== "minecraft:book") return;
+  if (mode === "new" && held?.typeId !== "minecraft:book") return;
+  if (mode === "update" && !(held?.typeId === "minecraft:written_book" && isPapersFor(held, horse))) return;
 
+  const rn = register(horse);
   const info = infoOf(horse);
   const book = new ItemStack("minecraft:written_book", 1);
   const pages = bookPages({
@@ -407,16 +470,27 @@ function writeBook(player, horse) {
   const component = book.getComponent("minecraft:book");
   component.setContents(pages);
   component.signBook(bookTitle(info.name), player.name);
-
-  if (player.getGameMode() !== GameMode.Creative) {
-    if (held.amount > 1) {
-      held.amount -= 1;
-      inv.setItem(slot, held);
-    } else {
-      inv.setItem(slot, undefined);
-    }
+  book.setLore([registryLore(rn)]);
+  try {
+    book.setDynamicProperty(BOOK_OF, horse.id);
+  } catch {
+    // Stackable items cannot hold dynamic properties; the lore still matches.
   }
-  const left = inv.addItem(book);
-  if (left) player.dimension.spawnItem(left, player.location);
+
+  if (mode === "update") {
+    inv.setItem(slot, book);
+    player.onScreenDisplay.setActionBar(`§aPapers updated: ${info.name}`);
+  } else {
+    if (player.getGameMode() !== GameMode.Creative) {
+      if (held.amount > 1) {
+        held.amount -= 1;
+        inv.setItem(slot, held);
+      } else {
+        inv.setItem(slot, undefined);
+      }
+    }
+    const left = inv.addItem(book);
+    if (left) player.dimension.spawnItem(left, player.location);
+  }
   player.playSound("item.book.page_turn");
 }

@@ -159,17 +159,21 @@ const pages = bookPages({
 });
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", pages[0],
-  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\nRegistry No. 27\n\nBorn: day 12\nBred by: Steve");
+  "§lSpirit§r\n\nColor: §6Chestnut§r\nMarkings: White spots\n§8Registry No. 27§r\n\nBorn: day 12\nBred by: Steve");
 check("page 2: parents, renamed one with its first name", pages[1],
-  "§lParents§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper #8");
-check("page 3 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
+  "§lParents§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
+check("page 3 has every stat", ["Health: 29\n", "Speed: 14.2\n", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[2].includes(t)), true);
+check("no maximums or speed unit", /of 30|of 1\.00|blocks\/s|best is/.test(pages[2]), false);
+check("tamer listed", bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0].includes("\nTamed by: Alex"), true);
+check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
+  .startsWith("§lOak Dancer §8#1§r"), true);
 check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[1],
   "§lParents§r\n\nX\n\nY");
 check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
-check("old horse says why", old[0].includes("unknown") && old[1].includes("Jump: unknown"), true);
+check("old horse says why, in light gray", old[0].includes("§7Born before") && old[0].includes("unknown") && old[1].includes("Jump: unknown"), true);
 check("unknown color", old[0].includes("Color: Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });

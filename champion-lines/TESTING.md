@@ -20,4 +20,9 @@ birth in chat.
 | T8 | Does cancelling `beforeEvents.playerInteractWithEntity` stop a book from mounting a tamed horse? | `cancel` is writable on that event | The player mounts the horse as well as getting the book. |
 | T9 | Does `setActionBar` show `\n` as a second line? | Also unverified for `compass-link` | The parents line runs into the stats line. |
 | T10 | Is `isOnGround` kept up to date for a horse a player is riding? | It is on the base `Entity` | No `[debug] jump rose` lines appear while riding, and old horses are never measured. Detect take-off and landing from vertical velocity instead. |
+| T12 | Does `dataDrivenEntityTrigger` fire `minecraft:on_tame` with the tamer still riding (or `tamedToPlayer` still readable)? | Vanilla `horse.json` runs that event when taming finishes, and taming happens while ridden | The book has no "Tamed by" line and the debug line says "by unknown". Record the owner another way. |
+| T13 | Do a written book's dynamic property and lore survive in the inventory? | Non-stackable items can hold dynamic properties | Sneak-click with a horse's own papers does nothing. |
 | T11 | Does a full-charge jump's rise match the Java formula in `jumpBlocks`? | The wiki's fit of strength to height | On a horse the pack set, the debug line's "rose" differs from "predicts" by more than about 0.1. Refit `jumpBlocks` from those pairs. |
+
+Confirmed in game on 2026-10-29: T7 (the book is written and signed) and T10
+(ridden jumps are measured).
