@@ -58,6 +58,22 @@
       "default": false
     },
     {
+      "type": "toggle",
+      "text": "Learn stats by riding",
+      "name": "horsebreed:learn_by_riding",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7On: health and speed show once a horse has been ridden, and jump shows the best jump seen. Off: the true stats show.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Show stats of untamed horses",
+      "name": "horsebreed:wild_stats",
+      "default": false
+    },
+    {
       "type": "slider",
       "text": "Chance to inherit the better parent's stat (%)",
       "name": "horsebreed:chance",

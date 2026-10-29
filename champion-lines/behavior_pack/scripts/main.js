@@ -11,6 +11,7 @@ import {
   jumpFromHeight,
   jumpStep,
   herdName,
+  shownStats,
   MARKINGS,
   speedOfStep,
   wildJump,
@@ -44,6 +45,8 @@ function readSettings() {
   return {
     stats: values[`${NS}:show_stats`] !== false,
     parents: values[`${NS}:show_parents`] === true,
+    wild: values[`${NS}:wild_stats`] === true,
+    learn: values[`${NS}:learn_by_riding`] !== false,
     chance: Number.isFinite(chance) ? Math.min(100, Math.max(50, chance)) / 100 : 0.6,
   };
 }
@@ -54,7 +57,8 @@ const settings = readSettings();
 // { rn, h, s, j, origin: "bred" | "wild", day, by, tb, g, c, m, p: [{ id, name, first, origin, g }] }
 // rn is the registry number, h hit points, s the movement value, j jump
 // strength in hundredths, tb the player who tamed it, g the generation, and
-// c and m a foal's coat and markings.
+// c and m a foal's coat and markings, rd whether it has been ridden, jm its
+// best jump seen, in blocks.
 
 function readData(horse) {
   try {
@@ -256,12 +260,12 @@ world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
 });
 
 // ---- measuring jump ----------------------------------------------------------
-// A horse's jump strength cannot be read, so for a horse that predates the
-// pack it is measured: while a player rides it, each jump's rise from take-off
-// to peak is recorded, and the best one is turned back into a strength. A
-// partly charged jump only rises less, so the best jump converges on a full
-// one. Horses whose jump the pack set itself are only checked against the
-// formula, in debug output.
+// While a player rides a horse, each jump's rise from take-off to peak is
+// recorded, and the best one kept (jm). A partly charged jump only rises less,
+// so the best jump converges on a full one. With "learn by riding" on, that
+// best jump is what players see. A horse's jump strength cannot be read, so
+// for a horse that predates the pack the best jump is also turned back into a
+// strength and used for breeding; a horse whose jump the pack set keeps it.
 
 const MIN_RISE = 0.6;
 const BOUNCY = new Set(["minecraft:slime", "minecraft:bed"]);
@@ -299,18 +303,22 @@ function trackJump(rider, horse) {
   }
 }
 
+/** Riding a horse once shows its health and speed, with "learn by riding" on. */
+function markRidden(horse) {
+  const data = readData(horse);
+  if (data?.rd) return;
+  writeData(horse, { ...data, rd: true });
+}
+
 function recordJump(rider, horse, rise) {
   if (rise < MIN_RISE) return;
   const data = readData(horse) ?? {};
-  const est = jumpFromHeight(rise);
-  if (data.j != null && !data.jEst) {
-    debug(`jump rose ${rise.toFixed(2)}; set strength ${data.j} predicts ${jumpBlocks(data.j).toFixed(2)} at full charge`);
-    return;
-  }
-  debug(`jump rose ${rise.toFixed(2)} -> strength ~${est} (best so far ${data.jm?.toFixed(2) ?? "none"})`);
+  const known = data.j != null && !data.jEst;
+  if (known) debug(`jump rose ${rise.toFixed(2)}; set strength ${data.j} predicts ${jumpBlocks(data.j).toFixed(2)} at full charge`);
+  else debug(`jump rose ${rise.toFixed(2)} -> strength ~${jumpFromHeight(rise)} (best so far ${data.jm?.toFixed(2) ?? "none"})`);
   if (data.jm != null && rise <= data.jm) return;
-  writeData(horse, { ...data, j: est, jEst: true, jm: rise });
-  rider.onScreenDisplay.setActionBar(`§aNew best jump: ${rise.toFixed(1)} blocks`);
+  writeData(horse, known ? { ...data, jm: rise } : { ...data, j: jumpFromHeight(rise), jEst: true, jm: rise });
+  if (!known || settings.learn) rider.onScreenDisplay.setActionBar(`§aNew best jump: ${rise.toFixed(1)} blocks`);
 }
 
 system.runInterval(() => {
@@ -320,6 +328,7 @@ system.runInterval(() => {
       const horse = player.getComponent("minecraft:riding")?.entityRidingOn;
       if (horse?.typeId !== HORSE) continue;
       riding.add(horse.id);
+      markRidden(horse);
       trackJump(player, horse);
     } catch {
       // The rider or horse can go away mid-update.
@@ -367,7 +376,12 @@ function infoOf(horse) {
     gen: data?.g,
     tamer: data?.tb,
     baby: horse.hasComponent("minecraft:is_baby"),
-    stats: statsOf(horse, data),
+    // What players may see, which is not always the true stats breeding uses.
+    stats: shownStats(
+      statsOf(horse, data),
+      { tamed: horse.hasComponent("minecraft:is_tamed") || data?.origin === "bred", ridden: data?.rd === true, jm: data?.jm },
+      settings,
+    ),
     origin: data?.origin,
     parents: parents.map((p) => p.name),
     parentEntries: parents,

@@ -37,3 +37,7 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
 - Foals inherit coat and markings from their parents (4 in 9 each, 1 in 9
   random), and every bred horse has a generation number, shown in its papers
   and beside its parents.
+- Stats are learnt by riding (setting, on by default): health and speed show
+  once a horse has been ridden, and jump shows its best jump seen. Untamed
+  horses' stats are hidden unless "Show stats of untamed horses" is on.
+  Breeding always uses the true stats.

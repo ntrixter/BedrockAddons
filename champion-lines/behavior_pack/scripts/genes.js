@@ -116,10 +116,32 @@ function tier(q) {
 
 const fmt = (n) => n.toFixed(1);
 
+/**
+ * The stats a player gets to see, from the true ones.
+ * horse: { tamed, ridden, jm } where jm is its best jump seen, in blocks.
+ * opts: { wild } shows an untamed horse's stats; { learn } hides health and
+ * speed until the horse has been ridden, and shows its best jump seen in
+ * place of its jump. Breeding always uses the true stats.
+ * Returns null when nothing is shown.
+ */
+export function shownStats(stats, horse, opts) {
+  if (!horse.tamed && !opts.wild) return null;
+  if (!opts.learn) return stats;
+  return {
+    h: horse.ridden ? stats.h : null,
+    s: horse.ridden ? stats.s : null,
+    j: horse.jm != null ? jumpFromHeight(horse.jm) : null,
+    jEst: true,
+  };
+}
+
 export function statParts(stats) {
+  if (!stats) return [];
   const parts = [];
-  parts.push(`${tier(quality(stats.h, HEALTH_MIN, HEALTH_MAX))}Health ${Math.round(stats.h)}§r`);
-  parts.push(`${tier(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
+  if (stats.h == null) parts.push("§7Health ?§r");
+  else parts.push(`${tier(quality(stats.h, HEALTH_MIN, HEALTH_MAX))}Health ${Math.round(stats.h)}§r`);
+  if (stats.s == null) parts.push("§7Speed ?§r");
+  else parts.push(`${tier(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
   if (stats.j == null) parts.push("§7Jump ?§r");
   else parts.push(`${tier(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${stats.jEst ? "~" : ""}${fmt(jumpBlocks(stats.j))}§r`);
   return parts;
@@ -213,7 +235,7 @@ export function parentsText(info) {
 export function describe(info, show) {
   const title = `§l${info.name ?? "Horse"}§r${info.baby ? " §7(foal)§r" : ""}`;
   const lines = [title];
-  if (show.stats) lines[0] += " · " + statParts(info.stats).join(" · ");
+  if (show.stats && info.stats) lines[0] += " · " + statParts(info.stats).join(" · ");
   if (show.parents) lines.push(`§7Parents: ${parentsText(info)}§r`);
   return lines.join("\n");
 }
@@ -282,20 +304,20 @@ export function bookPages(info) {
   ].join("\n").trimEnd()];
 
   let jump;
-  if (s.j == null) jump = ["Jump: unknown", "§7 ride it and jump at", " full charge§r"];
+  if (!s) jump = [];
+  else if (s.j == null) jump = ["Jump: unknown", "§7 ride it and jump at", " full charge§r"];
   else if (s.jEst) jump = [`Jump: ~${fmt(jumpBlocks(s.j))} blocks`, "§7 from its best jump§r"];
   else jump = [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)}§r`];
-  const stats = [
-    "§lStats§r",
-    "",
-    `Health: ${Math.round(s.h)}`,
-    `§7 ${fmt(s.h / 2)} hearts§r`,
-    "",
-    `Speed: ${fmt(blocksPerSecond(s.s))}`,
-    "",
-    ...jump,
-    "",
-    `§7Written on day ${info.today}§r`,
-  ].join("\n");
+  const ride = "§7 ride it to find out§r";
+  const body = !s
+    ? ["§7Tame it to learn", "its stats.§r"]
+    : [
+        ...(s.h == null ? ["Health: ?", ride] : [`Health: ${Math.round(s.h)}`, `§7 ${fmt(s.h / 2)} hearts§r`]),
+        "",
+        ...(s.s == null ? ["Speed: ?", ride] : [`Speed: ${fmt(blocksPerSecond(s.s))}`]),
+        "",
+        ...jump,
+      ];
+  const stats = ["§lStats§r", "", ...body, "", `§7Written on day ${info.today}§r`].join("\n");
   return [identity, stats, ...parentsPage];
 }

@@ -58,6 +58,18 @@ green from 60%, and aqua for the top 10%. With the parents setting on, a second
 line reads `Parents: Ace & Raven Pepper #112`. A parent named after the foal was born
 shows its new name while it is loaded.
 
+### Learning a horse's stats
+
+By default you have to find out what a horse is like. An untamed horse shows
+only its name. Once tamed, its health and speed show after it has been ridden,
+and its jump shows as the **best jump anyone has made on it**, so a good
+jumper is only known once someone tries it at full charge. The book shows the
+same. Breeding always uses the horse's true stats, whatever has been seen.
+
+Two settings change this: **Learn stats by riding** off shows the true stats
+straight away, and **Show stats of untamed horses** on shows a wild horse's
+stats before it is tamed. Bred foals count as tamed.
+
 ### Horses without a name tag
 
 Every horse has a name, even without a name tag. The pack makes one from a
@@ -142,12 +154,14 @@ Changes take effect the next time the world loads.
 | --- | --- |
 | Show stats when you look at a horse | on |
 | Show parents when you look at a horse | off |
+| Learn stats by riding | on |
+| Show stats of untamed horses | off |
 | Chance to inherit the better parent's stat | 60% |
 
 On a dedicated server there is no gear icon; see "Where pack settings persist"
 in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md) for the file to edit. The setting
-names are `horsebreed:show_stats`, `horsebreed:show_parents` and
-`horsebreed:chance`.
+names are `horsebreed:show_stats`, `horsebreed:show_parents`,
+`horsebreed:learn_by_riding`, `horsebreed:wild_stats` and `horsebreed:chance`.
 
 ## Tests
 

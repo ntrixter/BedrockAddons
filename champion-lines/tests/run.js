@@ -25,6 +25,8 @@ import {
   jumpFromHeight,
   blocksPerSecond,
   pick,
+  shownStats,
+  statParts,
   speedOfStep,
   speedStep,
   wildJump,
@@ -116,6 +118,22 @@ check("parent white (0) is kept", inheritLook(0, 5, 7, seq(0.1)), 0);
 check("foal of two wild horses", generationOf(0, 0), 1);
 check("one more than the older line", generationOf(3, 1), 4);
 check("unknown parents", generationOf(undefined, undefined), 1);
+
+console.log("Learning stats by riding");
+const truth = { h: 28, s: 0.3, j: 90 };
+check("untamed hidden", shownStats(truth, { tamed: false }, { wild: false, learn: true }), null);
+check("untamed shown with the wild setting", shownStats(truth, { tamed: false }, { wild: true, learn: false }), truth);
+check("learn off shows the truth", shownStats(truth, { tamed: true }, { wild: false, learn: false }), truth);
+check("not ridden yet", shownStats(truth, { tamed: true }, { learn: true }), { h: null, s: null, j: null, jEst: true });
+const learnt = shownStats(truth, { tamed: true, ridden: true, jm: 3.0 }, { learn: true });
+check("ridden: health and speed, best jump", [learnt.h, learnt.s, learnt.jEst], [28, 0.3, true]);
+check("best jump, not the true jump", Math.abs(jumpBlocks(learnt.j) - 3.0) < 0.1, true);
+check("action bar with nothing learnt", statParts(shownStats(truth, { tamed: true }, { learn: true })), ["§7Health ?§r", "§7Speed ?§r", "§7Jump ?§r"]);
+check("action bar for a hidden horse", describe({ name: "W", stats: null }, { stats: true }), "§lW§r");
+const hiddenBook = bookPages({ name: "W", stats: null, origin: "wild", today: 1 });
+check("book for a hidden horse", hiddenBook[1].includes("Tame it to learn"), true);
+const unridden = bookPages({ name: "R", stats: { h: null, s: null, j: null, jEst: true }, origin: "wild", today: 1 });
+check("book before riding", ["Health: ?", "Speed: ?", "ride it to find out", "Jump: unknown"].every((t) => unridden[1].includes(t)), true);
 
 console.log("Conversions");
 check("jump 1.00 is about 5.3 blocks", jumpBlocks(100).toFixed(1), "5.3");
