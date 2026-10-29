@@ -119,13 +119,47 @@ export function markingName(mark) {
   return MARKINGS[mark] ?? "Unknown";
 }
 
-/** How to name a horse that has no name tag. */
-export function lookName(variant) {
-  const c = COLORS[variant];
-  return c ? `unnamed ${c.toLowerCase()}` : "unnamed";
+// Names for horses without a name tag: a word from the coat colour, then a
+// word from the markings, so "Copper Blaze" is a chestnut with white socks and
+// a blaze. Picked from the entity id, which is saved with the horse, so a horse
+// keeps its name for life without storing it. 36 names per look; every one
+// fits the 16-character book title.
+const COLOR_WORDS = [
+  ["Snow", "Frost", "Pearl", "Ivory", "Ghost", "Lily"],
+  ["Honey", "Butter", "Sand", "Biscuit", "Maple", "Dune"],
+  ["Copper", "Rust", "Amber", "Ember", "Penny", "Ginger"],
+  ["Hazel", "Cocoa", "Oak", "Acorn", "Toffee", "Bramble"],
+  ["Raven", "Shadow", "Coal", "Onyx", "Night", "Crow"],
+  ["Ash", "Smoke", "Storm", "Flint", "Slate", "Pewter"],
+  ["Walnut", "Mocha", "Umber", "Cedar", "Bark", "Truffle"],
+];
+const MARK_WORDS = [
+  ["Runner", "Dancer", "Spirit", "Wind", "Dash", "Song"],
+  ["Blaze", "Socks", "Boots", "Flash", "Stripe", "Beacon"],
+  ["Patch", "Cloud", "Paint", "Quilt", "Pinto", "Mist"],
+  ["Freckle", "Speck", "Spark", "Flurry", "Dot", "Comet"],
+  ["Pepper", "Dapple", "Domino", "Ink", "Pebble", "Spots"],
+];
+
+function hash(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h;
 }
 
-/** "Spirit & unnamed chestnut", or why there are no parents to show. */
+/** The generated name of a horse with no name tag, e.g. "Copper Blaze". */
+export function herdName(id, variant, mark) {
+  const colors = COLOR_WORDS[variant];
+  const marks = MARK_WORDS[mark] ?? MARK_WORDS[0];
+  if (!colors) return "Horse";
+  const h = hash(String(id));
+  return `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}`;
+}
+
+/** "Spirit & Copper Blaze", or why there are no parents to show. */
 export function parentsText(info) {
   if (info.origin === "bred") {
     if (!info.parents?.length) return "parents unknown";

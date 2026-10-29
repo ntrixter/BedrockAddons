@@ -2,13 +2,12 @@ import { GameMode, ItemStack, system, world } from "@minecraft/server";
 import {
   bookPages,
   bookTitle,
-  colorName,
   describe,
   inherit,
   jumpBlocks,
   jumpFromHeight,
   jumpStep,
-  lookName,
+  herdName,
   speedOfStep,
   wildJump,
 } from "./genes.js";
@@ -99,15 +98,9 @@ function markOf(horse) {
   return horse.getComponent("minecraft:mark_variant")?.value;
 }
 
-/** Name tag, or "Chestnut horse" when it has none. */
+/** Name tag, or a generated name such as "Copper Blaze" when it has none. */
 function displayName(horse) {
-  if (horse.nameTag) return horse.nameTag;
-  return `${colorName(variantOf(horse))} horse`;
-}
-
-/** Name tag, or "unnamed chestnut": for naming a parent. */
-function parentLabel(horse) {
-  return horse.nameTag || lookName(variantOf(horse));
+  return horse.nameTag || herdName(horse.id, variantOf(horse), markOf(horse));
 }
 
 function applyStat(horse, stat, step) {
@@ -168,7 +161,7 @@ function onBorn(foal) {
     origin: "bred",
     day,
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: parentLabel(p) })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p) })),
   });
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;

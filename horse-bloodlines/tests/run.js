@@ -15,6 +15,7 @@ import {
   bookPages,
   bookTitle,
   describe,
+  herdName,
   inherit,
   jumpBlocks,
   jumpFromHeight,
@@ -117,8 +118,8 @@ check("stats only",
   describe({ name: "Spirit", stats, origin: "bred", parents: ["A", "B"] }, { stats: true, parents: false }),
   "§lSpirit§r · §bHealth 29§r · §bSpeed 14.2§r · §cJump 1.6§r");
 check("stats and parents",
-  describe({ name: "Spirit", stats, origin: "bred", parents: ["Ace", "unnamed black"] }, { stats: true, parents: true }),
-  "§lSpirit§r · §bHealth 29§r · §bSpeed 14.2§r · §cJump 1.6§r\n§7Parents: Ace & unnamed black§r");
+  describe({ name: "Spirit", stats, origin: "bred", parents: ["Ace", "Raven Pepper"] }, { stats: true, parents: true }),
+  "§lSpirit§r · §bHealth 29§r · §bSpeed 14.2§r · §cJump 1.6§r\n§7Parents: Ace & Raven Pepper§r");
 check("parents only, wild",
   describe({ name: "Gray horse", stats, origin: "wild", parents: [] }, { stats: false, parents: true }),
   "§lGray horse§r\n§7Parents: wild-born§r");
@@ -126,16 +127,35 @@ check("old horse, foal",
   describe({ name: "Horse", baby: true, stats: { h: 15, s: 0.1125, j: null } }, { stats: true, parents: true }),
   "§lHorse§r §7(foal)§r · §cHealth 15§r · §cSpeed 4.7§r · §7Jump ?§r\n§7Parents: born before Horse Bloodlines§r");
 
+console.log("Generated names");
+check("same horse, same name", herdName("-4294967295", 2, 1), herdName("-4294967295", 2, 1));
+check("colour word then marking word", /^(Copper|Rust|Amber|Ember|Penny|Ginger) (Blaze|Socks|Boots|Flash|Stripe|Beacon)$/.test(herdName("-12884901887", 2, 1)), true);
+{
+  const names = new Set();
+  let longest = 0;
+  for (let id = 0; id < 20000; id++) {
+    for (let v = 0; v < 7; v++) for (let m = 0; m < 5; m++) {
+      const n = herdName(String(-4294967296 * id - 1), v, m);
+      names.add(n);
+      longest = Math.max(longest, n.length);
+    }
+  }
+  check("all 7 x 5 x 36 names are reachable", names.size, 7 * 5 * 36);
+  check("every name fits a book title", longest <= 16, true);
+}
+check("unknown coat", herdName("1", 99, 0), "Horse");
+check("unknown markings fall back", herdName("1", 0, 99), herdName("1", 0, 0));
+
 console.log("Book");
 check("short title kept", bookTitle("Spirit"), "Spirit");
 check("long title cut to 16", bookTitle("Sir Gallops-a-Lot the Third"), "Sir Gallops-a-L.");
 const pages = bookPages({
-  name: "Spirit", stats, origin: "bred", parents: ["Ace", "unnamed black"],
+  name: "Spirit", stats, origin: "bred", parents: ["Ace", "Raven Pepper"],
   breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40,
 });
 check("two pages", pages.length, 2);
 check("page 1", pages[0],
-  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\n\nBorn: day 12\nBred by: Steve\n\nParents:\n Ace\n unnamed black");
+  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\n\nBorn: day 12\nBred by: Steve\n\nParents:\n Ace\n Raven Pepper");
 check("page 2 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[1].includes(t)), true);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);

@@ -46,9 +46,31 @@ blocks:
 Speed is in blocks per second and jump is in blocks, both approximate. Each
 stat is coloured by where it sits in the wild range: red bottom 30%, yellow,
 green from 60%, and aqua for the top 10%. With the parents setting on, a second
-line reads `Parents: Ace & unnamed black`. A parent without a name tag is named
-by its colour, and a parent named after the foal was born shows its new name
-while it is loaded.
+line reads `Parents: Ace & Raven Pepper`. A parent named after the foal was born
+shows its new name while it is loaded.
+
+### Horses without a name tag
+
+Every horse has a name, even without a name tag. The pack makes one from a
+word for its coat colour and a word for its markings, so the name says what the
+horse looks like:
+
+| Coat | Words | Markings | Words |
+| --- | --- | --- | --- |
+| White | Snow, Frost, Pearl, Ivory, Ghost, Lily | None | Runner, Dancer, Spirit, Wind, Dash, Song |
+| Creamy | Honey, Butter, Sand, Biscuit, Maple, Dune | White socks and blaze | Blaze, Socks, Boots, Flash, Stripe, Beacon |
+| Chestnut | Copper, Rust, Amber, Ember, Penny, Ginger | White patches | Patch, Cloud, Paint, Quilt, Pinto, Mist |
+| Brown | Hazel, Cocoa, Oak, Acorn, Toffee, Bramble | White spots | Freckle, Speck, Spark, Flurry, Dot, Comet |
+| Black | Raven, Shadow, Coal, Onyx, Night, Crow | Black spots | Pepper, Dapple, Domino, Ink, Pebble, Spots |
+| Gray | Ash, Smoke, Storm, Flint, Slate, Pewter | | |
+| Dark brown | Walnut, Mocha, Umber, Cedar, Bark, Truffle | | |
+
+A chestnut with socks and a blaze might be **Copper Blaze** or **Ginger Boots**;
+a black horse with black spots might be **Raven Pepper**. Which words a horse
+gets comes from its entity id, which is saved with it, so it keeps the same
+name for life and nothing extra is stored. There are 36 names for each look,
+so two horses in a big herd can occasionally share one. A name tag always
+wins.
 
 ### Use a book on a horse
 
