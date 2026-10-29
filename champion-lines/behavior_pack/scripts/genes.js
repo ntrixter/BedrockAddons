@@ -373,9 +373,9 @@ export function bookPages(info) {
     ? [...field("Color", coloredColorName(info.variant)), ...field("Markings", markingName(info.mark))]
     : info.mark > 0 ? field("Markings", markingName(info.mark)) : [];
   const top = [
+    KIND_NAMES[kind] ?? "Horse",
     ...field("Name", `§l${grayNumber(info.name ?? "Horse", "")}§r`),
     ...(info.firstName ? field(firstNameLabel(info.origin), info.firstName, "§7") : []),
-    KIND_NAMES[kind] ?? "Horse",
     ...looks,
     ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
   ];

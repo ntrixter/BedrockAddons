@@ -142,9 +142,9 @@ check("mule: a lost roll takes the donkey's", inherit(perfect, donkey, 0.6, seq(
 check("donkey name", /^\S+ \S+ #4$/.test(herdName("9", undefined, undefined, 4, "donkey")), true);
 check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "donkey") !== herdName("9", 2, 1, 0, "mule"), true);
 const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });
-check("donkey book says Donkey, no colour", donkeyBook[0].includes("\nDonkey\n") && !donkeyBook[0].includes("Color"), true);
+check("donkey book says Donkey, no colour", donkeyBook[0].startsWith("Donkey\n") && !donkeyBook[0].includes("Color"), true);
 const muleBook = bookPages({ name: "Russet Packer #5", kind: "mule", mark: 3, stats: { h: 22, s: 0.2, j: 60 }, origin: "bred", today: 1 });
-check("mule book shows its markings", plain(muleBook[0]).includes("\nMule\nMarkings: > White spots\n"), true);
+check("mule book shows its markings", plain(muleBook[0]).startsWith("Mule\n") && plain(muleBook[0]).includes("\nMarkings: > White spots\n"), true);
 check("plain mule book has no markings line", !bookPages({ name: "M", kind: "mule", mark: 0, stats: { h: 22, s: 0.2, j: 60 }, origin: "wild", today: 1 })[0].includes("Markings"), true);
 check("mule: one marking event per marking, each clearing the others", MARKINGS.every((_, i) => {
   const ev = mule.events[`horsebreed:set_mark_${i}`];
@@ -247,7 +247,7 @@ const pages = bookPages({
 });
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", plain(pages[0]),
-  "Name: > Spirit\nHorse\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
+  "Horse\nName: > Spirit\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
 check("colour word keeps its colour", pages[0].includes("§6Chestnut§r"), true);
 check("values reach the right edge", pages[0].split("\n").filter((l) => / {2,}/.test(l))
   .every((l) => textWidth(l) <= LINE_WIDTH && textWidth(l) > LINE_WIDTH - 4), true);
@@ -264,7 +264,7 @@ check("same breeder and tamer: two lines", plain(both[0]).includes("\nBred by: >
 const differ = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Steve", day: 2, today: 3 });
 check("different breeder and tamer", plain(differ[0]).includes("\nBred by: > Alex\nTamed by: > Steve"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
-  .split("\n")[0].endsWith("§lOak Dancer §8#1§r"), true);
+  .split("\n")[1].endsWith("§lOak Dancer §8#1§r"), true);
 check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[2],
   "§lLineage§r\n\nX\n\nY");
 check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
@@ -275,9 +275,9 @@ check("unknown color", plain(old[0]).includes("Color: > Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
 const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg: 27, stats, origin: "wild", variant: 2, mark: 1, today: 9 });
-check("renamed wild horse keeps its wild name", plain(renamed[0]).startsWith("Name: > Thunder\nWild name:\n> Copper Blaze #27\nHorse\n"), true);
+check("renamed wild horse keeps its wild name", plain(renamed[0]).startsWith("Horse\nName: > Thunder\nWild name:\n> Copper Blaze #27\n"), true);
 const renamedFoal = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, stats, origin: "bred", variant: 2, mark: 1, today: 9 });
-check("renamed foal keeps its birth name", plain(renamedFoal[0]).startsWith("Name: > Bolt\nBirth name:\n> Ember Socks #40\n"), true);
+check("renamed foal keeps its birth name", plain(renamedFoal[0]).startsWith("Horse\nName: > Bolt\nBirth name:\n> Ember Socks #40\n"), true);
 const genPages = bookPages({
   name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1 }, { name: "Coal Dapple #8", gen: 0 }],
