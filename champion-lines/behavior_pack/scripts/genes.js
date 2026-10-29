@@ -358,13 +358,12 @@ export function bookPages(info) {
   const kind = info.kind ?? "horse";
   let origin;
   if (info.origin === "bred") {
-    const same = info.tamer && info.tamer === info.breeder;
     origin = [
       ...(info.gen ? field("Generation", info.gen) : []),
       ...field("Born", `day ${info.day ?? "?"}`),
-      ...(same ? field("Bred and tamed by", info.breeder) : field("Bred by", info.breeder ?? "unknown")),
+      ...field("Bred by", info.breeder ?? "unknown"),
     ];
-    if (info.tamer && !same) origin.push(...field("Tamed by", info.tamer));
+    if (info.tamer) origin.push(...field("Tamed by", info.tamer));
   } else {
     if (info.origin === "wild") origin = ["Wild-born", ...field("First seen", `day ${info.day ?? "?"}`)];
     else origin = ["§7Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown.§r"];

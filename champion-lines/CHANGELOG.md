@@ -47,6 +47,6 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   better-parent rule. Overrides vanilla `mule.json` as well as `horse.json`.
 - Bred mules wear their horse parent's markings (setting, on by default). This
   adds a small resource pack, so the add-on now downloads as an `.mcaddon`.
-- Papers: values right-justified on their labels' lines, "Bred and tamed by" for
-  one player, Horse/Donkey/Mule named, speed in blocks/s, and the parents'
+- Papers: values right-justified on their labels' lines, Horse/Donkey/Mule
+  named, speed in blocks/s, and the parents'
   stats on the Lineage page.

@@ -260,7 +260,7 @@ check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2 blocks/s\n", "Jump:
 check("no maximums", /of 30|of 1\.00|best is/.test(pages[1]), false);
 check("tamer listed", plain(bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0]).includes("\nTamed by: > Alex"), true);
 const both = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Alex", day: 2, today: 3 });
-check("same breeder and tamer: one line", plain(both[0]).includes("\nBred and tamed by:\n> Alex") && !both[0].includes("Tamed by"), true);
+check("same breeder and tamer: two lines", plain(both[0]).includes("\nBred by: > Alex\nTamed by: > Alex"), true);
 const differ = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Steve", day: 2, today: 3 });
 check("different breeder and tamer", plain(differ[0]).includes("\nBred by: > Alex\nTamed by: > Steve"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]

@@ -127,8 +127,7 @@ by a signed book of the horse's papers:
 
 - name, Horse / Donkey / Mule, colour (written in that colour), markings and
   registry number
-- its generation, the day it was born, who bred it and who tamed it ("Bred and
-  tamed by" when that is one player)
+- its generation, the day it was born, who bred it and who tamed it
 - health, speed (blocks per second) and jump (blocks)
 - for a bred horse, a last **Lineage** page: its parents, their generations
   and their stats, as far as riders have learnt them
