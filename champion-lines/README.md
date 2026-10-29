@@ -10,16 +10,14 @@ values can be stacked into one horse over a few generations.
 
 - **Add-on ID:** `champion-lines` (kebab-case; also the tag prefix, the issue
   label and the artifact filename)
-- **Minimum Minecraft version:** 1.26.60 (`min_engine_version` in the manifests)
-- **Packs:** both. The resource pack only draws mules' markings; the behaviour
-  pack lists it as a dependency, so enabling the behaviour pack enables it too.
+- **Minimum Minecraft version:** 1.26.60 (`min_engine_version` in the manifest)
+- **Packs:** behaviour pack only
 - **Author:** ntrixter
 - **No experiments and no cheats needed.** Everything runs from the pack's
   script, so it works on a survival world with cheats off and keeps
   achievements.
 - **Overrides the vanilla horse and mule** (`entities/horse.json` and
-  `mule.json`, and the mule's client entity `entity/mule_v3.entity.json`).
-  Another add-on that also replaces one of them will conflict with this one;
+  `mule.json`). Another add-on that also replaces one of them will conflict with this one;
   whichever is higher in the pack list wins. Donkeys are not overridden.
 
 ## What you get
@@ -45,14 +43,6 @@ health varies. A **mule**, bred from a horse and a donkey, rolls each of its
 three stats by the same rule as a horse foal, from those two parents. Since
 the donkey parent always brings the donkey's speed and jump, and a mule
 cannot breed on, a top mule takes a top horse and some luck.
-
-A bred mule also wears its **horse parent's markings** (socks and blaze,
-white patches, white spots or black spots) over the mule coat, so mules no
-longer all look alike, and the look tells you which horse it came from. This
-is the one thing the resource pack is for; the setting **Mule markings from the
-horse parent** turns it off, which shows every mule plain again. The marking is
-recorded either way, so turning the setting back on restores it. Foals stay
-plain until they grow up, because the horse markings do not fit the foal model.
 
 Donkeys and mules get names, registry numbers, generations and books like
 horses, with name words of their own (Dusty Jack, Russet Packer), and their
@@ -108,17 +98,18 @@ horse looks like:
 | Gray | Ash, Smoke, Storm, Flint, Slate, Pewter | | |
 | Dark brown | Walnut, Mocha, Umber, Cedar, Bark, Truffle | | |
 
-Then comes a **registry number**, unique in the world. A horse is registered
-when it is tamed or first written up in a book, whichever comes first, so wild
-horses nobody keeps do not use numbers up; until then it goes by its two words
-alone. A chestnut with socks and a blaze might be
-**Copper Blaze #27**; a black horse with black spots **Raven Pepper #112**. The
-words come from the horse's entity id, which is saved with it, and the number
-is stored on the horse, so a horse keeps its name for life. A name-tagged
-horse still gets a number, shown in its book.
+Then comes a **number** for that name: the first Copper Blaze is #1, the
+second #2, and so on. Separately, every horse gets a **registry number**,
+unique in the world and shown in its book. Both are given when a horse is
+tamed or first written up in a book, whichever comes first, so wild horses
+nobody keeps do not use numbers up; until then a horse goes by its two words
+alone. So the 27th horse registered might be **Copper Blaze #2**, Registry
+No. 27. The words come from the horse's entity id, which is saved with it, and
+the numbers are stored on the horse, so a horse keeps its name for life. A
+name-tagged horse still gets both numbers.
 
 A book title holds at most 16 characters, so a long one keeps the colour word
-and the number: **Biscuit #1234**.
+and the number: **Biscuit #12**.
 
 ### Use a book on a horse
 
@@ -188,14 +179,13 @@ Changes take effect the next time the world loads.
 | Learn stats by riding | on |
 | Show stats of untamed horses | off |
 | Include donkeys and mules | on |
-| Mule markings from the horse parent | on |
 | Chance to inherit the better parent's stat | 60% |
 
 On a dedicated server there is no gear icon; see "Where pack settings persist"
 in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md) for the file to edit. The setting
 names are `horsebreed:show_stats`, `horsebreed:show_parents`,
 `horsebreed:learn_by_riding`, `horsebreed:wild_stats`,
-`horsebreed:donkeys_mules`, `horsebreed:mule_markings` and `horsebreed:chance`.
+`horsebreed:donkeys_mules` and `horsebreed:chance`.
 
 ## Tests
 
@@ -203,26 +193,9 @@ names are `horsebreed:show_stats`, `horsebreed:show_parents`,
 cd champion-lines/tests && node run.js
 ```
 
-In game, with cheats on, a mule with given markings can be summoned without
-breeding one: 1 white socks and blaze, 2 white patches, 3 white spots, 4 black
-spots, 0 none.
-
-```
-/summon mule ~ ~ ~ 0 0 horsebreed:set_mark_1
-/event entity @e[type=mule,r=5] horsebreed:set_mark_3
-```
-
-The second changes mules already near you; a mule the pack bred keeps its
-recorded markings and goes back to them when the world reloads.
-
-They cover the inheritance roll, the text of the action bar and the book, and
-check that the stat grids in the script match the groups in the entity files.
-Nothing needs installing. Anything that needs the game is in
-[TESTING.md](TESTING.md).
-
 ## Download
 
-Grab the latest `champion-lines-<version>.mcaddon` from the
+Grab the latest `champion-lines-<version>.mcpack` from the
 [Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=champion-lines).
 Releases in this repository are shared across every add-on, so filter by the
 `champion-lines-v` tag prefix.
@@ -230,25 +203,22 @@ Releases in this repository are shared across every add-on, so filter by the
 ## Install on a client
 
 1. Download the file.
-2. Open it. Minecraft imports both packs automatically.
-3. Enable the behaviour pack on the world you want it in, under **Settings →
-   Behaviour Packs**. The resource pack comes with it.
+2. Open it. Minecraft imports the pack automatically.
+3. Enable it on the world you want it in, under **Settings → Behaviour Packs**.
 
 ## Install on a dedicated server
 
-1. Rename the downloaded file to `.zip` and extract it.
-2. Copy `champion-lines_BP` into the server's `behavior_packs/` directory, and
-   `champion-lines_RP` into the server's `resource_packs/` directory.
-3. Register both packs in the world (below).
-4. Restart the server.
+1. Rename the downloaded file to `.zip` and extract it. A single-pack `.mcpack`
+   extracts loose, with `manifest.json` at the top level. Create a
+   `champion-lines_BP` folder yourself inside the server's
+   `behavior_packs/` directory and put the extracted files in it.
+2. Register the pack in the world (below).
+3. Restart the server.
 
-Three things that quietly break a server install:
+Two things that quietly break a server install:
 
 - `level-name` in `server.properties` must match the world's folder name under
   `worlds/` **exactly**, including spaces and letter case.
-- A resource pack is not forced on connecting players unless
-  `texturepack-required=true` is set in `server.properties`. Without it, a
-  player who declines the pack sees plain mules; everything else still works.
 - Do not hand-edit `valid_known_packs.json`. The server maintains it.
 
 ### The one that is specific to a script pack
@@ -268,19 +238,17 @@ kind**. The pack appears installed and does nothing.
 and `resource_packs/`, so wrap the download once:
 
 ```sh
-mkdir -p packs/behavior_packs packs/resource_packs
-unzip -q champion-lines-<version>.mcaddon -d extracted
-mv extracted/champion-lines_BP packs/behavior_packs/
-mv extracted/champion-lines_RP packs/resource_packs/
+mkdir -p packs/behavior_packs/champion-lines_BP
+unzip -q champion-lines-<version>.mcpack -d packs/behavior_packs/champion-lines_BP
 ```
 
 Mount `packs/` into the container and point `MC_PACK` at its in-container path.
 The image does not register the pack, so the step below still applies.
 
-## Register the packs in the world
+## Register the pack in the world
 
-These files live in `worlds/<world name>/`. If they already exist, **merge**
-these entries into the existing array rather than overwriting the file.
+This file lives in `worlds/<world name>/`. If it already exists, **merge** this
+entry into the existing array rather than overwriting the file.
 
 `world_behavior_packs.json`
 
@@ -293,19 +261,7 @@ these entries into the existing array rather than overwriting the file.
 ]
 ```
 
-`world_resource_packs.json`
-
-```json
-[
-  {
-    "pack_id": "82f25b49-9ace-4c46-a4c5-6b6316e8e90e",
-    "version": [1, 0, 0]
-  }
-]
-```
-
-Those are the **header** UUIDs from the manifests. The module UUIDs will not
-work.
+That is the **header** UUID from the manifest. The module UUID will not work.
 
 > **If the pack does not load on a server, try the string form.** This
 > manifest is `format_version` 3, and it is not yet settled whether
@@ -326,18 +282,16 @@ all three of:
 3. remove the entry from `<world>/world_behavior_pack_settings.json`
 
 Removing the add-on keeps every animal's current stats; they are saved with
-the animal (expected, not yet confirmed in game). Mules go back to the plain
-vanilla look at once. The papers already written stay as they are, and foals
-and mules bred afterwards go back to vanilla. Names, registry numbers and the
-rest of each animal's record stay in the world save, so re-adding the add-on
-brings them back, and it puts each mule's markings back too. Animals bred
-while it was away count as animals from before the pack: no parents,
-generation 0.
+the animal (expected, not yet confirmed in game). The papers already written
+stay as they are, and foals and mules bred afterwards go back to vanilla.
+Names, registry numbers and the rest of each animal's record stay in the world
+save, so re-adding the add-on brings them back. Animals bred while it was away
+count as animals from before the pack: no parents, generation 0.
 
 ## Re-syncing after a Minecraft update
 
-The monthly `vanilla-drift` workflow reports when Mojang changes `horse.json`,
-`mule.json` or the mule's client entity.
+The monthly `vanilla-drift` workflow reports when Mojang changes `horse.json`
+or `mule.json`.
 The pack's additions are generated, so a re-sync is two commands from the
 repository root:
 
@@ -346,12 +300,9 @@ python3 champion-lines/tools/sync_entities.py
 python3 scripts/check_vanilla_drift.py champion-lines --print-hash
 ```
 
-The first fetches the three vanilla files, strips their `//` comments and
-inserts this pack's component groups and events at the top of
-`component_groups` and `events`; in the mule's client entity it adds the
-horse's marking textures and swaps in this pack's render controller. If
-Mojang changes the mule's render controller (`controller.render.mule.v4`),
-copy the change into `resource_pack/render_controllers/`. Every vanilla line is left as it was. Put the printed hashes into
+The first fetches both vanilla files, strips its `//` comments and inserts this
+pack's component groups and events at the top of `component_groups` and
+`events`. Every vanilla line is left as it was. Put the printed hashes into
 `upstream_sha256` in `addon.json`, raise `min_engine_version` if the new file's
 `format_version` needs it, and run the tests, which check that the groups
 still match the script.

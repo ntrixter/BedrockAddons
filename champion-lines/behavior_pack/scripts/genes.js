@@ -179,7 +179,7 @@ export function coloredColorName(variant) {
   return code ? `${code}${colorName(variant)}§r` : colorName(variant);
 }
 
-/** A name with its registry number in dark gray: "Oak Dancer §8#1§r". */
+/** A name with its number in dark gray: "Oak Dancer §8#1§r". */
 export function grayNumber(name, after = "§r") {
   return name.replace(/ (#\d+)$/, ` §8$1${after}`);
 }
@@ -211,7 +211,7 @@ const MARK_WORDS = [
 ];
 
 // Donkeys and mules have one look each, so their names come from lists of
-// their own: 36 names per kind before the registry number.
+// their own: 36 names per kind before the number.
 const OTHER_WORDS = {
   donkey: [
     ["Dusty", "Clover", "Barley", "Thistle", "Juniper", "Hickory"],
@@ -235,10 +235,11 @@ function hash(text) {
 }
 
 /**
- * The generated name of a horse with no name tag, e.g. "Copper Blaze #27".
- * The words describe the horse; the registry number makes the name unique.
+ * The generated name of a horse with no name tag, e.g. "Copper Blaze #3".
+ * The words describe the horse; the number counts the horses registered under
+ * those words, so the third Copper Blaze is #3 whatever its registry number.
  */
-export function herdName(id, variant, mark, reg, kind = "horse") {
+export function herdName(id, variant, mark, num, kind = "horse") {
   const h = hash(String(id));
   let words;
   if (OTHER_WORDS[kind]) {
@@ -249,7 +250,7 @@ export function herdName(id, variant, mark, reg, kind = "horse") {
     const marks = MARK_WORDS[mark] ?? MARK_WORDS[0];
     words = colors ? `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}` : "Horse";
   }
-  return reg ? `${words} #${reg}` : words;
+  return num ? `${words} #${num}` : words;
 }
 
 /** "Spirit & Copper Blaze", or why there are no parents to show. */
@@ -339,13 +340,12 @@ function field(label, value, code = "") {
   return pad >= 1 ? [left + " ".repeat(pad) + right] : [left, rightAlign(right)];
 }
 
-/** Short stats for a parent on the Lineage page: "H 28 · S 12.1 · J ~3.9". */
-export function shortStats(st) {
-  if (!st) return "?";
-  const h = st.h == null ? "?" : Math.round(st.h);
-  const sp = st.s == null ? "?" : fmt(blocksPerSecond(st.s));
-  const j = st.j == null ? "?" : `${st.jEst ? "~" : ""}${fmt(jumpBlocks(st.j))}`;
-  return `H ${h} · S ${sp} · J ${j}`;
+/** A parent's stats for the Lineage page, one per line: "Health: 18". */
+export function parentStatLines(st) {
+  const h = st?.h == null ? "?" : Math.round(st.h);
+  const sp = st?.s == null ? "?" : fmt(blocksPerSecond(st.s));
+  const j = st?.j == null ? "?" : `${st.jEst ? "~" : ""}${fmt(jumpBlocks(st.j))}`;
+  return [`Health: ${h}`, `Speed: ${sp}`, `Jump: ${j}`].map((t) => `§7 ${t}§r`);
 }
 
 /**
@@ -371,11 +371,12 @@ export function bookPages(info) {
   }
   const looks = kind === "horse"
     ? [...field("Color", coloredColorName(info.variant)), ...field("Markings", markingName(info.mark))]
-    : info.mark > 0 ? field("Markings", markingName(info.mark)) : [];
+    : [];
   const top = [
     `§l${KIND_NAMES[kind] ?? "Horse"}§r`,
     ...field("Name", `§l${grayNumber(info.name ?? "Horse", "")}§r`),
     ...(info.firstName ? field(firstNameLabel(info.origin), info.firstName, "§7") : []),
+    "",
     ...looks,
     ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
   ];
@@ -386,19 +387,19 @@ export function bookPages(info) {
   // A renamed parent is listed under its current name with its first name
   // below, so a book written before the rename can still be matched to it.
   const entries = info.parentEntries ?? (info.parents ?? []).map((name) => ({ name }));
-  const parentsPage = info.origin !== "bred" ? [] : [[
-    "§lLineage§r",
-    "",
-    ...(entries.length
-      ? entries.flatMap((p) => [
-          grayNumber(p.name),
-          ...(p.gen !== undefined ? [`§7 generation ${p.gen}§r`] : []),
-          ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []),
-          ...("stats" in p ? [`§7 ${shortStats(p.stats)}§r`] : []),
-          "",
-        ])
-      : ["unknown"]),
-  ].join("\n").trimEnd()];
+  const parentBlocks = entries.map((p) => [
+    grayNumber(p.name),
+    ...(p.gen !== undefined ? [`§7 generation ${p.gen}§r`] : []),
+    ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []),
+    ...("stats" in p ? parentStatLines(p.stats) : []),
+  ]);
+  const lineage = (blocks) => ["§lLineage§r", "", ...(blocks.length ? blocks.flatMap((b) => [...b, ""]) : ["unknown"])].join("\n").trimEnd();
+  // Two parents with all their lines can overrun a page; then each gets one.
+  let parentsPage = [];
+  if (info.origin === "bred") {
+    const together = lineage(parentBlocks);
+    parentsPage = together.split("\n").length <= PAGE_LINES ? [together] : parentBlocks.map((b) => lineage([b]));
+  }
 
   let jump;
   if (!s) jump = [];
@@ -411,7 +412,7 @@ export function bookPages(info) {
     : [
         ...(s.h == null ? ["Health: ?", ride] : [`Health: ${Math.round(s.h)}`, `§7 ${fmt(s.h / 2)} hearts§r`]),
         "",
-        ...(s.s == null ? ["Speed: ?", ride] : [`Speed: ${fmt(blocksPerSecond(s.s))} blocks/s`]),
+        ...(s.s == null ? ["Speed: ?", ride] : [`Speed: ${fmt(blocksPerSecond(s.s))}`, "§7 blocks/s§r"]),
         "",
         ...jump,
       ];

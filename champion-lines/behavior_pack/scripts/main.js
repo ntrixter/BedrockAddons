@@ -50,7 +50,6 @@ function readSettings() {
     wild: values[`${NS}:wild_stats`] === true,
     learn: values[`${NS}:learn_by_riding`] !== false,
     donkeys: values[`${NS}:donkeys_mules`] !== false,
-    muleMarks: values[`${NS}:mule_markings`] !== false,
     chance: Number.isFinite(chance) ? Math.min(100, Math.max(25, chance)) / 100 : 0.6,
   };
 }
@@ -64,8 +63,8 @@ const isEquine = (entity) => EQUINES.includes(entity.typeId);
 const kindOf = (entity) => KINDS[entity.typeId];
 
 // ---- per-horse record -----------------------------------------------------
-// { rn, h, s, j, origin: "bred" | "wild", day, by, tb, g, c, m, p: [{ id, name, first, origin, g }] }
-// rn is the registry number, h hit points, s the movement value, j jump
+// { rn, nn, h, s, j, origin: "bred" | "wild", day, by, tb, g, c, m, p: [{ id, name, first, origin, g }] }
+// rn is the registry number, nn the generated name's number, h hit points, s the movement value, j jump
 // strength in hundredths, tb the player who tamed it, g the generation, and
 // c and m a foal's coat and markings, rd whether it has been ridden, jm its
 // best jump seen, in blocks.
@@ -95,17 +94,40 @@ function nextRegistry() {
   return reg;
 }
 
-/** Saves a horse's record. A horse keeps its registry number for life. */
-function writeData(horse, data) {
-  const rn = data.rn ?? readData(horse)?.rn;
-  horse.setDynamicProperty(DATA, JSON.stringify({ ...data, rn }));
+const NAME_COUNTS = `${NS}:name_counts`;
+
+/**
+ * The next number for a generated name, counted per name: the first
+ * "Copper Blaze" registered is #1, the second #2, whatever their registry
+ * numbers are.
+ */
+function nextNameNumber(words) {
+  let counts = {};
+  try {
+    counts = JSON.parse(world.getDynamicProperty(NAME_COUNTS) ?? "{}");
+  } catch {
+    counts = {};
+  }
+  const n = (counts[words] ?? 0) + 1;
+  counts[words] = n;
+  world.setDynamicProperty(NAME_COUNTS, JSON.stringify(counts));
+  return n;
 }
 
-/** Registers the horse if it is not yet registered; returns its number. */
+/** Saves a horse's record. A horse keeps its registry and name numbers for life. */
+function writeData(horse, data) {
+  const old = readData(horse);
+  const rn = data.rn ?? old?.rn;
+  const nn = data.nn ?? old?.nn;
+  horse.setDynamicProperty(DATA, JSON.stringify({ ...data, rn, nn }));
+}
+
+/** Registers the horse if it is not yet registered; returns its registry number. */
 function register(horse, extra = {}) {
   const data = readData(horse) ?? {};
   const rn = data.rn ?? nextRegistry();
-  writeData(horse, { ...data, ...extra, rn });
+  const nn = data.nn ?? nextNameNumber(herdName(horse.id, variantOf(horse), markOf(horse), undefined, kindOf(horse)));
+  writeData(horse, { ...data, ...extra, rn, nn });
   return rn;
 }
 
@@ -176,29 +198,7 @@ function displayName(horse) {
 
 /** The generated name the horse was given in the wild or at birth. */
 function firstNameOf(horse) {
-  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.rn, kindOf(horse));
-}
-
-/**
- * Shows a mule's recorded markings, or none with the setting off. The record
- * is kept either way, so turning the setting back on, or re-adding the pack
- * after the game dropped the markings, restores them.
- */
-function syncMuleLook(mule) {
-  if (kindOf(mule) !== "mule") return;
-  const data = readData(mule);
-  const have = mule.getComponent("minecraft:mark_variant")?.value ?? 0;
-  // A mule with no recorded marking keeps the one it has, such as one
-  // summoned with a horsebreed:set_mark_N spawn event for testing.
-  if (data?.m === undefined) {
-    if (have > 0) writeData(mule, { ...data, m: have });
-    return;
-  }
-  const want = settings.muleMarks ? data.m : 0;
-  if (want !== have) {
-    mule.triggerEvent(`${NS}:set_mark_${want}`);
-    debug(`mule ${displayName(mule)}: markings ${have} -> ${want}`);
-  }
+  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.nn, kindOf(horse));
 }
 
 function applyStat(horse, stat, step) {
@@ -268,17 +268,12 @@ function onBorn(foal) {
     g: generationOf(genOf(a), genOf(b)),
     by: breeders.length ? breeders.join(" & ") : undefined,
     p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p), st: shownOf(p) })),
-    // A mule wears its horse parent's markings over its own coat.
-    ...(kind === "mule" ? { m: markOf(parents.find((p) => kindOf(p) === "horse") ?? a) ?? 0 } : {}),
   });
   applyStat(foal, "health", child.h);
   applyStat(foal, "speed", child.s);
   applyStat(foal, "jump", child.j);
   if (isHorse) writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
-  else {
-    syncMuleLook(foal);
-    debug(`mule markings ${readData(foal)?.m} from its horse parent`);
-  }
+
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -309,9 +304,8 @@ function onSpawned(horse) {
   // Donkeys and mules from the wild or a spawn egg are vanilla: their speed
   // and jump are the same for every animal, and health is read as it is.
   if (kindOf(horse) !== "horse") {
-    const m = horse.getComponent("minecraft:mark_variant")?.value;
-    writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay(), ...(m ? { m } : {}) });
-    debug(`spawned ${kindOf(horse)}: health ${liveHealth(horse)}${m ? `, markings ${m}` : ""}`);
+    writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay() });
+    debug(`spawned ${kindOf(horse)}: health ${liveHealth(horse)}`);
     return;
   }
   // Vanilla's jump cannot be read back, so roll it here, the same way vanilla
@@ -332,14 +326,6 @@ world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
     else if (cause === "Spawned" || cause === "Event") onSpawned(entity);
   } catch (err) {
     if (entity.isValid) console.warn(`[Champion Lines] ${err}`);
-  }
-});
-
-world.afterEvents.entityLoad.subscribe(({ entity }) => {
-  try {
-    if (isEquine(entity)) syncMuleLook(entity);
-  } catch {
-    // The entity can unload again before this runs.
   }
 });
 
@@ -501,13 +487,7 @@ if (settings.stats || settings.parents) {
       try {
         const horse = targetHorse(player);
         if (horse) {
-          let text = describe(infoOf(horse), settings);
-          // Test builds show a mule's marking value, to tell a script fault
-          // (value 0) from a resource pack one (value set, mule still plain).
-          if (DEBUG && kindOf(horse) === "mule") {
-            text += ` §8[mark_variant ${horse.getComponent("minecraft:mark_variant")?.value ?? "none"}, recorded ${readData(horse)?.m ?? "none"}]§r`;
-          }
-          player.onScreenDisplay.setActionBar(text);
+          player.onScreenDisplay.setActionBar(describe(infoOf(horse), settings));
           showing.add(player.id);
         } else if (showing.delete(player.id)) {
           player.onScreenDisplay.setActionBar("");

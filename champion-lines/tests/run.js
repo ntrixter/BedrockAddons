@@ -120,7 +120,7 @@ check("every event adds its group", ours.every((e) => {
 
 console.log("Donkeys and mules");
 const mule = JSON.parse(readFileSync(new URL("../behavior_pack/entities/mule.json", import.meta.url), "utf8"))["minecraft:entity"];
-const muleEvents = Object.keys(mule.events).filter((e) => e.startsWith("horsebreed:") && !e.includes("_mark_"));
+const muleEvents = Object.keys(mule.events).filter((e) => e.startsWith("horsebreed:"));
 check("mule: same stat events as the horse", muleEvents.sort(), ours.slice().sort());
 check("mule: each adds its group", muleEvents.every((e) => {
   const g = mule.events[e].add.component_groups[0];
@@ -143,20 +143,6 @@ check("donkey name", /^\S+ \S+ #4$/.test(herdName("9", undefined, undefined, 4, 
 check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "donkey") !== herdName("9", 2, 1, 0, "mule"), true);
 const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });
 check("donkey book says Donkey, no colour", donkeyBook[0].startsWith("§lDonkey§r\n") && !donkeyBook[0].includes("Color"), true);
-const muleBook = bookPages({ name: "Russet Packer #5", kind: "mule", mark: 3, stats: { h: 22, s: 0.2, j: 60 }, origin: "bred", today: 1 });
-check("mule book shows its markings", plain(muleBook[0]).startsWith("Mule\n") && plain(muleBook[0]).includes("\nMarkings: > White spots\n"), true);
-check("plain mule book has no markings line", !bookPages({ name: "M", kind: "mule", mark: 0, stats: { h: 22, s: 0.2, j: 60 }, origin: "wild", today: 1 })[0].includes("Markings"), true);
-check("mule: one marking event per marking, each clearing the others", MARKINGS.every((_, i) => {
-  const ev = mule.events[`horsebreed:set_mark_${i}`];
-  return ev.add.component_groups[0] === `horsebreed:mark_${i}` && ev.remove.component_groups.length === MARKINGS.length - 1
-    && mule.component_groups[`horsebreed:mark_${i}`]["minecraft:mark_variant"].value === i;
-}), true);
-const client = JSON.parse(readFileSync(new URL("../resource_pack/entity/mule_v3.entity.json", import.meta.url), "utf8"))["minecraft:client_entity"].description;
-const controllers = JSON.parse(readFileSync(new URL("../resource_pack/render_controllers/champion_lines_mule.render_controllers.json", import.meta.url), "utf8")).render_controllers;
-check("mule client entity uses the pack's controller", client.render_controllers.every((c) => c in controllers), true);
-check("every marking texture the controller names is defined", Object.values(controllers)[0].arrays.textures["Array.markings"]
-  .every((t) => t.replace("Texture.", "") in client.textures), true);
-check("controller lists one texture per marking", Object.values(controllers)[0].arrays.textures["Array.markings"].length, MARKINGS.length);
 check("fixed stats shown plain", statParts({ h: 30, s: 0.175, j: 50, fixed: true }).slice(1).every((p) => p.startsWith("§f")), true);
 
 console.log("Coat, markings and generation");
@@ -234,6 +220,7 @@ check("colour word then marking word", /^(Copper|Rust|Amber|Ember|Penny|Ginger) 
 check("unknown coat", herdName("1", 99, 0), "Horse");
 check("registry number appended", /^\S+ \S+ #27$/.test(herdName("1", 2, 1, 27)), true);
 check("same words with or without a number", herdName("1", 2, 1, 27).startsWith(herdName("1", 2, 1) + " "), true);
+check("name number, not the registry number", herdName("1", 2, 1, 3).endsWith(" #3"), true);
 check("unknown markings fall back", herdName("1", 0, 99), herdName("1", 0, 0));
 
 console.log("Book");
@@ -247,7 +234,7 @@ const pages = bookPages({
 });
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", plain(pages[0]),
-  "Horse\nName: > Spirit\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
+  "Horse\nName: > Spirit\n\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
 check("colour word keeps its colour", pages[0].includes("§6Chestnut§r"), true);
 check("values reach the right edge", pages[0].split("\n").filter((l) => / {2,}/.test(l))
   .every((l) => textWidth(l) <= LINE_WIDTH && textWidth(l) > LINE_WIDTH - 4), true);
@@ -255,7 +242,7 @@ check("a long pair puts its value on the next line", plain(bookPages({ name: "T"
 check("a value too long to pad is left as it is", rightAlign("W".repeat(30)), "W".repeat(30));
 check("page 3: lineage, renamed one with its first name", pages[2],
   "§lLineage§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
-check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2 blocks/s\n", "Jump: 1.6 blocks", "day 40"]
+check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2\n§7 blocks/s§r", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[1].includes(t)), true);
 check("no maximums", /of 30|of 1\.00|best is/.test(pages[1]), false);
 check("tamer listed", plain(bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0]).includes("\nTamed by: > Alex"), true);
@@ -288,8 +275,12 @@ check("a full horse fits its page", [full.length, full.every((p) => p.split("\n"
 check("its stats follow", full[1].startsWith("§lStats"), true);
 const statPages = bookPages({ name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1, stats: { h: 28, s: 0.29, j: 90, jEst: true } }, { name: "Coal", gen: 0, stats: null }] });
-check("parents' stats on the Lineage page", plain(statPages[2]).includes("\n> H 28 · S 12.2 · J ~4.4\n"), true);
-check("a parent's hidden stats", plain(statPages[2]).endsWith("\n> ?"), true);
+check("parents' stats on the Lineage page", plain(statPages[2]).includes("\n> Health: 28\n> Speed: 12.2\n> Jump: ~4.4\n"), true);
+check("a parent's hidden stats", plain(statPages[2]).endsWith("\n> Health: ?\n> Speed: ?\n> Jump: ?"), true);
+const crowded = bookPages({ name: "C", stats, origin: "bred", day: 1, today: 2, parentEntries: [
+  { name: "Thunder", first: "Copper Blaze #3", origin: "wild", gen: 0, stats },
+  { name: "Storm", first: "Ash Dash #1", origin: "wild", gen: 0, stats }] });
+check("two full parents get a Lineage page each", [crowded.length, crowded.every((p) => p.split("\n").length <= PAGE_LINES), crowded[3].startsWith("§lLineage")], [4, true, true]);
 check("parents show their generation", genPages[2].includes("Swan Boots §8#1§r\n§7 generation 1§r"), true);
 check("wild parent is generation 0", genPages[2].includes("§7 generation 0§r"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);

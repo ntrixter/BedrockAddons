@@ -26,9 +26,8 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   `Jump ~4.9` and used for breeding.
 - Horses get a registry number, unique in the world, when they are tamed or
   first written up in a book. Horses without a name tag get a name built from
-  their coat and markings plus that number,
-  such as Copper Blaze #27, used on the look-at line, for parents and in the
-  book.
+  their coat and markings plus a number counted per name, such as Copper
+  Blaze #2, used on the look-at line, for parents and in the book.
 - Use a book on a horse to get a signed book of its papers: name, colour,
   markings, birthday, breeder, parents and stats. A renamed horse, or
   parent, also shows its birth or wild name, so old books still identify it.
@@ -45,8 +44,5 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   vanilla but get names, registry numbers, generations and books. A mule
   rolls health, speed and jump from its horse and donkey parents by the
   better-parent rule. Overrides vanilla `mule.json` as well as `horse.json`.
-- Bred mules wear their horse parent's markings (setting, on by default). This
-  adds a small resource pack, so the add-on now downloads as an `.mcaddon`.
 - Papers: values right-justified on their labels' lines, Horse/Donkey/Mule
-  named, speed in blocks/s, and the parents'
-  stats on the Lineage page.
+  named, speed in blocks/s, and the parents' stats on the Lineage page.
