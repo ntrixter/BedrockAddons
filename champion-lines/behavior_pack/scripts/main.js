@@ -501,7 +501,13 @@ if (settings.stats || settings.parents) {
       try {
         const horse = targetHorse(player);
         if (horse) {
-          player.onScreenDisplay.setActionBar(describe(infoOf(horse), settings));
+          let text = describe(infoOf(horse), settings);
+          // Test builds show a mule's marking value, to tell a script fault
+          // (value 0) from a resource pack one (value set, mule still plain).
+          if (DEBUG && kindOf(horse) === "mule") {
+            text += ` §8[mark_variant ${horse.getComponent("minecraft:mark_variant")?.value ?? "none"}, recorded ${readData(horse)?.m ?? "none"}]§r`;
+          }
+          player.onScreenDisplay.setActionBar(text);
           showing.add(player.id);
         } else if (showing.delete(player.id)) {
           player.onScreenDisplay.setActionBar("");

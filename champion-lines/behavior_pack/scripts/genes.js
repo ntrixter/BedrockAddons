@@ -360,7 +360,7 @@ export function bookPages(info) {
   if (info.origin === "bred") {
     const same = info.tamer && info.tamer === info.breeder;
     origin = [
-      ...(info.gen ? [`Generation: ${info.gen}`] : []),
+      ...(info.gen ? field("Generation", info.gen) : []),
       ...field("Born", `day ${info.day ?? "?"}`),
       ...(same ? field("Bred and tamed by", info.breeder) : field("Bred by", info.breeder ?? "unknown")),
     ];
@@ -374,7 +374,7 @@ export function bookPages(info) {
     ? [...field("Color", coloredColorName(info.variant)), ...field("Markings", markingName(info.mark))]
     : info.mark > 0 ? field("Markings", markingName(info.mark)) : [];
   const top = [
-    `§l${grayNumber(info.name ?? "Horse", "")}§r`,
+    ...field("Name", `§l${grayNumber(info.name ?? "Horse", "")}§r`),
     ...(info.firstName ? field(firstNameLabel(info.origin), info.firstName, "§7") : []),
     KIND_NAMES[kind] ?? "Horse",
     ...looks,

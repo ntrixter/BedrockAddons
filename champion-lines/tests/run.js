@@ -247,7 +247,7 @@ const pages = bookPages({
 });
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", plain(pages[0]),
-  "Spirit\nHorse\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
+  "Name: > Spirit\nHorse\nColor: > Chestnut\nMarkings: > White spots\nRegistry No.: > 27\n\nBorn: > day 12\nBred by: > Steve");
 check("colour word keeps its colour", pages[0].includes("§6Chestnut§r"), true);
 check("values reach the right edge", pages[0].split("\n").filter((l) => / {2,}/.test(l))
   .every((l) => textWidth(l) <= LINE_WIDTH && textWidth(l) > LINE_WIDTH - 4), true);
@@ -264,7 +264,7 @@ check("same breeder and tamer: one line", plain(both[0]).includes("\nBred and ta
 const differ = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Steve", day: 2, today: 3 });
 check("different breeder and tamer", plain(differ[0]).includes("\nBred by: > Alex\nTamed by: > Steve"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
-  .startsWith("§lOak Dancer §8#1§r"), true);
+  .split("\n")[0].endsWith("§lOak Dancer §8#1§r"), true);
 check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[2],
   "§lLineage§r\n\nX\n\nY");
 check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
@@ -275,14 +275,14 @@ check("unknown color", plain(old[0]).includes("Color: > Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
 const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg: 27, stats, origin: "wild", variant: 2, mark: 1, today: 9 });
-check("renamed wild horse keeps its wild name", plain(renamed[0]).startsWith("Thunder\nWild name:\n> Copper Blaze #27\nHorse\n"), true);
+check("renamed wild horse keeps its wild name", plain(renamed[0]).startsWith("Name: > Thunder\nWild name:\n> Copper Blaze #27\nHorse\n"), true);
 const renamedFoal = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, stats, origin: "bred", variant: 2, mark: 1, today: 9 });
-check("renamed foal keeps its birth name", plain(renamedFoal[0]).startsWith("Bolt\nBirth name:\n> Ember Socks #40\n"), true);
+check("renamed foal keeps its birth name", plain(renamedFoal[0]).startsWith("Name: > Bolt\nBirth name:\n> Ember Socks #40\n"), true);
 const genPages = bookPages({
   name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1 }, { name: "Coal Dapple #8", gen: 0 }],
 });
-check("bred horse shows its generation", plain(genPages[0]).includes("\nGeneration: 2\nBorn: > day 5"), true);
+check("bred horse shows its generation", plain(genPages[0]).includes("\nGeneration: > 2\nBorn: > day 5"), true);
 const full = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, gen: 3, stats, origin: "bred", breeder: "A", tamer: "B", day: 5, variant: 2, mark: 1, today: 9 });
 check("a full horse fits its page", [full.length, full.every((p) => p.split("\n").length <= PAGE_LINES)], [3, true]);
 check("its stats follow", full[1].startsWith("§lStats"), true);
