@@ -199,6 +199,15 @@ export function bookTitle(name) {
 }
 
 /**
+ * What a horse's generated name is called once a name tag replaces it: the
+ * name it was born with, or the one it had in the wild. A horse that predates
+ * the pack counts as wild, since nothing is known of its birth.
+ */
+export function firstNameLabel(origin) {
+  return origin === "bred" ? "Birth name" : "Wild name";
+}
+
+/**
  * The pages of the info book.
  * info: { name, firstName, reg, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
  */
@@ -214,7 +223,7 @@ export function bookPages(info) {
   }
   const identity = [
     `§l${info.name ?? "Horse"}§r`,
-    ...(info.firstName ? [`§7First name: ${info.firstName}§r`] : []),
+    ...(info.firstName ? [`§7${firstNameLabel(info.origin)}: ${info.firstName}§r`] : []),
     "",
     `Color: ${colorName(info.variant)}`,
     `Markings: ${markingName(info.mark)}`,
@@ -230,7 +239,7 @@ export function bookPages(info) {
     "§lParents§r",
     "",
     ...(entries.length
-      ? entries.flatMap((p) => [p.name, ...(p.first ? [`§7 first name: ${p.first}§r`] : []), ""])
+      ? entries.flatMap((p) => [p.name, ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
       : ["unknown"]),
   ].join("\n").trimEnd()];
 

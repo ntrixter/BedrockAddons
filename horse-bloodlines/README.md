@@ -89,10 +89,11 @@ by a signed book of the horse's papers:
 It is titled with the horse's current name and signed by you. A book is a
 snapshot: it keeps the name the horse had when it was written. So that an old
 book can still be matched to a horse after a rename, a horse with a name tag
-also has its **first name** listed under its name: the generated name it got
-when it spawned or was born, such as `First name: Copper Blaze #27`. Parents
-are listed the same way, by their current name with their first name below
-if they have been renamed. Holding a book no longer
+also has its first name listed under its name: the generated name it got
+when it was born or spawned, as `Birth name: Copper Blaze #27` for a bred horse
+or `Wild name: Copper Blaze #27` for one that spawned wild. A horse that
+predates the pack counts as wild. Parents are listed the same way, by their
+current name with their birth or wild name below if they have been renamed. Holding a book no longer
 mounts or feeds a horse. In creative mode the book is not used up.
 
 ## Things worth knowing

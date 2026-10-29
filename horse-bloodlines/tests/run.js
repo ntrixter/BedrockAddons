@@ -155,13 +155,13 @@ check("numbered name that fits", bookTitle("Copper Blaze #27"), "Copper Blaze #2
 check("long numbered name keeps colour and number", bookTitle("Biscuit Freckle #1234"), "Biscuit #1234");
 const pages = bookPages({
   name: "Spirit", stats, origin: "bred", breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40, reg: 27,
-  parentEntries: [{ name: "Thunder", first: "Copper Blaze #3" }, { name: "Raven Pepper #8" }],
+  parentEntries: [{ name: "Thunder", first: "Copper Blaze #3", origin: "wild" }, { name: "Raven Pepper #8" }],
 });
 check("three pages for a bred horse", pages.length, 3);
 check("page 1", pages[0],
   "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\nRegistry No. 27\n\nBorn: day 12\nBred by: Steve");
 check("page 2: parents, renamed one with its first name", pages[1],
-  "§lParents§r\n\nThunder\n§7 first name: Copper Blaze #3§r\n\nRaven Pepper #8");
+  "§lParents§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper #8");
 check("page 3 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[2].includes(t)), true);
 check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[1],
@@ -174,7 +174,9 @@ check("unknown color", old[0].includes("Color: Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
 const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg: 27, stats, origin: "wild", variant: 2, mark: 1, today: 9 });
-check("renamed horse keeps its first name", renamed[0].startsWith("§lThunder§r\n§7First name: Copper Blaze #27§r\n"), true);
+check("renamed wild horse keeps its wild name", renamed[0].startsWith("§lThunder§r\n§7Wild name: Copper Blaze #27§r\n"), true);
+const renamedFoal = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, stats, origin: "bred", variant: 2, mark: 1, today: 9 });
+check("renamed foal keeps its birth name", renamedFoal[0].startsWith("§lBolt§r\n§7Birth name: Ember Socks #40§r\n"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");

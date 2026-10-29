@@ -186,7 +186,7 @@ function onBorn(foal) {
     origin: "bred",
     day,
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p) })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin })),
   });
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
@@ -306,7 +306,7 @@ function parentsOf(data) {
       live = undefined;
     }
     const name = live?.isValid && live.nameTag ? live.nameTag : p.name;
-    return { name, first: p.first && p.first !== name ? p.first : undefined };
+    return { name, first: p.first && p.first !== name ? p.first : undefined, origin: p.origin };
   });
 }
 

@@ -30,4 +30,4 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   book.
 - Use a book on a horse to get a signed book of its papers: name, colour,
   markings, birthday, breeder, parents and stats. A renamed horse, or
-  parent, also shows its first name, so old books still identify it.
+  parent, also shows its birth or wild name, so old books still identify it.
