@@ -328,9 +328,15 @@ export function rightAlign(text) {
   return pad > 0 ? " ".repeat(pad) + text : text;
 }
 
-/** A label on its own line, then its value right-justified below it. */
+/**
+ * A label, then its value right-justified on the same line. A pair too wide
+ * for one line puts the value right-justified on the line below.
+ */
 function field(label, value, code = "") {
-  return [`${code}${label}:${code ? "§r" : ""}`, rightAlign(`${code}${value}${code ? "§r" : ""}`)];
+  const left = `${code}${label}:${code ? "§r" : ""}`;
+  const right = `${code}${value}${code ? "§r" : ""}`;
+  const pad = Math.floor((LINE_WIDTH - textWidth(left) - textWidth(right)) / GLYPH[" "]);
+  return pad >= 1 ? [left + " ".repeat(pad) + right] : [left, rightAlign(right)];
 }
 
 /** Short stats for a parent on the Lineage page: "H 28 · S 12.1 · J ~3.9". */

@@ -133,8 +133,9 @@ by a signed book of the horse's papers:
 - for a bred horse, a last **Lineage** page: its parents, their generations
   and their stats, as far as riders have learnt them
 
-On the first page each label has its value on the line below, pushed to the
-right edge, so long player names still fit. Bedrock books cannot align text,
+On the first page each value sits on its label's line, pushed to the right
+edge; one too long to share the line, such as a long player name, goes on the
+line below, still to the right. Bedrock books cannot align text,
 so the pack pads with spaces measured in the Minecraft font; with the smooth
 font setting on, values land slightly off the edge. When everything will not
 fit on one page, the horse's details carry over onto a second page.
