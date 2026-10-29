@@ -47,8 +47,9 @@ function readSettings() {
 const settings = readSettings();
 
 // ---- per-horse record -----------------------------------------------------
-// { h, s, j, origin: "bred" | "wild", day, by, p: [{ id, name }] }
-// h is hit points, s the movement value, j jump strength in hundredths.
+// { reg, h, s, j, origin: "bred" | "wild", day, by, p: [{ id, name }] }
+// reg is the registry number, h hit points, s the movement value, j jump
+// strength in hundredths.
 
 function readData(horse) {
   try {
@@ -59,8 +60,31 @@ function readData(horse) {
   }
 }
 
+const NEXT_REG = `${NS}:next_registry`;
+
+/**
+ * The next registry number, world-wide. Horses are numbered in the order the
+ * pack first records them, so a generated name never repeats in one world.
+ */
+function nextRegistry() {
+  const n = world.getDynamicProperty(NEXT_REG);
+  const reg = typeof n === "number" && n >= 1 ? n : 1;
+  world.setDynamicProperty(NEXT_REG, reg + 1);
+  return reg;
+}
+
+/** Saves a horse's record. A horse keeps its first registry number for life. */
 function writeData(horse, data) {
-  horse.setDynamicProperty(DATA, JSON.stringify(data));
+  const reg = data.reg ?? readData(horse)?.reg ?? nextRegistry();
+  horse.setDynamicProperty(DATA, JSON.stringify({ ...data, reg }));
+}
+
+/** The registry number, given out the first time the pack meets the horse. */
+function registryOf(horse) {
+  const data = readData(horse);
+  if (data?.reg) return data.reg;
+  writeData(horse, data ?? {});
+  return readData(horse)?.reg;
 }
 
 function liveHealth(horse) {
@@ -100,7 +124,8 @@ function markOf(horse) {
 
 /** Name tag, or a generated name such as "Copper Blaze" when it has none. */
 function displayName(horse) {
-  return horse.nameTag || herdName(horse.id, variantOf(horse), markOf(horse));
+  const reg = registryOf(horse);
+  return horse.nameTag || herdName(horse.id, variantOf(horse), markOf(horse), reg);
 }
 
 function applyStat(horse, stat, step) {
@@ -279,10 +304,12 @@ function parentNames(data) {
 }
 
 function infoOf(horse) {
+  const name = displayName(horse); // first, as it may give out a registry number
   const data = readData(horse);
   return {
     data,
-    name: displayName(horse),
+    name,
+    reg: data?.reg,
     baby: horse.hasComponent("minecraft:is_baby"),
     stats: statsOf(horse, data),
     origin: data?.origin,

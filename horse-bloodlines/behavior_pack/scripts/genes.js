@@ -150,13 +150,16 @@ function hash(text) {
   return h;
 }
 
-/** The generated name of a horse with no name tag, e.g. "Copper Blaze". */
-export function herdName(id, variant, mark) {
+/**
+ * The generated name of a horse with no name tag, e.g. "Copper Blaze #27".
+ * The words describe the horse; the registry number makes the name unique.
+ */
+export function herdName(id, variant, mark, reg) {
   const colors = COLOR_WORDS[variant];
   const marks = MARK_WORDS[mark] ?? MARK_WORDS[0];
-  if (!colors) return "Horse";
   const h = hash(String(id));
-  return `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}`;
+  const words = colors ? `${colors[h % colors.length]} ${marks[(h >>> 8) % marks.length]}` : "Horse";
+  return reg ? `${words} #${reg}` : words;
 }
 
 /** "Spirit & Copper Blaze", or why there are no parents to show. */
@@ -182,15 +185,22 @@ export function describe(info, show) {
   return lines.join("\n");
 }
 
-/** Book title: Bedrock rejects long ones, so keep to the 16 a player may type. */
+/**
+ * Book title: Bedrock rejects long ones, so keep to the 16 a player may type.
+ * A generated name too long with its number keeps the colour word and the
+ * number ("Biscuit #1234"), so the title still identifies the horse.
+ */
 export function bookTitle(name) {
   const t = name ?? "Horse";
-  return t.length > 16 ? t.slice(0, 15) + "." : t;
+  if (t.length <= 16) return t;
+  const numbered = t.match(/^(\S+) .* (#\d+)$/);
+  if (numbered && numbered[1].length + numbered[2].length < 16) return `${numbered[1]} ${numbered[2]}`;
+  return t.slice(0, 15) + ".";
 }
 
 /**
  * The pages of the info book.
- * info: { name, stats, origin, parents, breeder, day, variant, mark, today }
+ * info: { name, reg, stats, origin, parents, breeder, day, variant, mark, today }
  */
 export function bookPages(info) {
   const s = info.stats;
@@ -213,6 +223,7 @@ export function bookPages(info) {
     "",
     `Color: ${colorName(info.variant)}`,
     `Markings: ${markingName(info.mark)}`,
+    ...(info.reg ? [`Registry No. ${info.reg}`] : []),
     "",
     ...origin,
   ].join("\n");

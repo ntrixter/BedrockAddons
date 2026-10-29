@@ -144,18 +144,22 @@ check("colour word then marking word", /^(Copper|Rust|Amber|Ember|Penny|Ginger) 
   check("every name fits a book title", longest <= 16, true);
 }
 check("unknown coat", herdName("1", 99, 0), "Horse");
+check("registry number appended", /^\S+ \S+ #27$/.test(herdName("1", 2, 1, 27)), true);
+check("same words with or without a number", herdName("1", 2, 1, 27).startsWith(herdName("1", 2, 1) + " "), true);
 check("unknown markings fall back", herdName("1", 0, 99), herdName("1", 0, 0));
 
 console.log("Book");
 check("short title kept", bookTitle("Spirit"), "Spirit");
 check("long title cut to 16", bookTitle("Sir Gallops-a-Lot the Third"), "Sir Gallops-a-L.");
+check("numbered name that fits", bookTitle("Copper Blaze #27"), "Copper Blaze #27");
+check("long numbered name keeps colour and number", bookTitle("Biscuit Freckle #1234"), "Biscuit #1234");
 const pages = bookPages({
   name: "Spirit", stats, origin: "bred", parents: ["Ace", "Raven Pepper"],
-  breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40,
+  breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40, reg: 27,
 });
 check("two pages", pages.length, 2);
 check("page 1", pages[0],
-  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\n\nBorn: day 12\nBred by: Steve\n\nParents:\n Ace\n Raven Pepper");
+  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\nRegistry No. 27\n\nBorn: day 12\nBred by: Steve\n\nParents:\n Ace\n Raven Pepper");
 check("page 2 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[1].includes(t)), true);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);

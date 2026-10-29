@@ -46,7 +46,7 @@ blocks:
 Speed is in blocks per second and jump is in blocks, both approximate. Each
 stat is coloured by where it sits in the wild range: red bottom 30%, yellow,
 green from 60%, and aqua for the top 10%. With the parents setting on, a second
-line reads `Parents: Ace & Raven Pepper`. A parent named after the foal was born
+line reads `Parents: Ace & Raven Pepper #112`. A parent named after the foal was born
 shows its new name while it is loaded.
 
 ### Horses without a name tag
@@ -65,19 +65,23 @@ horse looks like:
 | Gray | Ash, Smoke, Storm, Flint, Slate, Pewter | | |
 | Dark brown | Walnut, Mocha, Umber, Cedar, Bark, Truffle | | |
 
-A chestnut with socks and a blaze might be **Copper Blaze** or **Ginger Boots**;
-a black horse with black spots might be **Raven Pepper**. Which words a horse
-gets comes from its entity id, which is saved with it, so it keeps the same
-name for life and nothing extra is stored. There are 36 names for each look,
-so two horses in a big herd can occasionally share one. A name tag always
-wins.
+Then comes a **registry number**, unique in the world: horses are numbered in
+the order the pack first meets them, by spawning, being born, or being looked
+at, ridden or written up. A chestnut with socks and a blaze might be
+**Copper Blaze #27**; a black horse with black spots **Raven Pepper #112**. The
+words come from the horse's entity id, which is saved with it, and the number
+is stored on the horse, so a horse keeps its name for life. A name-tagged
+horse still gets a number, shown in its book.
+
+A book title holds at most 16 characters, so a long one keeps the colour word
+and the number: **Biscuit #1234**.
 
 ### Use a book on a horse
 
 Right-click (or tap) a horse while holding a plain book. The book is replaced
 by a signed book of the horse's papers:
 
-- name, colour and markings
+- name, colour, markings and registry number
 - the day it was born, who bred it, and its parents
 - health, speed and jump, with how each compares to the best a horse can have
 
