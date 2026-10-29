@@ -200,26 +200,21 @@ export function bookTitle(name) {
 
 /**
  * The pages of the info book.
- * info: { name, reg, stats, origin, parents, breeder, day, variant, mark, today }
+ * info: { name, firstName, reg, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
  */
 export function bookPages(info) {
   const s = info.stats;
   let origin;
   if (info.origin === "bred") {
-    origin = [
-      `Born: day ${info.day ?? "?"}`,
-      `Bred by: ${info.breeder ?? "unknown"}`,
-      "",
-      "Parents:",
-      ...(info.parents?.length ? info.parents.map((p) => ` ${p}`) : [" unknown"]),
-    ];
+    origin = [`Born: day ${info.day ?? "?"}`, `Bred by: ${info.breeder ?? "unknown"}`];
   } else if (info.origin === "wild") {
     origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
   } else {
     origin = ["Born before Horse", "Bloodlines was added,", "so its parents and", "birthday are unknown."];
   }
-  const page1 = [
+  const identity = [
     `§l${info.name ?? "Horse"}§r`,
+    ...(info.firstName ? [`§7First name: ${info.firstName}§r`] : []),
     "",
     `Color: ${colorName(info.variant)}`,
     `Markings: ${markingName(info.mark)}`,
@@ -228,11 +223,22 @@ export function bookPages(info) {
     ...origin,
   ].join("\n");
 
+  // A renamed parent is listed under its current name with its first name
+  // below, so a book written before the rename can still be matched to it.
+  const entries = info.parentEntries ?? (info.parents ?? []).map((name) => ({ name }));
+  const parentsPage = info.origin !== "bred" ? [] : [[
+    "§lParents§r",
+    "",
+    ...(entries.length
+      ? entries.flatMap((p) => [p.name, ...(p.first ? [`§7 first name: ${p.first}§r`] : []), ""])
+      : ["unknown"]),
+  ].join("\n").trimEnd()];
+
   let jump;
   if (s.j == null) jump = ["Jump: unknown", "§7 ride it and jump at", " full charge§r"];
   else if (s.jEst) jump = [`Jump: ~${fmt(jumpBlocks(s.j))} blocks`, "§7 from its best jump§r"];
   else jump = [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)} of 1.00§r`];
-  const page2 = [
+  const stats = [
     "§lStats§r",
     "",
     `Health: ${Math.round(s.h)} of ${HEALTH_MAX}`,
@@ -245,5 +251,5 @@ export function bookPages(info) {
     "",
     `§7Written on day ${info.today}§r`,
   ].join("\n");
-  return [page1, page2];
+  return [identity, ...parentsPage, stats];
 }

@@ -29,4 +29,5 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   such as Copper Blaze #27, used on the look-at line, for parents and in the
   book.
 - Use a book on a horse to get a signed book of its papers: name, colour,
-  markings, birthday, breeder, parents and stats.
+  markings, birthday, breeder, parents and stats. A renamed horse, or
+  parent, also shows its first name, so old books still identify it.

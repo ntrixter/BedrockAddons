@@ -186,7 +186,7 @@ function onBorn(foal) {
     origin: "bred",
     day,
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: displayName(p) })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p) })),
   });
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
@@ -291,7 +291,13 @@ system.runInterval(() => {
 // ---- what the player is looking at ------------------------------------------
 
 /** Names of a bred horse's parents, live name tags first. */
-function parentNames(data) {
+/** The generated name a horse was given when the pack first met it. */
+function firstNameOf(horse) {
+  return herdName(horse.id, variantOf(horse), markOf(horse), readData(horse)?.reg);
+}
+
+/** A bred horse's parents as { name, first }: live name tags first. */
+function parentsOf(data) {
   return (data?.p ?? []).map((p) => {
     let live;
     try {
@@ -299,21 +305,28 @@ function parentNames(data) {
     } catch {
       live = undefined;
     }
-    return live?.isValid && live.nameTag ? live.nameTag : p.name;
+    const name = live?.isValid && live.nameTag ? live.nameTag : p.name;
+    return { name, first: p.first && p.first !== name ? p.first : undefined };
   });
 }
 
 function infoOf(horse) {
   const name = displayName(horse); // first, as it may give out a registry number
   const data = readData(horse);
+  // The generated name is the horse's first name, from the day it spawned or
+  // was born; a name tag renames it, and the book keeps both.
+  const firstName = firstNameOf(horse);
+  const parents = parentsOf(data);
   return {
     data,
     name,
+    firstName: firstName !== name ? firstName : undefined,
     reg: data?.reg,
     baby: horse.hasComponent("minecraft:is_baby"),
     stats: statsOf(horse, data),
     origin: data?.origin,
-    parents: parentNames(data),
+    parents: parents.map((p) => p.name),
+    parentEntries: parents,
   };
 }
 

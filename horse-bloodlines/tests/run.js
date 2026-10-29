@@ -154,20 +154,27 @@ check("long title cut to 16", bookTitle("Sir Gallops-a-Lot the Third"), "Sir Gal
 check("numbered name that fits", bookTitle("Copper Blaze #27"), "Copper Blaze #27");
 check("long numbered name keeps colour and number", bookTitle("Biscuit Freckle #1234"), "Biscuit #1234");
 const pages = bookPages({
-  name: "Spirit", stats, origin: "bred", parents: ["Ace", "Raven Pepper"],
-  breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40, reg: 27,
+  name: "Spirit", stats, origin: "bred", breeder: "Steve", day: 12, variant: 2, mark: 3, today: 40, reg: 27,
+  parentEntries: [{ name: "Thunder", first: "Copper Blaze #3" }, { name: "Raven Pepper #8" }],
 });
-check("two pages", pages.length, 2);
+check("three pages for a bred horse", pages.length, 3);
 check("page 1", pages[0],
-  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\nRegistry No. 27\n\nBorn: day 12\nBred by: Steve\n\nParents:\n Ace\n Raven Pepper");
-check("page 2 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
-  .every((t) => pages[1].includes(t)), true);
+  "§lSpirit§r\n\nColor: Chestnut\nMarkings: White spots\nRegistry No. 27\n\nBorn: day 12\nBred by: Steve");
+check("page 2: parents, renamed one with its first name", pages[1],
+  "§lParents§r\n\nThunder\n§7 first name: Copper Blaze #3§r\n\nRaven Pepper #8");
+check("page 3 has every stat", ["Health: 29 of 30", "Speed: 14.2 blocks/s", "Jump: 1.6 blocks", "day 40"]
+  .every((t) => pages[2].includes(t)), true);
+check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[1],
+  "§lParents§r\n\nX\n\nY");
+check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "wild", today: 1 }).length, 2);
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
 check("old horse says why", old[0].includes("unknown") && old[1].includes("Jump: unknown"), true);
 check("unknown color", old[0].includes("Color: Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
+const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg: 27, stats, origin: "wild", variant: 2, mark: 1, today: 9 });
+check("renamed horse keeps its first name", renamed[0].startsWith("§lThunder§r\n§7First name: Copper Blaze #27§r\n"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");

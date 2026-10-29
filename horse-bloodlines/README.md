@@ -82,10 +82,17 @@ Right-click (or tap) a horse while holding a plain book. The book is replaced
 by a signed book of the horse's papers:
 
 - name, colour, markings and registry number
-- the day it was born, who bred it, and its parents
+- the day it was born and who bred it
+- its parents (a page of their own, for a bred horse)
 - health, speed and jump, with how each compares to the best a horse can have
 
-It is titled with the horse's name and signed by you. Holding a book no longer
+It is titled with the horse's current name and signed by you. A book is a
+snapshot: it keeps the name the horse had when it was written. So that an old
+book can still be matched to a horse after a rename, a horse with a name tag
+also has its **first name** listed under its name: the generated name it got
+when it spawned or was born, such as `First name: Copper Blaze #27`. Parents
+are listed the same way, by their current name with their first name below
+if they have been renamed. Holding a book no longer
 mounts or feeds a horse. In creative mode the book is not used up.
 
 ## Things worth knowing
