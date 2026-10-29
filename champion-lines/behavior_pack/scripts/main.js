@@ -50,6 +50,7 @@ function readSettings() {
     wild: values[`${NS}:wild_stats`] === true,
     learn: values[`${NS}:learn_by_riding`] !== false,
     donkeys: values[`${NS}:donkeys_mules`] !== false,
+    sneakBook: values[`${NS}:sneak_for_book`] === true,
     chance: Number.isFinite(chance) ? Math.min(100, Math.max(25, chance)) / 100 : 0.6,
   };
 }
@@ -544,7 +545,9 @@ world.beforeEvents.playerInteractWithEntity.subscribe((ev) => {
   const { player, target, itemStack } = ev;
   if (!isEquine(target) || !itemStack) return;
   let mode;
-  if (itemStack.typeId === "minecraft:book") mode = "new";
+  // With the sneak setting on, a plain book needs sneaking too, so riding or
+  // feeding with a book in hand does not use it up by mistake.
+  if (itemStack.typeId === "minecraft:book" && (player.isSneaking || !settings.sneakBook)) mode = "new";
   else if (itemStack.typeId === "minecraft:written_book" && player.isSneaking && isPapersFor(itemStack, target)) mode = "update";
   else return;
   // Without this a book in hand mounts the horse, feeds a wild one's temper,

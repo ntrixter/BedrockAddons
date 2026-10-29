@@ -138,7 +138,9 @@ when it was born or spawned, as `Birth name: Copper Blaze #27` for a bred horse
 or `Wild name: Copper Blaze #27` for one that spawned wild. A horse that
 predates the pack counts as wild. Parents are listed the same way, by their
 current name with their birth or wild name below if they have been renamed. Holding a book no longer
-mounts or feeds a horse. In creative mode the book is not used up.
+mounts or feeds a horse. In creative mode the book is not used up. With the
+setting **Sneak to write a horse's papers** on, a plain book only works while
+sneaking, so it is never used up by mistake.
 
 To bring a book up to date, sneak and right-click the horse while holding its
 papers. Only that horse's own papers are rewritten; another horse's book, or
@@ -179,13 +181,15 @@ Changes take effect the next time the world loads.
 | Learn stats by riding | on |
 | Show stats of untamed horses | off |
 | Include donkeys and mules | on |
+| Sneak to write a horse's papers | off |
 | Chance to inherit the better parent's stat | 60% |
 
 On a dedicated server there is no gear icon; see "Where pack settings persist"
 in [BEDROCK-NOTES.md](../BEDROCK-NOTES.md) for the file to edit. The setting
 names are `horsebreed:show_stats`, `horsebreed:show_parents`,
 `horsebreed:learn_by_riding`, `horsebreed:wild_stats`,
-`horsebreed:donkeys_mules` and `horsebreed:chance`.
+`horsebreed:donkeys_mules`, `horsebreed:sneak_for_book` and
+`horsebreed:chance`.
 
 ## Tests
 

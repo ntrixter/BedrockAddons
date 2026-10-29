@@ -84,6 +84,12 @@
       "text": "§7Donkeys stay vanilla but get names and papers. A mule takes each stat from its horse or donkey parent by the same chance.§r"
     },
     {
+      "type": "toggle",
+      "text": "Sneak to write a horse's papers",
+      "name": "horsebreed:sneak_for_book",
+      "default": false
+    },
+    {
       "type": "slider",
       "text": "Chance to inherit the better parent's stat (%)",
       "name": "horsebreed:chance",
