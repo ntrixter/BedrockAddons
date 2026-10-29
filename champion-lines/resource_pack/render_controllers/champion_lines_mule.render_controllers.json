@@ -25,7 +25,7 @@
       "materials": [{ "*": "Material.default" }],
       "textures": [
         "query.is_baby ? Texture.baby_mule : Texture.mule",
-        "query.is_baby ? Texture.markings_none : Array.markings[query.mark_variant]",
+        "Array.markings[query.is_baby ? 0 : query.mark_variant]",
         "Texture.armor_none"
       ]
     }
