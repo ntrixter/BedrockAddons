@@ -1,0 +1,191 @@
+// Horse Bloodlines - the parts with no game in them: stat grids, the
+// inheritance roll, and the text for the action bar and the book. Kept free of
+// @minecraft/server so tests/run.js can drive it with plain objects.
+
+// These grids must match tools/sync_horse.py, which writes one component group
+// per step into entities/horse.json.
+export const HEALTH_MIN = 15;
+export const HEALTH_MAX = 30;
+export const SPEED_MIN = 0.1125;
+export const SPEED_STEP = 0.0025;
+export const SPEED_MAX = 0.3375;
+export const JUMP_MIN = 40; // hundredths of jump strength
+export const JUMP_MAX = 100;
+
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+
+export function healthStep(hp) {
+  return clamp(Math.round(hp), HEALTH_MIN, HEALTH_MAX);
+}
+
+/** Index of the nearest speed group, 0..90. */
+export function speedStep(speed) {
+  const k = Math.round((clamp(speed, SPEED_MIN, SPEED_MAX) - SPEED_MIN) / SPEED_STEP);
+  return clamp(k, 0, Math.round((SPEED_MAX - SPEED_MIN) / SPEED_STEP));
+}
+
+export function speedOfStep(k) {
+  return Math.round((SPEED_MIN + k * SPEED_STEP) * 10000) / 10000;
+}
+
+export function jumpStep(hundredths) {
+  return clamp(Math.round(hundredths), JUMP_MIN, JUMP_MAX);
+}
+
+/** A fresh jump as vanilla rolls it: uniform over 0.40 .. 1.00. */
+export function wildJump(rand) {
+  return JUMP_MIN + Math.floor(rand() * (JUMP_MAX - JUMP_MIN + 1));
+}
+
+/** The better value with probability `chance`, otherwise the worse one. */
+export function pick(a, b, chance, rand) {
+  const hi = Math.max(a, b);
+  const lo = Math.min(a, b);
+  return rand() < chance ? hi : lo;
+}
+
+/**
+ * A foal's stats from its parents' stats. Each stat is rolled on its own.
+ * A parent whose jump is unknown (it predates the pack) stands in with a fresh
+ * wild roll, so the foal's jump is always known.
+ *
+ * Returns grid steps: { h: hit points, s: speed step, j: jump hundredths }.
+ */
+export function inherit(a, b, chance, rand) {
+  const ja = a.j ?? wildJump(rand);
+  const jb = b.j ?? wildJump(rand);
+  return {
+    h: healthStep(pick(a.h, b.h, chance, rand)),
+    s: speedStep(pick(a.s, b.s, chance, rand)),
+    j: jumpStep(pick(ja, jb, chance, rand)),
+  };
+}
+
+// Conversions players recognise. Speed in blocks per second uses the factor
+// the Minecraft Wiki gives for horses; jump height uses the wiki's fit of jump
+// strength to blocks. Both are shown as approximate.
+export function blocksPerSecond(speed) {
+  return speed * 42.16;
+}
+
+export function jumpBlocks(hundredths) {
+  const x = hundredths / 100;
+  return -0.1817584952 * x ** 3 + 3.689713992 * x ** 2 + 2.128599134 * x - 0.343930367;
+}
+
+/** 0 .. 1: where a value sits in the wild range. */
+function quality(v, lo, hi) {
+  return clamp((v - lo) / (hi - lo), 0, 1);
+}
+
+function tier(q) {
+  if (q >= 0.9) return "§b";
+  if (q >= 0.6) return "§a";
+  if (q >= 0.3) return "§e";
+  return "§c";
+}
+
+const fmt = (n) => n.toFixed(1);
+
+export function statParts(stats) {
+  const parts = [];
+  parts.push(`${tier(quality(stats.h, HEALTH_MIN, HEALTH_MAX))}Health ${Math.round(stats.h)}§r`);
+  parts.push(`${tier(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
+  if (stats.j == null) parts.push("§7Jump ?§r");
+  else parts.push(`${tier(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${fmt(jumpBlocks(stats.j))}§r`);
+  return parts;
+}
+
+export const COLORS = ["White", "Creamy", "Chestnut", "Brown", "Black", "Gray", "Dark brown"];
+export const MARKINGS = ["None", "White socks and blaze", "White patches", "White spots", "Black spots"];
+
+export function colorName(variant) {
+  return COLORS[variant] ?? "Unknown";
+}
+
+export function markingName(mark) {
+  return MARKINGS[mark] ?? "Unknown";
+}
+
+/** How to name a horse that has no name tag. */
+export function lookName(variant) {
+  const c = COLORS[variant];
+  return c ? `unnamed ${c.toLowerCase()}` : "unnamed";
+}
+
+/** "Spirit & unnamed chestnut", or why there are no parents to show. */
+export function parentsText(info) {
+  if (info.origin === "bred") {
+    if (!info.parents?.length) return "parents unknown";
+    return info.parents.join(" & ");
+  }
+  if (info.origin === "wild") return "wild-born";
+  return "born before Horse Bloodlines";
+}
+
+/**
+ * The action-bar text.
+ * info: { name, baby, stats, origin, parents: [names] }
+ * show: { stats, parents }
+ */
+export function describe(info, show) {
+  const title = `§l${info.name ?? "Horse"}§r${info.baby ? " §7(foal)§r" : ""}`;
+  const lines = [title];
+  if (show.stats) lines[0] += " · " + statParts(info.stats).join(" · ");
+  if (show.parents) lines.push(`§7Parents: ${parentsText(info)}§r`);
+  return lines.join("\n");
+}
+
+/** Book title: Bedrock rejects long ones, so keep to the 16 a player may type. */
+export function bookTitle(name) {
+  const t = name ?? "Horse";
+  return t.length > 16 ? t.slice(0, 15) + "." : t;
+}
+
+/**
+ * The pages of the info book.
+ * info: { name, stats, origin, parents, breeder, day, variant, mark, today }
+ */
+export function bookPages(info) {
+  const s = info.stats;
+  let origin;
+  if (info.origin === "bred") {
+    origin = [
+      `Born: day ${info.day ?? "?"}`,
+      `Bred by: ${info.breeder ?? "unknown"}`,
+      "",
+      "Parents:",
+      ...(info.parents?.length ? info.parents.map((p) => ` ${p}`) : [" unknown"]),
+    ];
+  } else if (info.origin === "wild") {
+    origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
+  } else {
+    origin = ["Born before Horse", "Bloodlines was added,", "so its parents and", "birthday are unknown."];
+  }
+  const page1 = [
+    `§l${info.name ?? "Horse"}§r`,
+    "",
+    `Color: ${colorName(info.variant)}`,
+    `Markings: ${markingName(info.mark)}`,
+    "",
+    ...origin,
+  ].join("\n");
+
+  const jump = s.j == null
+    ? ["Jump: unknown", "§7(horse predates the", "add-on)§r"]
+    : [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)} of 1.00§r`];
+  const page2 = [
+    "§lStats§r",
+    "",
+    `Health: ${Math.round(s.h)} of ${HEALTH_MAX}`,
+    `§7 ${fmt(s.h / 2)} hearts§r`,
+    "",
+    `Speed: ${fmt(blocksPerSecond(s.s))} blocks/s`,
+    `§7 best is ${fmt(blocksPerSecond(SPEED_MAX))}§r`,
+    "",
+    ...jump,
+    "",
+    `§7Written on day ${info.today}§r`,
+  ].join("\n");
+  return [page1, page2];
+}
