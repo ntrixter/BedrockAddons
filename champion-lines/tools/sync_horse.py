@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Rebuild behavior_pack/entities/horse.json from Mojang's vanilla horse.
 
-    python3 horse-bloodlines/tools/sync_horse.py            # fetch upstream
-    python3 horse-bloodlines/tools/sync_horse.py horse.json # use a local copy
+    python3 champion-lines/tools/sync_horse.py            # fetch upstream
+    python3 champion-lines/tools/sync_horse.py horse.json # use a local copy
 
 Bedrock has no script call that sets a horse's maximum health or its jump
 strength, and none that reads jump strength back. The only way to give a foal

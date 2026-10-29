@@ -1,8 +1,8 @@
-// Horse Bloodlines test harness.
+// Champion Lines test harness.
 //
 // genes.js has no @minecraft/server import, so it loads straight into Node:
 //
-//   cd horse-bloodlines/tests && node run.js
+//   cd champion-lines/tests && node run.js
 //
 // It checks the inheritance roll, the stat grids against entities/horse.json,
 // and the action-bar and book text. It cannot check anything that needs the
@@ -125,7 +125,7 @@ check("parents only, wild",
   "§lGray horse§r\n§7Parents: wild-born§r");
 check("old horse, foal",
   describe({ name: "Horse", baby: true, stats: { h: 15, s: 0.1125, j: null } }, { stats: true, parents: true }),
-  "§lHorse§r §7(foal)§r · §cHealth 15§r · §cSpeed 4.7§r · §7Jump ?§r\n§7Parents: born before Horse Bloodlines§r");
+  "§lHorse§r §7(foal)§r · §cHealth 15§r · §cSpeed 4.7§r · §7Jump ?§r\n§7Parents: born before Champion Lines§r");
 
 console.log("Generated names");
 check("same horse, same name", herdName("-4294967295", 2, 1), herdName("-4294967295", 2, 1));

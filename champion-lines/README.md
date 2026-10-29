@@ -1,14 +1,14 @@
-# Horse Bloodlines
+# Champion Lines
 
 In vanilla, a foal's stats are a blend of its parents' with randomness mixed
-in, so breeding two good horses tends to give you a worse one. Horse Bloodlines
+in, so breeding two good horses tends to give you a worse one. Champion Lines
 breeds the way ARK does instead. Each of a foal's three stats (health, speed
 and jump) is rolled on its own: there is a **60% chance it copies the better
 parent's value and a 40% chance it copies the worse one**. The foal never lands
 between or below its parents, so a good bloodline holds its ground and the best
 values can be stacked into one horse over a few generations.
 
-- **Add-on ID:** `horse-bloodlines` (kebab-case; also the tag prefix, the issue
+- **Add-on ID:** `champion-lines` (kebab-case; also the tag prefix, the issue
   label and the artifact filename)
 - **Minimum Minecraft version:** 1.26.60 (`min_engine_version` in the manifest)
 - **Packs:** behaviour pack only
@@ -138,7 +138,7 @@ names are `horsebreed:show_stats`, `horsebreed:show_parents` and
 ## Tests
 
 ```sh
-cd horse-bloodlines/tests && node run.js
+cd champion-lines/tests && node run.js
 ```
 
 They cover the inheritance roll, the text of the action bar and the book, and
@@ -148,10 +148,10 @@ Nothing needs installing. Anything that needs the game is in
 
 ## Download
 
-Grab the latest `horse-bloodlines-<version>.mcpack` from the
-[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=horse-bloodlines).
+Grab the latest `champion-lines-<version>.mcpack` from the
+[Releases page](https://github.com/ntrixter/BedrockAddons/releases?q=champion-lines).
 Releases in this repository are shared across every add-on, so filter by the
-`horse-bloodlines-v` tag prefix.
+`champion-lines-v` tag prefix.
 
 ## Install on a client
 
@@ -163,7 +163,7 @@ Releases in this repository are shared across every add-on, so filter by the
 
 1. Rename the downloaded file to `.zip` and extract it. A single-pack `.mcpack`
    extracts loose, with `manifest.json` at the top level. Create a
-   `horse-bloodlines_BP` folder yourself inside the server's
+   `champion-lines_BP` folder yourself inside the server's
    `behavior_packs/` directory and put the extracted files in it.
 2. Register the pack in the world (below).
 3. Restart the server.
@@ -191,8 +191,8 @@ kind**. The pack appears installed and does nothing.
 and `resource_packs/`, so wrap the download once:
 
 ```sh
-mkdir -p packs/behavior_packs/horse-bloodlines_BP
-unzip -q horse-bloodlines-<version>.mcpack -d packs/behavior_packs/horse-bloodlines_BP
+mkdir -p packs/behavior_packs/champion-lines_BP
+unzip -q champion-lines-<version>.mcpack -d packs/behavior_packs/champion-lines_BP
 ```
 
 Mount `packs/` into the container and point `MC_PACK` at its in-container path.
@@ -245,8 +245,8 @@ The pack's additions are generated, so a re-sync is two commands from the
 repository root:
 
 ```sh
-python3 horse-bloodlines/tools/sync_horse.py
-python3 scripts/check_vanilla_drift.py horse-bloodlines --print-hash
+python3 champion-lines/tools/sync_horse.py
+python3 scripts/check_vanilla_drift.py champion-lines --print-hash
 ```
 
 The first fetches the vanilla horse, strips its `//` comments and inserts this

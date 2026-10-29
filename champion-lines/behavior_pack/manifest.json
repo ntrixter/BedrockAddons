@@ -1,7 +1,7 @@
 {
   "format_version": 3,
   "header": {
-    "name": "Horse Bloodlines",
+    "name": "Champion Lines",
     "description": "v1.0.0 - Foals keep their parents' best stats: each stat has a 60% chance to come from the better parent.",
     "uuid": "2e779d30-28bb-40d5-a839-d9e661a7b53e",
     "version": "1.0.0",
@@ -39,7 +39,7 @@
   "settings": [
     {
       "type": "label",
-      "text": "§lHorse Bloodlines§r - foals take after their parents instead of drifting back to average."
+      "text": "§lChampion Lines§r - foals take after their parents instead of drifting back to average."
     },
     {
       "type": "label",

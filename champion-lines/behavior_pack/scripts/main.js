@@ -167,7 +167,7 @@ function onBorn(foal) {
   const day = world.getDay();
   if (parents.length < 2) {
     // No fed pair nearby: keep what vanilla gave it, and give it a known jump.
-    console.warn(`[Horse Bloodlines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
+    console.warn(`[Champion Lines] foal born with ${parents.length} fed parent(s) in range; stats left to vanilla`);
     const j = wildJump(Math.random);
     applyStat(foal, "jump", j);
     writeData(foal, { h: liveHealth(foal), s: liveSpeed(foal), j, origin: "bred", day });
@@ -211,7 +211,7 @@ world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
     if (cause === "Born") onBorn(entity);
     else if (cause === "Spawned" || cause === "Event") onSpawned(entity);
   } catch (err) {
-    if (entity.isValid) console.warn(`[Horse Bloodlines] ${err}`);
+    if (entity.isValid) console.warn(`[Champion Lines] ${err}`);
   }
 });
 
@@ -381,7 +381,7 @@ world.beforeEvents.playerInteractWithEntity.subscribe((ev) => {
     try {
       writeBook(player, target);
     } catch (err) {
-      console.warn(`[Horse Bloodlines] could not write the book: ${err}`);
+      console.warn(`[Champion Lines] could not write the book: ${err}`);
     }
   });
 });

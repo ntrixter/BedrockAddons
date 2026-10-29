@@ -17,9 +17,9 @@ body:
         repository; see CONTRIBUTING.md.
       options:
         - bottles-of-xp
+        - champion-lines
         - compass-link
         - creeper-drop-all
-        - horse-bloodlines
         - nightshare
         - no-witch-conversion
         - salvage-smelting

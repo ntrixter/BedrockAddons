@@ -1,4 +1,4 @@
-// Horse Bloodlines - the parts with no game in them: stat grids, the
+// Champion Lines - the parts with no game in them: stat grids, the
 // inheritance roll, and the text for the action bar and the book. Kept free of
 // @minecraft/server so tests/run.js can drive it with plain objects.
 
@@ -169,7 +169,7 @@ export function parentsText(info) {
     return info.parents.join(" & ");
   }
   if (info.origin === "wild") return "wild-born";
-  return "born before Horse Bloodlines";
+  return "born before Champion Lines";
 }
 
 /**
@@ -219,7 +219,7 @@ export function bookPages(info) {
   } else if (info.origin === "wild") {
     origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
   } else {
-    origin = ["Born before Horse", "Bloodlines was added,", "so its parents and", "birthday are unknown."];
+    origin = ["Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown."];
   }
   const identity = [
     `§l${info.name ?? "Horse"}§r`,
