@@ -1,0 +1,110 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Champion Lines",
+    "description": "v1.0.0 - Foals keep their parents' best stats: each stat has a 60% chance to come from the better parent.",
+    "uuid": "2e779d30-28bb-40d5-a839-d9e661a7b53e",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.60"
+  },
+  "modules": [
+    {
+      "type": "data",
+      "description": "Overrides the horse and mule with one component group per stat value, so a script can set a foal's exact stats.",
+      "uuid": "dfc65e28-ec9d-4694-9536-21d19cd6d40a",
+      "version": "1.0.0"
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "0fdd9616-9d78-4be0-919a-308c877a483d",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "§lChampion Lines§r - foals take after their parents instead of drifting back to average."
+    },
+    {
+      "type": "label",
+      "text": "§7Changes here take effect the next time the world loads.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Show stats when you look at a horse",
+      "name": "horsebreed:show_stats",
+      "default": true
+    },
+    {
+      "type": "toggle",
+      "text": "Show parents when you look at a horse",
+      "name": "horsebreed:show_parents",
+      "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "Learn stats by riding",
+      "name": "horsebreed:learn_by_riding",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7On: health and speed show once a horse has been ridden, and jump shows the best jump seen. Off: the true stats show.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Show stats of untamed horses",
+      "name": "horsebreed:wild_stats",
+      "default": false
+    },
+    {
+      "type": "toggle",
+      "text": "Include donkeys and mules",
+      "name": "horsebreed:donkeys_mules",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Donkeys stay vanilla but get names and papers. A mule takes each stat from its horse or donkey parent by the same chance.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Sneak to write a horse's papers",
+      "name": "horsebreed:sneak_for_book",
+      "default": false
+    },
+    {
+      "type": "slider",
+      "text": "Chance to inherit the better parent's stat (%)",
+      "name": "horsebreed:chance",
+      "min": 25,
+      "max": 100,
+      "step": 5,
+      "default": 60
+    },
+    {
+      "type": "label",
+      "text": "§7Health, speed and jump are rolled separately. 50 is a coin toss, 100 always keeps the better value, and below 50 the worse parent is more likely.§r"
+    },
+    {
+      "type": "label",
+      "text": "§7Use a book on a horse to get a signed book of its papers: name, color, parents, breeder, birthday and stats.§r"
+    }
+  ]
+}

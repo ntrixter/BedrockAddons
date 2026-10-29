@@ -1,0 +1,8 @@
+{
+  "name": "champion-lines-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run.js"
+  }
+}
