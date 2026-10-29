@@ -97,14 +97,14 @@
       "type": "slider",
       "text": "Chance to inherit the better parent's stat (%)",
       "name": "horsebreed:chance",
-      "min": 50,
+      "min": 25,
       "max": 100,
       "step": 5,
       "default": 60
     },
     {
       "type": "label",
-      "text": "§7Health, speed and jump are rolled separately. 50 is a coin toss; 100 always keeps the better value.§r"
+      "text": "§7Health, speed and jump are rolled separately. 50 is a coin toss, 100 always keeps the better value, and below 50 the worse parent is more likely.§r"
     },
     {
       "type": "label",

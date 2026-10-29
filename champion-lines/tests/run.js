@@ -18,6 +18,10 @@ import {
   describe,
   FIXED,
   generationOf,
+  LINE_WIDTH,
+  PAGE_LINES,
+  rightAlign,
+  textWidth,
   herdName,
   inherit,
   inheritLook,
@@ -33,6 +37,9 @@ import {
   VANILLA_MULE,
   wildJump,
 } from "../behavior_pack/scripts/genes.js";
+
+// Book text without formatting codes or the padding that right-justifies values.
+const plain = (text) => text.replace(/§./g, "").replace(/\n +/g, "\n> ");
 
 let failures = 0;
 function check(label, actual, expected) {
@@ -137,7 +144,7 @@ check("donkey and mule names differ from horse words", herdName("9", 2, 1, 0, "d
 const donkeyBook = bookPages({ name: "Dusty Jack #4", kind: "donkey", stats: { h: 22, s: 0.175, j: 50, fixed: true }, origin: "wild", today: 1 });
 check("donkey book says Donkey, no colour", donkeyBook[0].includes("\nDonkey\n") && !donkeyBook[0].includes("Color"), true);
 const muleBook = bookPages({ name: "Russet Packer #5", kind: "mule", mark: 3, stats: { h: 22, s: 0.2, j: 60 }, origin: "bred", today: 1 });
-check("mule book shows its markings", muleBook[0].includes("\nMule\nMarkings: White spots\n"), true);
+check("mule book shows its markings", plain(muleBook[0]).includes("\nMule\nMarkings:\n> White spots\n"), true);
 check("plain mule book has no markings line", !bookPages({ name: "M", kind: "mule", mark: 0, stats: { h: 22, s: 0.2, j: 60 }, origin: "wild", today: 1 })[0].includes("Markings"), true);
 check("mule: one marking event per marking, each clearing the others", MARKINGS.every((_, i) => {
   const ev = mule.events[`horsebreed:set_mark_${i}`];
@@ -239,14 +246,22 @@ const pages = bookPages({
   parentEntries: [{ name: "Thunder", first: "Copper Blaze #3", origin: "wild" }, { name: "Raven Pepper #8" }],
 });
 check("three pages for a bred horse", pages.length, 3);
-check("page 1", pages[0],
-  "§lSpirit§r\n\nColor: §6Chestnut§r\nMarkings: White spots\n§8Registry No. 27§r\n\nBorn: day 12\nBred by: Steve");
+check("page 1", plain(pages[0]),
+  "Spirit\nHorse\nColor:\n> Chestnut\nMarkings:\n> White spots\nRegistry No.:\n> 27\n\nBorn:\n> day 12\nBred by:\n> Steve");
+check("colour word keeps its colour", pages[0].includes("§6Chestnut§r"), true);
+check("values reach the right edge", pages[0].split("\n").filter((l) => l.startsWith(" "))
+  .every((l) => textWidth(l) <= LINE_WIDTH && textWidth(l) > LINE_WIDTH - 4), true);
+check("a value too long to pad is left as it is", rightAlign("W".repeat(30)), "W".repeat(30));
 check("page 3: lineage, renamed one with its first name", pages[2],
   "§lLineage§r\n\nThunder\n§7 wild name: Copper Blaze #3§r\n\nRaven Pepper §8#8§r");
-check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2\n", "Jump: 1.6 blocks", "day 40"]
+check("page 2 has every stat", ["Health: 29\n", "Speed: 14.2 blocks/s\n", "Jump: 1.6 blocks", "day 40"]
   .every((t) => pages[1].includes(t)), true);
-check("no maximums or speed unit", /of 30|of 1\.00|blocks\/s|best is/.test(pages[1]), false);
-check("tamer listed", bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0].includes("\nTamed by: Alex"), true);
+check("no maximums", /of 30|of 1\.00|best is/.test(pages[1]), false);
+check("tamer listed", plain(bookPages({ name: "T", stats, origin: "wild", tamer: "Alex", today: 1 })[0]).includes("\nTamed by:\n> Alex"), true);
+const both = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Alex", day: 2, today: 3 });
+check("same breeder and tamer: one line", plain(both[0]).includes("\nBred and tamed by:\n> Alex") && !both[0].includes("Tamed by"), true);
+const differ = bookPages({ name: "B", stats, origin: "bred", breeder: "Alex", tamer: "Steve", day: 2, today: 3 });
+check("different breeder and tamer", plain(differ[0]).includes("\nBred by:\n> Alex\nTamed by:\n> Steve"), true);
 check("generated name's number in dark gray", bookPages({ name: "Oak Dancer #1", stats, origin: "wild", today: 1 })[0]
   .startsWith("§lOak Dancer §8#1§r"), true);
 check("plain parent names still work", bookPages({ name: "A", stats, origin: "bred", parents: ["X", "Y"], today: 1 })[2],
@@ -255,18 +270,25 @@ check("wild horse has no parents page", bookPages({ name: "W", stats, origin: "w
 check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").length <= 14), true);
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
 check("old horse says why, in light gray", old[0].includes("§7Born before") && old[0].includes("unknown") && old[1].includes("Jump: unknown"), true);
-check("unknown color", old[0].includes("Color: Unknown"), true);
+check("unknown color", plain(old[0]).includes("Color:\n> Unknown"), true);
 check("unknown jump says how to measure", old[1].includes("full charge"), true);
 const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
 const renamed = bookPages({ name: "Thunder", firstName: "Copper Blaze #27", reg: 27, stats, origin: "wild", variant: 2, mark: 1, today: 9 });
-check("renamed wild horse keeps its wild name", renamed[0].startsWith("§lThunder§r\n§7Wild name: Copper Blaze #27§r\n"), true);
+check("renamed wild horse keeps its wild name", plain(renamed[0]).startsWith("Thunder\nWild name:\n> Copper Blaze #27\nHorse\n"), true);
 const renamedFoal = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, stats, origin: "bred", variant: 2, mark: 1, today: 9 });
-check("renamed foal keeps its birth name", renamedFoal[0].startsWith("§lBolt§r\n§7Birth name: Ember Socks #40§r\n"), true);
+check("renamed foal keeps its birth name", plain(renamedFoal[0]).startsWith("Bolt\nBirth name:\n> Ember Socks #40\n"), true);
 const genPages = bookPages({
   name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1 }, { name: "Coal Dapple #8", gen: 0 }],
 });
-check("bred horse shows its generation", genPages[0].includes("\nGeneration 2\nBorn: day 5"), true);
+check("bred horse shows its generation", plain(genPages[0]).includes("\nGeneration: 2\nBorn:\n> day 5"), true);
+const full = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, gen: 3, stats, origin: "bred", breeder: "A", tamer: "B", day: 5, variant: 2, mark: 1, today: 9 });
+check("a full horse page runs onto a second page", [full.length, full.every((p) => p.split("\n").length <= PAGE_LINES)], [4, true]);
+check("its stats follow", full[2].startsWith("§lStats"), true);
+const statPages = bookPages({ name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
+  parentEntries: [{ name: "Swan Boots #1", gen: 1, stats: { h: 28, s: 0.29, j: 90, jEst: true } }, { name: "Coal", gen: 0, stats: null }] });
+check("parents' stats on the Lineage page", plain(statPages[2]).includes("\n> H 28 · S 12.2 · J ~4.4\n"), true);
+check("a parent's hidden stats", plain(statPages[2]).endsWith("\n> ?"), true);
 check("parents show their generation", genPages[2].includes("Swan Boots §8#1§r\n§7 generation 1§r"), true);
 check("wild parent is generation 0", genPages[2].includes("§7 generation 0§r"), true);
 check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);

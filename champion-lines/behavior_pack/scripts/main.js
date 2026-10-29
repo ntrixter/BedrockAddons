@@ -51,7 +51,7 @@ function readSettings() {
     learn: values[`${NS}:learn_by_riding`] !== false,
     donkeys: values[`${NS}:donkeys_mules`] !== false,
     muleMarks: values[`${NS}:mule_markings`] !== false,
-    chance: Number.isFinite(chance) ? Math.min(100, Math.max(50, chance)) / 100 : 0.6,
+    chance: Number.isFinite(chance) ? Math.min(100, Math.max(25, chance)) / 100 : 0.6,
   };
 }
 
@@ -186,9 +186,19 @@ function firstNameOf(horse) {
  */
 function syncMuleLook(mule) {
   if (kindOf(mule) !== "mule") return;
-  const want = settings.muleMarks ? (readData(mule)?.m ?? 0) : 0;
+  const data = readData(mule);
   const have = mule.getComponent("minecraft:mark_variant")?.value ?? 0;
-  if (want !== have) mule.triggerEvent(`${NS}:set_mark_${want}`);
+  // A mule with no recorded marking keeps the one it has, such as one
+  // summoned with a horsebreed:set_mark_N spawn event for testing.
+  if (data?.m === undefined) {
+    if (have > 0) writeData(mule, { ...data, m: have });
+    return;
+  }
+  const want = settings.muleMarks ? data.m : 0;
+  if (want !== have) {
+    mule.triggerEvent(`${NS}:set_mark_${want}`);
+    debug(`mule ${displayName(mule)}: markings ${have} -> ${want}`);
+  }
 }
 
 function applyStat(horse, stat, step) {
@@ -257,7 +267,7 @@ function onBorn(foal) {
     day,
     g: generationOf(genOf(a), genOf(b)),
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p), st: shownOf(p) })),
     // A mule wears its horse parent's markings over its own coat.
     ...(kind === "mule" ? { m: markOf(parents.find((p) => kindOf(p) === "horse") ?? a) ?? 0 } : {}),
   });
@@ -265,7 +275,10 @@ function onBorn(foal) {
   applyStat(foal, "speed", child.s);
   applyStat(foal, "jump", child.j);
   if (isHorse) writeData(foal, { ...readData(foal), ...setLook(foal, parents) });
-  else syncMuleLook(foal);
+  else {
+    syncMuleLook(foal);
+    debug(`mule markings ${readData(foal)?.m} from its horse parent`);
+  }
   for (const p of parents) fed.delete(p.id);
   const fmt = (st) => `${st.h}/${Number(st.s).toFixed(4)}/${st.j ?? "?"}`;
   debug(`born: ${fmt(statsOf(a))} x ${fmt(statsOf(b))} -> ${child.h}/${speedOfStep(child.s)}/${child.j}`);
@@ -286,7 +299,7 @@ function onDonkeyBorn(foal, parents, day) {
     day,
     g: generationOf(...parents.map(genOf)),
     by: breeders.length ? breeders.join(" & ") : undefined,
-    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p) })),
+    p: parents.map((p) => ({ id: p.id, name: displayName(p), first: firstNameOf(p), origin: readData(p)?.origin, g: genOf(p), st: shownOf(p) })),
   });
   for (const p of parents) fed.delete(p.id);
   debug(`donkey born, health ${liveHealth(foal)} (vanilla)`);
@@ -296,7 +309,9 @@ function onSpawned(horse) {
   // Donkeys and mules from the wild or a spawn egg are vanilla: their speed
   // and jump are the same for every animal, and health is read as it is.
   if (kindOf(horse) !== "horse") {
-    writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay() });
+    const m = horse.getComponent("minecraft:mark_variant")?.value;
+    writeData(horse, { h: liveHealth(horse), origin: "wild", day: world.getDay(), ...(m ? { m } : {}) });
+    debug(`spawned ${kindOf(horse)}: health ${liveHealth(horse)}${m ? `, markings ${m}` : ""}`);
     return;
   }
   // Vanilla's jump cannot be read back, so roll it here, the same way vanilla
@@ -410,9 +425,10 @@ system.runInterval(() => {
 // ---- what the player is looking at ------------------------------------------
 
 /**
- * A bred horse's parents as { name, first, origin }. A parent that is loaded
- * is read live, so a later name tag or registry number shows; otherwise the
- * names recorded at the foal's birth are used.
+ * A bred horse's parents as { name, first, origin, gen, stats }. A parent
+ * that is loaded is read live, so a later name tag, registry number or what
+ * riders have learnt of it shows; otherwise what was recorded at the foal's
+ * birth is used.
  */
 function parentsOf(data) {
   return (data?.p ?? []).map((p) => {
@@ -425,10 +441,19 @@ function parentsOf(data) {
     if (live?.isValid) {
       const name = displayName(live);
       const first = firstNameOf(live);
-      return { name, first: first !== name ? first : undefined, origin: readData(live)?.origin, gen: genOf(live) };
+      return { name, first: first !== name ? first : undefined, origin: readData(live)?.origin, gen: genOf(live), stats: shownOf(live) };
     }
-    return { name: p.name, first: p.first && p.first !== p.name ? p.first : undefined, origin: p.origin, gen: p.g };
+    return { name: p.name, first: p.first && p.first !== p.name ? p.first : undefined, origin: p.origin, gen: p.g, stats: p.st ?? null };
   });
+}
+
+/** What players may see of a horse's stats: not always the true ones breeding uses. */
+function shownOf(horse, data = readData(horse)) {
+  return shownStats(
+    statsOf(horse, data),
+    { tamed: horse.hasComponent("minecraft:is_tamed") || data?.origin === "bred", ridden: data?.rd === true, jm: data?.jm },
+    settings,
+  );
 }
 
 function infoOf(horse) {
@@ -447,12 +472,7 @@ function infoOf(horse) {
     gen: data?.g,
     tamer: data?.tb,
     baby: horse.hasComponent("minecraft:is_baby"),
-    // What players may see, which is not always the true stats breeding uses.
-    stats: shownStats(
-      statsOf(horse, data),
-      { tamed: horse.hasComponent("minecraft:is_tamed") || data?.origin === "bred", ridden: data?.rd === true, jm: data?.jm },
-      settings,
-    ),
+    stats: shownOf(horse, data),
     origin: data?.origin,
     parents: parents.map((p) => p.name),
     parentEntries: parents,

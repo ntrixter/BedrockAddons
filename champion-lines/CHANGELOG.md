@@ -17,7 +17,7 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
 
 - ARK-style breeding for horses. Each of a foal's health, speed and jump has a
   60% chance to copy the better parent's value, and otherwise copies the worse
-  one. The chance is a setting, from 50 to 100%.
+  one. The chance is a setting, from 25 to 100%.
 - Look at a horse to see its health, speed and jump above the hotbar, coloured
   by how good each is. On by default.
 - An optional second line naming the horse's parents. Off by default.
@@ -47,3 +47,6 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
   better-parent rule. Overrides vanilla `mule.json` as well as `horse.json`.
 - Bred mules wear their horse parent's markings (setting, on by default). This
   adds a small resource pack, so the add-on now downloads as an `.mcaddon`.
+- Papers: values right-justified under their labels, "Bred and tamed by" for
+  one player, Horse/Donkey/Mule named, speed in blocks/s, and the parents'
+  stats on the Lineage page.

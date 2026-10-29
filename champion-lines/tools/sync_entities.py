@@ -117,6 +117,7 @@ def build(entity: str, upstream: str) -> str:
 # controller, which needs the horse's marking textures by these names.
 MULE_CLIENT = "resource_pack/entity/mule_v3.entity.json"
 MULE_CONTROLLER = "controller.render.champion_lines.mule"
+CLIENT_MIN_ENGINE = "1.26.60"  # the resource pack's own min_engine_version
 MARK_TEXTURES = {
     "markings_white": "textures/entity/horse2/horse_markings_white",
     "markings_whitefield": "textures/entity/horse2/horse_markings_whitefield",
@@ -132,6 +133,13 @@ def build_mule_client(upstream: str) -> str:
     if text.count('"controller.render.mule.v4"') != 1:
         raise RuntimeError(f"{MULE_CLIENT}: vanilla no longer uses controller.render.mule.v4; re-check the render controller")
     text = text.replace('"controller.render.mule.v4"', f'"{MULE_CONTROLLER}"')
+    # Vanilla ships several mule client entities and the game takes the one
+    # with the highest min_engine_version it supports. A copy that ties with
+    # vanilla's is not guaranteed to win, so this one claims the pack's own.
+    old = '"min_engine_version": "1.17.10"'
+    if text.count(old) != 1:
+        raise RuntimeError(f"{MULE_CLIENT}: vanilla's min_engine_version changed; re-check which copy wins")
+    text = text.replace(old, f'"min_engine_version": "{CLIENT_MIN_ENGINE}"')
     json.loads(text)
     return text
 

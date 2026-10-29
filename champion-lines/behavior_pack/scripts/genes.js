@@ -297,36 +297,86 @@ export function firstNameLabel(origin) {
   return origin === "bred" ? "Birth name" : "Wild name";
 }
 
+// Book text is drawn in the Minecraft font, so a value is right-justified by
+// padding it with spaces to a measured width. These are the font's advance
+// widths in pixels; every character not listed is 6. A page line holds about
+// 120: "Wild name: Ghost Beacon" (119) fits and "Markings: White socks and"
+// (128) wraps. With the smooth font setting on, values land a little off.
+const GLYPH = { " ": 4, i: 2, l: 3, t: 4, I: 4, f: 5, k: 5, ".": 2, ",": 2, ":": 2, ";": 2, "!": 2, "'": 2, "|": 2, "`": 3, "(": 5, ")": 5, "[": 4, "]": 4, "{": 5, "}": 5, "<": 5, ">": 5, '"': 4, "*": 5, "@": 7, "~": 7 };
+export const LINE_WIDTH = 118;
+export const PAGE_LINES = 14;
+
+/** Width of book text in pixels, ignoring § formatting codes. */
+export function textWidth(text) {
+  let w = 0;
+  let bold = false;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "§") {
+      const code = text[++i];
+      if (code === "l") bold = true;
+      else if (code === "r") bold = false;
+      continue;
+    }
+    w += (GLYPH[text[i]] ?? 6) + (bold ? 1 : 0);
+  }
+  return w;
+}
+
+/** The text pushed to the right edge of the page with spaces. */
+export function rightAlign(text) {
+  const pad = Math.floor((LINE_WIDTH - textWidth(text)) / GLYPH[" "]);
+  return pad > 0 ? " ".repeat(pad) + text : text;
+}
+
+/** A label on its own line, then its value right-justified below it. */
+function field(label, value, code = "") {
+  return [`${code}${label}:${code ? "§r" : ""}`, rightAlign(`${code}${value}${code ? "§r" : ""}`)];
+}
+
+/** Short stats for a parent on the Lineage page: "H 28 · S 12.1 · J ~3.9". */
+export function shortStats(st) {
+  if (!st) return "?";
+  const h = st.h == null ? "?" : Math.round(st.h);
+  const sp = st.s == null ? "?" : fmt(blocksPerSecond(st.s));
+  const j = st.j == null ? "?" : `${st.jEst ? "~" : ""}${fmt(jumpBlocks(st.j))}`;
+  return `H ${h} · S ${sp} · J ${j}`;
+}
+
 /**
- * The pages of the info book.
- * info: { name, firstName, reg, gen, tamer, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
+ * The pages of the info book: the horse, its stats, and (bred horses only)
+ * its lineage. The horse's page runs onto a second page when it would not fit.
+ * info: { name, kind, firstName, reg, gen, tamer, stats, origin, parents, parentEntries, breeder, day, variant, mark, today }
  */
 export function bookPages(info) {
   const s = info.stats;
+  const kind = info.kind ?? "horse";
   let origin;
   if (info.origin === "bred") {
+    const same = info.tamer && info.tamer === info.breeder;
     origin = [
-      ...(info.gen ? [`Generation ${info.gen}`] : []),
-      `Born: day ${info.day ?? "?"}`,
-      `Bred by: ${info.breeder ?? "unknown"}`,
+      ...(info.gen ? [`Generation: ${info.gen}`] : []),
+      ...field("Born", `day ${info.day ?? "?"}`),
+      ...(same ? field("Bred and tamed by", info.breeder) : field("Bred by", info.breeder ?? "unknown")),
     ];
-  } else if (info.origin === "wild") {
-    origin = ["Wild-born", `First seen: day ${info.day ?? "?"}`];
+    if (info.tamer && !same) origin.push(...field("Tamed by", info.tamer));
   } else {
-    origin = ["§7Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown.§r"];
+    if (info.origin === "wild") origin = ["Wild-born", ...field("First seen", `day ${info.day ?? "?"}`)];
+    else origin = ["§7Born before Champion", "Lines was added,", "so its parents and", "birthday are unknown.§r"];
+    if (info.tamer) origin.push(...field("Tamed by", info.tamer));
   }
-  if (info.tamer) origin.push(`Tamed by: ${info.tamer}`);
-  const identity = [
+  const looks = kind === "horse"
+    ? [...field("Color", coloredColorName(info.variant)), ...field("Markings", markingName(info.mark))]
+    : info.mark > 0 ? field("Markings", markingName(info.mark)) : [];
+  const top = [
     `§l${grayNumber(info.name ?? "Horse", "")}§r`,
-    ...(info.firstName ? [`§7${firstNameLabel(info.origin)}: ${info.firstName}§r`] : []),
-    "",
-    ...(info.kind && info.kind !== "horse"
-      ? [KIND_NAMES[info.kind], ...(info.mark > 0 ? [`Markings: ${markingName(info.mark)}`] : [])]
-      : [`Color: ${coloredColorName(info.variant)}`, `Markings: ${markingName(info.mark)}`]),
-    ...(info.reg ? [`§8Registry No. ${info.reg}§r`] : []),
-    "",
-    ...origin,
-  ].join("\n");
+    ...(info.firstName ? field(firstNameLabel(info.origin), info.firstName, "§7") : []),
+    KIND_NAMES[kind] ?? "Horse",
+    ...looks,
+    ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
+  ];
+  const identity = top.length + 1 + origin.length <= PAGE_LINES
+    ? [[...top, "", ...origin].join("\n")]
+    : [top.join("\n"), origin.join("\n")];
 
   // A renamed parent is listed under its current name with its first name
   // below, so a book written before the rename can still be matched to it.
@@ -335,7 +385,13 @@ export function bookPages(info) {
     "§lLineage§r",
     "",
     ...(entries.length
-      ? entries.flatMap((p) => [grayNumber(p.name), ...(p.gen !== undefined ? [`§7 generation ${p.gen}§r`] : []), ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []), ""])
+      ? entries.flatMap((p) => [
+          grayNumber(p.name),
+          ...(p.gen !== undefined ? [`§7 generation ${p.gen}§r`] : []),
+          ...(p.first ? [`§7 ${firstNameLabel(p.origin).toLowerCase()}: ${p.first}§r`] : []),
+          ...("stats" in p ? [`§7 ${shortStats(p.stats)}§r`] : []),
+          "",
+        ])
       : ["unknown"]),
   ].join("\n").trimEnd()];
 
@@ -350,10 +406,10 @@ export function bookPages(info) {
     : [
         ...(s.h == null ? ["Health: ?", ride] : [`Health: ${Math.round(s.h)}`, `§7 ${fmt(s.h / 2)} hearts§r`]),
         "",
-        ...(s.s == null ? ["Speed: ?", ride] : [`Speed: ${fmt(blocksPerSecond(s.s))}`]),
+        ...(s.s == null ? ["Speed: ?", ride] : [`Speed: ${fmt(blocksPerSecond(s.s))} blocks/s`]),
         "",
         ...jump,
       ];
   const stats = ["§lStats§r", "", ...body, "", `§7Written on day ${info.today}§r`].join("\n");
-  return [identity, stats, ...parentsPage];
+  return [...identity, stats, ...parentsPage];
 }

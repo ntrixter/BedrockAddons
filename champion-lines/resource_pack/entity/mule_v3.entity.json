@@ -3,7 +3,7 @@
   "minecraft:client_entity": {
     "description": {
       "identifier": "minecraft:mule",
-      "min_engine_version": "1.17.10",
+      "min_engine_version": "1.26.60",
       "materials": {
         "default": "horse"
       },

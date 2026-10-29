@@ -36,7 +36,7 @@ stat separately:
 | Speed 9.1 and 12.8 blocks/s | 12.8 (60%) or 9.1 (40%) |
 | Jump 2.4 and 4.1 blocks | 4.1 (60%) or 2.4 (40%) |
 
-The chance is a setting (50 to 100%).
+The chance is a setting (25 to 100%; below 50 the worse parent is the likelier).
 
 **Donkeys and mules** are covered too, unless the setting is off. Donkeys
 stay vanilla: they spawn and breed exactly as without the pack, every donkey
@@ -125,10 +125,19 @@ and the number: **Biscuit #1234**.
 Right-click (or tap) a horse while holding a plain book. The book is replaced
 by a signed book of the horse's papers:
 
-- name, colour (written in that colour), markings and registry number
-- its generation, the day it was born, who bred it and who tamed it
+- name, Horse / Donkey / Mule, colour (written in that colour), markings and
+  registry number
+- its generation, the day it was born, who bred it and who tamed it ("Bred and
+  tamed by" when that is one player)
 - health, speed (blocks per second) and jump (blocks)
-- for a bred horse, a last **Lineage** page: its parents and their generations
+- for a bred horse, a last **Lineage** page: its parents, their generations
+  and their stats, as far as riders have learnt them
+
+On the first page each label has its value on the line below, pushed to the
+right edge, so long player names still fit. Bedrock books cannot align text,
+so the pack pads with spaces measured in the Minecraft font; with the smooth
+font setting on, values land slightly off the edge. When everything will not
+fit on one page, the horse's details carry over onto a second page.
 
 It is titled with the horse's current name and signed by you. A book is a
 snapshot: it keeps the name the horse had when it was written. So that an old
@@ -193,6 +202,18 @@ names are `horsebreed:show_stats`, `horsebreed:show_parents`,
 ```sh
 cd champion-lines/tests && node run.js
 ```
+
+In game, with cheats on, a mule with given markings can be summoned without
+breeding one: 1 white socks and blaze, 2 white patches, 3 white spots, 4 black
+spots, 0 none.
+
+```
+/summon mule ~ ~ ~ 0 0 horsebreed:set_mark_1
+/event entity @e[type=mule,r=5] horsebreed:set_mark_3
+```
+
+The second changes mules already near you; a mule the pack bred keeps its
+recorded markings and goes back to them when the world reloads.
 
 They cover the inheritance roll, the text of the action bar and the book, and
 check that the stat grids in the script match the groups in the entity files.
