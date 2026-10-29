@@ -5,6 +5,8 @@ import {
   colorName,
   describe,
   inherit,
+  jumpBlocks,
+  jumpFromHeight,
   jumpStep,
   lookName,
   speedOfStep,
@@ -85,6 +87,7 @@ function statsOf(horse, data = readData(horse)) {
     h: data?.h ?? liveHealth(horse) ?? 15,
     s: data?.s ?? liveSpeed(horse) ?? 0.1125,
     j: data?.j ?? liveJump(horse) ?? null,
+    jEst: data?.jEst === true,
   };
 }
 
@@ -193,6 +196,79 @@ world.afterEvents.entitySpawn.subscribe(({ entity, cause }) => {
     if (entity.isValid) console.warn(`[Horse Bloodlines] ${err}`);
   }
 });
+
+// ---- measuring jump ----------------------------------------------------------
+// A horse's jump strength cannot be read, so for a horse that predates the
+// pack it is measured: while a player rides it, each jump's rise from take-off
+// to peak is recorded, and the best one is turned back into a strength. A
+// partly charged jump only rises less, so the best jump converges on a full
+// one. Horses whose jump the pack set itself are only checked against the
+// formula, in debug output.
+
+const MIN_RISE = 0.6;
+const BOUNCY = new Set(["minecraft:slime", "minecraft:bed"]);
+// horse id -> { groundY, airborne, startY, peak, clean }
+const flights = new Map();
+
+function bouncyUnder(horse, y) {
+  const { x, z } = horse.location;
+  const block = horse.dimension.getBlock({ x: Math.floor(x), y: Math.floor(y - 0.05), z: Math.floor(z) });
+  return BOUNCY.has(block?.typeId);
+}
+
+function trackJump(rider, horse) {
+  const y = horse.location.y;
+  let f = flights.get(horse.id);
+  if (!f) {
+    f = { groundY: y, airborne: false };
+    flights.set(horse.id, f);
+  }
+  if (horse.isOnGround) {
+    if (f.airborne && f.clean) recordJump(rider, horse, f.peak - f.startY);
+    f.airborne = false;
+    f.groundY = y;
+    return;
+  }
+  if (!f.airborne) {
+    f.airborne = true;
+    f.startY = f.groundY;
+    f.peak = y;
+    // Water, Jump Boost and bouncy blocks all change the height of a jump.
+    f.clean = !horse.isInWater && !horse.getEffect("jump_boost") && !bouncyUnder(horse, f.groundY);
+  } else {
+    f.peak = Math.max(f.peak, y);
+    if (horse.isInWater) f.clean = false;
+  }
+}
+
+function recordJump(rider, horse, rise) {
+  if (rise < MIN_RISE) return;
+  const data = readData(horse) ?? {};
+  const est = jumpFromHeight(rise);
+  if (data.j != null && !data.jEst) {
+    debug(`jump rose ${rise.toFixed(2)}; set strength ${data.j} predicts ${jumpBlocks(data.j).toFixed(2)} at full charge`);
+    return;
+  }
+  debug(`jump rose ${rise.toFixed(2)} -> strength ~${est} (best so far ${data.jm?.toFixed(2) ?? "none"})`);
+  if (data.jm != null && rise <= data.jm) return;
+  writeData(horse, { ...data, j: est, jEst: true, jm: rise });
+  rider.onScreenDisplay.setActionBar(`§aNew best jump: ${rise.toFixed(1)} blocks`);
+}
+
+system.runInterval(() => {
+  const riding = new Set();
+  for (const player of world.getPlayers()) {
+    try {
+      const horse = player.getComponent("minecraft:riding")?.entityRidingOn;
+      if (horse?.typeId !== HORSE) continue;
+      riding.add(horse.id);
+      trackJump(player, horse);
+    } catch {
+      // The rider or horse can go away mid-update.
+    }
+  }
+  for (const id of flights.keys()) if (!riding.has(id)) flights.delete(id);
+}, 1);
 
 // ---- what the player is looking at ------------------------------------------
 

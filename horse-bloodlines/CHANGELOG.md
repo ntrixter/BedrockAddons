@@ -21,5 +21,8 @@ version, so the heading has to match exactly: `## [1.0.0] - 2026-10-29`.
 - Look at a horse to see its health, speed and jump above the hotbar, coloured
   by how good each is. On by default.
 - An optional second line naming the horse's parents. Off by default.
+- Horses that were in the world before the pack get their jump measured:
+  ride one and its best jump is turned back into a jump strength, shown as
+  `Jump ~4.9` and used for breeding.
 - Use a book on a horse to get a signed book of its papers: name, colour,
   markings, birthday, breeder, parents and stats.

@@ -64,11 +64,17 @@ mounts or feeds a horse. In creative mode the book is not used up.
 
 ## Things worth knowing
 
-- **Jump can only be known for horses that appear after the pack is on.** No
+- **Jump has to be measured for horses that were around before the pack.** No
   script can read a horse's jump strength. The pack sets it itself, using the
   same random range as vanilla, the moment a horse spawns or is born. A horse
-  that was already in the world shows `Jump ?`. When it breeds, a fresh wild
-  roll stands in for its jump, so every foal's jump is known.
+  that was already in the world shows `Jump ?` until someone rides it and
+  jumps. Every jump's height, from take-off to peak, is recorded, and the best
+  one is turned back into a jump strength. The line then shows `Jump ~4.9` and
+  the rider sees **New best jump**. A partly charged jump only rises less, so
+  a few full-charge jumps on flat open ground settle it. Jumps in water, with
+  Jump Boost, or off a slime block or bed are ignored. When an old horse
+  breeds before it has been measured, a fresh wild roll stands in for its
+  jump.
 - **Speed lands on a grid of 0.0025.** Each possible value needs its own entry
   in the horse file, so a foal's speed is rounded to the nearest of 91 steps,
   about 0.1 blocks/s apart. Health is whole points (15 to 30) and jump strength

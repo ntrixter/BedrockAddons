@@ -17,6 +17,7 @@ import {
   describe,
   inherit,
   jumpBlocks,
+  jumpFromHeight,
   blocksPerSecond,
   pick,
   speedOfStep,
@@ -100,6 +101,16 @@ check("jump 1.00 is about 5.3 blocks", jumpBlocks(100).toFixed(1), "5.3");
 check("jump 0.40 is about 1.1 blocks", jumpBlocks(40).toFixed(1), "1.1");
 check("best speed is about 14.2 b/s", blocksPerSecond(0.3375).toFixed(1), "14.2");
 
+console.log("Measured jump");
+check("every strength round-trips", Array.from({ length: 61 }, (_, i) => 40 + i)
+  .every((j) => jumpFromHeight(jumpBlocks(j)) === j), true);
+check("5 blocks is strength 0.97", jumpFromHeight(5.0), 97);
+check("below the range clamps to 40", jumpFromHeight(0.7), 40);
+check("above the range clamps to 100", jumpFromHeight(6.5), 100);
+check("estimate is marked with ~",
+  describe({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true } }, { stats: true, parents: false }),
+  "§lOld§r · §eHealth 20§r · §eSpeed 8.4§r · §bJump ~4.9§r");
+
 console.log("Action bar");
 const stats = { h: 29, s: 0.3375, j: 50 };
 check("stats only",
@@ -131,6 +142,9 @@ check("pages stay short", pages.every((p) => p.length < 256 && p.split("\n").len
 const old = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: null }, variant: 9, mark: 0, today: 3 });
 check("old horse says why", old[0].includes("unknown") && old[1].includes("Jump: unknown"), true);
 check("unknown color", old[0].includes("Color: Unknown"), true);
+check("unknown jump says how to measure", old[1].includes("full charge"), true);
+const measured = bookPages({ name: "Old", stats: { h: 20, s: 0.2, j: 96, jEst: true }, variant: 0, mark: 0, today: 3 });
+check("measured jump in the book", measured[1].includes("Jump: ~4.9 blocks"), true);
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll passed");
 process.exit(failures ? 1 : 0);

@@ -73,6 +73,18 @@ export function jumpBlocks(hundredths) {
   return -0.1817584952 * x ** 3 + 3.689713992 * x ** 2 + 2.128599134 * x - 0.343930367;
 }
 
+/**
+ * The jump strength (hundredths) whose full jump comes nearest to a measured
+ * rise in blocks. The inverse of jumpBlocks over the vanilla range.
+ */
+export function jumpFromHeight(blocks) {
+  let best = JUMP_MIN;
+  for (let j = JUMP_MIN; j <= JUMP_MAX; j++) {
+    if (Math.abs(jumpBlocks(j) - blocks) < Math.abs(jumpBlocks(best) - blocks)) best = j;
+  }
+  return best;
+}
+
 /** 0 .. 1: where a value sits in the wild range. */
 function quality(v, lo, hi) {
   return clamp((v - lo) / (hi - lo), 0, 1);
@@ -92,7 +104,7 @@ export function statParts(stats) {
   parts.push(`${tier(quality(stats.h, HEALTH_MIN, HEALTH_MAX))}Health ${Math.round(stats.h)}§r`);
   parts.push(`${tier(quality(stats.s, SPEED_MIN, SPEED_MAX))}Speed ${fmt(blocksPerSecond(stats.s))}§r`);
   if (stats.j == null) parts.push("§7Jump ?§r");
-  else parts.push(`${tier(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${fmt(jumpBlocks(stats.j))}§r`);
+  else parts.push(`${tier(quality(stats.j, JUMP_MIN, JUMP_MAX))}Jump ${stats.jEst ? "~" : ""}${fmt(jumpBlocks(stats.j))}§r`);
   return parts;
 }
 
@@ -171,9 +183,10 @@ export function bookPages(info) {
     ...origin,
   ].join("\n");
 
-  const jump = s.j == null
-    ? ["Jump: unknown", "§7(horse predates the", "add-on)§r"]
-    : [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)} of 1.00§r`];
+  let jump;
+  if (s.j == null) jump = ["Jump: unknown", "§7 ride it and jump at", " full charge§r"];
+  else if (s.jEst) jump = [`Jump: ~${fmt(jumpBlocks(s.j))} blocks`, "§7 from its best jump§r"];
+  else jump = [`Jump: ${fmt(jumpBlocks(s.j))} blocks`, `§7 strength ${(s.j / 100).toFixed(2)} of 1.00§r`];
   const page2 = [
     "§lStats§r",
     "",
