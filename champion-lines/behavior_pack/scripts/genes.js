@@ -306,6 +306,24 @@ export function firstNameLabel(origin) {
 const GLYPH = { " ": 4, i: 2, l: 3, t: 4, I: 4, f: 5, k: 5, ".": 2, ",": 2, ":": 2, ";": 2, "!": 2, "'": 2, "|": 2, "`": 3, "(": 5, ")": 5, "[": 4, "]": 4, "{": 5, "}": 5, "<": 5, ">": 5, '"': 4, "*": 5, "@": 7, "~": 7 };
 export const LINE_WIDTH = 118;
 export const PAGE_LINES = 14;
+// The game refuses a page longer than this, counting § codes and the spaces
+// that right-justify a value; short values mean long padding.
+export const PAGE_CHARS = 256;
+
+/** Lines packed into as few pages as fit both the line and character limits. */
+export function packPages(lines) {
+  const pages = [];
+  let cur = [];
+  for (const line of lines) {
+    const next = [...cur, line];
+    if (cur.length && (next.length > PAGE_LINES || next.join("\n").length > PAGE_CHARS)) {
+      pages.push(cur);
+      cur = line === "" ? [] : [line];
+    } else cur = next;
+  }
+  if (cur.length) pages.push(cur);
+  return pages.map((p) => p.join("\n").trimEnd());
+}
 
 /** Width of book text in pixels, ignoring § formatting codes. */
 export function textWidth(text) {
@@ -380,9 +398,9 @@ export function bookPages(info) {
     ...looks,
     ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
   ];
-  const identity = top.length + 1 + origin.length <= PAGE_LINES
-    ? [[...top, "", ...origin].join("\n")]
-    : [top.join("\n"), origin.join("\n")];
+  // One page when it fits; otherwise the origin starts a page of its own.
+  const whole = packPages([...top, "", ...origin]);
+  const identity = whole.length === 1 ? whole : [...packPages(top), ...packPages(origin)];
 
   // A renamed parent is listed under its current name with its first name
   // below, so a book written before the rename can still be matched to it.
@@ -418,5 +436,5 @@ export function bookPages(info) {
         ...jump,
       ];
   const stats = ["§lStats§r", "", ...body, "", `§7Written on day ${info.today}§r`].join("\n");
-  return [...identity, stats, ...parentsPage];
+  return [...identity, ...packPages(stats.split("\n")), ...parentsPage.flatMap((p) => packPages(p.split("\n")))];
 }
