@@ -17,6 +17,7 @@ body:
         repository; see CONTRIBUTING.md.
       options:
         - bottles-of-xp
+        - champion-lines
         - compass-link
         - creeper-drop-all
         - nightshare
