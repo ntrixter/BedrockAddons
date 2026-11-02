@@ -306,9 +306,20 @@ export function firstNameLabel(origin) {
 const GLYPH = { " ": 4, i: 2, l: 3, t: 4, I: 4, f: 5, k: 5, ".": 2, ",": 2, ":": 2, ";": 2, "!": 2, "'": 2, "|": 2, "`": 3, "(": 5, ")": 5, "[": 4, "]": 4, "{": 5, "}": 5, "<": 5, ">": 5, '"': 4, "*": 5, "@": 7, "~": 7 };
 export const LINE_WIDTH = 118;
 export const PAGE_LINES = 14;
-// The game refuses a page longer than this, counting § codes and the spaces
-// that right-justify a value; short values mean long padding.
+// The game refuses a page longer than this many bytes of UTF-8, counting the
+// spaces that right-justify a value (short values mean long padding) and the
+// § of every formatting code, which takes two bytes.
 export const PAGE_CHARS = 256;
+
+/** Length of text in UTF-8 bytes, the unit of the game's page limit. */
+export function byteLength(text) {
+  let n = 0;
+  for (const ch of text) {
+    const c = ch.codePointAt(0);
+    n += c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4;
+  }
+  return n;
+}
 
 /** Lines packed into as few pages as fit both the line and character limits. */
 export function packPages(lines) {
@@ -316,7 +327,7 @@ export function packPages(lines) {
   let cur = [];
   for (const line of lines) {
     const next = [...cur, line];
-    if (cur.length && (next.length > PAGE_LINES || next.join("\n").length > PAGE_CHARS)) {
+    if (cur.length && (next.length > PAGE_LINES || byteLength(next.join("\n")) > PAGE_CHARS)) {
       pages.push(cur);
       cur = line === "" ? [] : [line];
     } else cur = next;
@@ -351,11 +362,14 @@ export function rightAlign(text) {
  * A label, then its value right-justified on the same line. A pair too wide
  * for one line puts the value right-justified on the line below.
  */
-function field(label, value, code = "") {
-  const left = `${code}${label}:${code ? "§r" : ""}`;
-  const right = `${code}${value}${code ? "§r" : ""}`;
-  const pad = Math.floor((LINE_WIDTH - textWidth(left) - textWidth(right)) / GLYPH[" "]);
-  return pad >= 1 ? [left + " ".repeat(pad) + right] : [left, rightAlign(right)];
+function field(label, raw, code = "") {
+  const value = String(raw);
+  // A colour code carries on across the padding and onto the next line, so
+  // the pair needs it only once: every character counts toward PAGE_CHARS.
+  const left = `${code}${label}:`;
+  const end = code ? "§r" : "";
+  const pad = Math.floor((LINE_WIDTH - textWidth(left) - textWidth(value)) / GLYPH[" "]);
+  return pad >= 1 ? [left + " ".repeat(pad) + value + end] : [left, rightAlign(value) + end];
 }
 
 /** A parent's stats for the Lineage page, one per line: "Health: 18". */
@@ -398,7 +412,7 @@ export function bookPages(info) {
     ...looks,
     ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
   ];
-  // One page when it fits; otherwise the origin starts a page of its own.
+  // One page when it fits; otherwise the origin moves to a page of its own.
   const whole = packPages([...top, "", ...origin]);
   const identity = whole.length === 1 ? whole : [...packPages(top), ...packPages(origin)];
 
@@ -436,5 +450,7 @@ export function bookPages(info) {
         ...jump,
       ];
   const stats = ["§lStats§r", "", ...body, "", `§7Written on day ${info.today}§r`].join("\n");
-  return [...identity, ...packPages(stats.split("\n")), ...parentsPage.flatMap((p) => packPages(p.split("\n")))];
+  // Stats stay on page 2 whatever the horse's page needs; its overflow follows.
+  const [first, ...more] = identity;
+  return [first, ...packPages(stats.split("\n")), ...more, ...parentsPage.flatMap((p) => packPages(p.split("\n")))];
 }

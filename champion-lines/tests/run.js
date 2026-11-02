@@ -13,6 +13,7 @@
 import { readFileSync } from "node:fs";
 import {
   bookPages,
+  byteLength,
   bookTitle,
   COLORS,
   describe,
@@ -274,17 +275,19 @@ const genPages = bookPages({
 check("bred horse shows its generation", plain(genPages[0]).includes("\nGeneration: > 2\nBorn: > day 5"), true);
 const full = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, gen: 3, stats, origin: "bred", breeder: "A", tamer: "B", day: 5, variant: 2, mark: 1, today: 9 });
 // Padding spaces count toward the 256-character page limit, so a full page 1
-// with short values carries its origin onto a page of its own.
-check("a full horse splits its page at the origin", [full.length, plain(full[1]).startsWith("Generation:"), full.every((p) => p.split("\n").length <= PAGE_LINES && p.length <= 256)], [4, true, true]);
-check("its stats follow", full[2].startsWith("§lStats"), true);
+// with short values carries its origin onto a page of its own, after Stats.
+check("a full horse moves its origin after the stats", [full.length, plain(full[2]).startsWith("Generation:"), full.every((p) => p.split("\n").length <= PAGE_LINES && byteLength(p) <= 256)], [4, true, true]);
+check("its stats stay on page 2", full[1].startsWith("§lStats"), true);
 let longest = 0;
 for (const origin of ["wild", "bred", undefined]) for (const name of ["A", "!!?!!", "Cookie n Cream"]) for (const firstName of [undefined, "Ash #1", "Copper Blaze #27"])
   for (const variant of [0, 1, 2, 3, 4, 5, 6]) for (const mark of [0, 1, 2, 3, 4]) for (const tamer of [undefined, "Al", "Sir_Longname_3rd"])
     for (const st of [null, { h: null, s: null, j: null, jEst: true }, stats])
       for (const p of bookPages({ name, firstName, reg: 7, variant, mark, origin, gen: 2, breeder: "Al", tamer, day: 1234, stats: st, today: 1300,
         parentEntries: [{ name: "Ash #1", gen: 1, first: "Copper Blaze #27", origin: "wild", stats }, { name: "B", gen: 0, stats: null }] }))
-        longest = Math.max(longest, p.length, p.split("\n").length > PAGE_LINES ? 999 : 0);
-check("no page passes 256 characters or 14 lines", longest <= 256, true);
+        longest = Math.max(longest, byteLength(p), p.split("\n").length > PAGE_LINES ? 999 : 0);
+check("no page passes 256 bytes or 14 lines", longest <= 256, true);
+for (const origin of ["wild", "bred", undefined]) for (const firstName of [undefined, "Copper Blaze #27"]) for (const tamer of [undefined, "Al"])
+  check(`stats on page 2 (${origin}, ${firstName ?? "not renamed"}, ${tamer ?? "untamed"})`, bookPages({ name: "A", firstName, reg: 7, variant: 0, mark: 0, origin, gen: 2, breeder: "Al", tamer, day: 1, stats, today: 2 })[1].startsWith("§lStats"), true);
 const statPages = bookPages({ name: "Bolt", gen: 2, stats, origin: "bred", day: 5, today: 9,
   parentEntries: [{ name: "Swan Boots #1", gen: 1, stats: { h: 28, s: 0.29, j: 90, jEst: true } }, { name: "Coal", gen: 0, stats: null }] });
 check("parents' stats on the Lineage page", plain(statPages[2]).endsWith("\n> Health: 28\n> Speed: 12.2\n> Jump: ~4.4"), true);
