@@ -321,6 +321,31 @@ export function byteLength(text) {
   return n;
 }
 
+/**
+ * The lines as one page, with the widest padding trimmed a space at a time
+ * until it fits the byte limit: short values then sit left of the edge. Null
+ * when even a single space of padding leaves it too long or too many lines.
+ */
+export function squeeze(lines) {
+  if (lines.length > PAGE_LINES) return null;
+  const out = [...lines];
+  for (;;) {
+    const text = out.join("\n");
+    if (byteLength(text) <= PAGE_CHARS) return text;
+    // The longest run of spaces, keeping one between a label and its value.
+    let best = -1;
+    let bestLen = 0;
+    out.forEach((line, i) => {
+      const run = line.match(/ +/g)?.reduce((a, r) => Math.max(a, r.length), 0) ?? 0;
+      const min = /^ /.test(line) ? 0 : 1;
+      if (run - min > bestLen) { best = i; bestLen = run - min; }
+    });
+    if (best < 0) return null;
+    const run = out[best].match(/ +/g).reduce((a, r) => (r.length > a.length ? r : a), "");
+    out[best] = out[best].replace(run, run.slice(1));
+  }
+}
+
 /** Lines packed into as few pages as fit both the line and character limits. */
 export function packPages(lines) {
   const pages = [];
@@ -412,9 +437,10 @@ export function bookPages(info) {
     ...looks,
     ...(info.reg ? field("Registry No.", info.reg, "§8") : []),
   ];
-  // One page when it fits; otherwise the origin moves to a page of its own.
-  const whole = packPages([...top, "", ...origin]);
-  const identity = whole.length === 1 ? whole : [...packPages(top), ...packPages(origin)];
+  // One page when it fits, trimming padding if it must; otherwise the origin
+  // moves to a page of its own.
+  const whole = squeeze([...top, "", ...origin]);
+  const identity = whole ? [whole] : [...packPages(top), ...packPages(origin)];
 
   // A renamed parent is listed under its current name with its first name
   // below, so a book written before the rename can still be matched to it.

@@ -275,8 +275,8 @@ const genPages = bookPages({
 check("bred horse shows its generation", plain(genPages[0]).includes("\nGeneration: > 2\nBorn: > day 5"), true);
 const full = bookPages({ name: "Bolt", firstName: "Ember Socks #40", reg: 40, gen: 3, stats, origin: "bred", breeder: "A", tamer: "B", day: 5, variant: 2, mark: 1, today: 9 });
 // Padding spaces count toward the 256-character page limit, so a full page 1
-// with short values carries its origin onto a page of its own, after Stats.
-check("a full horse moves its origin after the stats", [full.length, plain(full[2]).startsWith("Generation:"), full.every((p) => p.split("\n").length <= PAGE_LINES && byteLength(p) <= 256)], [4, true, true]);
+// with short values trims its widest padding to stay on one page.
+check("a full horse fits page 1 by trimming padding", [full.length, plain(full[0]).includes("Tamed by:"), full.every((p) => p.split("\n").length <= PAGE_LINES && byteLength(p) <= 256)], [3, true, true]);
 check("its stats stay on page 2", full[1].startsWith("§lStats"), true);
 let longest = 0;
 for (const origin of ["wild", "bred", undefined]) for (const name of ["A", "!!?!!", "Cookie n Cream"]) for (const firstName of [undefined, "Ash #1", "Copper Blaze #27"])
