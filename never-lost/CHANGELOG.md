@@ -7,11 +7,11 @@ add-on follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 independently of every other add-on in this repository.
 
 Release notes on GitHub are generated from the section matching the tagged
-version, so the heading has to match exactly: `## [1.0.0] - 2026-10-16`.
+version, so the heading has to match exactly: `## [1.0.0] - 2026-11-04`.
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-16
+## [1.0.0] - 2026-11-04
 
 ### Added
 
