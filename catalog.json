@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-02T22:16:39Z",
+  "generated_at": "2026-11-04T20:54:16Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -122,6 +122,37 @@
               0
             ],
             "folder": "creeper-drop-all_BP"
+          }
+        ]
+      },
+      "latest_prerelease": null
+    },
+    "never-lost": {
+      "display_name": "Never Lost",
+      "description": "Dropped netherite and anything enchanted with Mending never despawn, and optionally neither do items you have renamed.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "never-lost-v1.0.0",
+        "filename": "never-lost-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/never-lost-v1.0.0/never-lost-1.0.0.mcpack",
+        "sha256": "1abfb7d699ae7b87e33ea11b42da3bde94c60a59ed1c97e8984cbd7860acbb33",
+        "published_at": "2026-11-04T20:53:51Z",
+        "min_engine_version": [
+          1,
+          26,
+          30
+        ],
+        "packs": [
+          {
+            "uuid": "8a0e40f4-750a-45fc-9975-96382613e356",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "never-lost_BP"
           }
         ]
       },
