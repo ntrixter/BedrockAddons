@@ -299,6 +299,23 @@ tooling originally conflated the two and rejected the first script pack outright
 
 ---
 
+## Dropped items (`@minecraft/server`)
+
+- **No stable API reads or resets a dropped item's five-minute despawn timer,
+  but swapping the item entity for a copy starts a fresh one.** Spawn
+  `dimension.spawnItem(entity.getComponent("minecraft:item").itemStack, location)`,
+  then `remove()` the original in the same script call, before the game gets a
+  tick to merge them. The copy is identical: armour trim, enchantments,
+  durability and custom name all carry across, including the parts no script
+  API exposes, such as the trim. Repeating the swap every four minutes kept
+  items on the ground indefinitely, and across a save and reload. Verified in
+  game 2026-10-20 with `never-lost`.
+- **`getComponent("minecraft:enchantable").hasEnchantment("mending")` sees the
+  stored enchantment on an enchanted book**, not only on tools and armour, so
+  one check covers both. Verified in game 2026-10-20 with `never-lost`.
+
+---
+
 ## Experience (`@minecraft/server`)
 
 Verified in game 2026-10-02, from the `[debug]` lines of a Bottles of XP test

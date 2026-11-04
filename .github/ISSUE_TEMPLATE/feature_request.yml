@@ -20,6 +20,7 @@ body:
         - champion-lines
         - compass-link
         - creeper-drop-all
+        - never-lost
         - nightshare
         - no-witch-conversion
         - salvage-smelting

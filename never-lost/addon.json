@@ -1,0 +1,5 @@
+{
+  "display_name": "Never Lost",
+  "description": "Dropped netherite and anything enchanted with Mending never despawn, and optionally neither do items you have renamed.",
+  "deprecated": false
+}

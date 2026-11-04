@@ -1,0 +1,73 @@
+{
+  "format_version": 3,
+  "header": {
+    "name": "Never Lost",
+    "description": "v1.0.0 - Dropped netherite and anything enchanted with Mending never despawn, and optionally neither do items you have renamed.",
+    "uuid": "8a0e40f4-750a-45fc-9975-96382613e356",
+    "version": "1.0.0",
+    "min_engine_version": "1.26.30"
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "45f7c97e-0ab5-45e1-b9eb-ea14b023a82b",
+      "version": "1.0.0",
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "ntrixter"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/ntrixter/BedrockAddons",
+    "product_type": "addon"
+  },
+  "settings": [
+    {
+      "type": "label",
+      "text": "§l§aNever Lost§r - dropped items that would normally vanish after five minutes stay where they fell."
+    },
+    {
+      "type": "label",
+      "text": "§7Changes here take effect the next time the world loads.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Netherite",
+      "name": "never_lost:netherite",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Every netherite item: tools, weapons, armour, horse and nautilus armour, ancient debris, scrap, ingots, blocks and the upgrade template.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Items with Mending",
+      "name": "never_lost:mending",
+      "default": true
+    },
+    {
+      "type": "label",
+      "text": "§7Any item enchanted with Mending, whatever it is made of.§r"
+    },
+    {
+      "type": "toggle",
+      "text": "Renamed items",
+      "name": "never_lost:named_items",
+      "default": false
+    },
+    {
+      "type": "label",
+      "text": "§7Any item given a name at an anvil, whatever it is made of. Off by default: a renamed stack of dirt would never go away either.§r"
+    }
+  ]
+}
