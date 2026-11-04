@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-15T02:15:53Z",
+  "generated_at": "2026-11-02T22:16:39Z",
   "repository": "ntrixter/BedrockAddons",
   "addons": {
     "bottles-of-xp": {
@@ -29,6 +29,37 @@
               2
             ],
             "folder": "bottles-of-xp_BP"
+          }
+        ]
+      },
+      "latest_prerelease": null
+    },
+    "champion-lines": {
+      "display_name": "Champion Lines",
+      "description": "Foals keep their parents' best stats, ARK style: each of health, speed and jump has a 60% chance to come from the better parent. Mules too, bred from a horse and a donkey. Look at a horse to see its stats and parents, and use a book on it for its papers.",
+      "deprecated": false,
+      "latest_stable": {
+        "version": "1.0.0",
+        "tag": "champion-lines-v1.0.0",
+        "filename": "champion-lines-1.0.0.mcpack",
+        "download_url": "https://github.com/ntrixter/BedrockAddons/releases/download/champion-lines-v1.0.0/champion-lines-1.0.0.mcpack",
+        "sha256": "d60103e3bc8fba6b510d8ab48c3a373e52c81b9c18b32e1ed2f0abe3486be909",
+        "published_at": "2026-11-02T22:16:19Z",
+        "min_engine_version": [
+          1,
+          26,
+          60
+        ],
+        "packs": [
+          {
+            "uuid": "2e779d30-28bb-40d5-a839-d9e661a7b53e",
+            "type": "data",
+            "version": [
+              1,
+              0,
+              0
+            ],
+            "folder": "champion-lines_BP"
           }
         ]
       },
