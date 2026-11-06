@@ -629,6 +629,23 @@ nightly.
 
 ---
 
+## Achievements: `product_type` and custom commands
+
+Confirmed in game on 1.26.x (latest stable, no experiments), 2026-11-06, with a
+throwaway script pack on `@minecraft/server` 2.8.0:
+
+- **A behaviour pack without `"metadata": { "product_type": "addon" }` disables
+  achievements the moment it is enabled** on the create-world screen, before any
+  script runs. `format_version` 2 or 3 makes no difference. Adding the
+  `product_type` field removed the "Achievements disabled" notice. Every add-on
+  here already carries it; a test pack built by hand must too.
+- **Running a custom command registered with `cheatsRequired: false` keeps
+  achievements enabled.** The command ran with cheats off, and the pause menu
+  showed no "Achievements disabled" notice afterwards. Tested with both
+  `permissionLevel: CommandPermissionLevel.Any` and `GameDirectors`.
+
+---
+
 ## Patterns that worked
 
 - Persist state in **one** world dynamic property holding a JSON blob. Keep an
