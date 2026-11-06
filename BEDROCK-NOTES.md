@@ -631,18 +631,25 @@ nightly.
 
 ## Achievements: `product_type` and custom commands
 
-Confirmed in game on 1.26.x (latest stable, no experiments), 2026-11-06, with a
-throwaway script pack on `@minecraft/server` 2.8.0:
+Tested in game on 1.26.x (latest stable, no experiments), 2026-11-06, with a
+throwaway script pack on `@minecraft/server` 2.8.0.
 
-- **A behaviour pack without `"metadata": { "product_type": "addon" }` disables
-  achievements the moment it is enabled** on the create-world screen, before any
-  script runs. `format_version` 2 or 3 makes no difference. Adding the
-  `product_type` field removed the "Achievements disabled" notice. Every add-on
-  here already carries it; a test pack built by hand must too.
-- **Running a custom command registered with `cheatsRequired: false` keeps
-  achievements enabled.** The command ran with cheats off, and the pause menu
-  showed no "Achievements disabled" notice afterwards. Tested with both
-  `permissionLevel: CommandPermissionLevel.Any` and `GameDirectors`.
+**Where to look.** The pause menu shows nothing about achievements either way,
+so it proves nothing. The reliable signal is the banner at the top of in-world
+**Settings → Game**: "Achievements cannot be earned in this world." That is the
+world's permanent lock. Turning cheats on sets it, and it stays after cheats are
+turned off again.
+
+- **Without `"metadata": { "product_type": "addon" }`** a behaviour pack shows
+  an "Achievements disabled" warning on the create-world screen and under the
+  Play button the moment it is enabled. `format_version` 2 or 3 makes no
+  difference. It does **not** set the permanent lock: the world showed no
+  Settings → Game banner. Not established whether achievements can actually be
+  earned while such a pack is active. Every add-on here carries `product_type`
+  anyway, and a hand-built test pack should too; with it, the warning is gone.
+- **A custom command registered with `cheatsRequired: false` does not set the
+  permanent lock.** Both a `CommandPermissionLevel.Any` and a `GameDirectors`
+  command ran with cheats off, and Settings → Game showed no banner afterwards.
 
 ---
 
