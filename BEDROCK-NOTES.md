@@ -641,8 +641,8 @@ throwaway script pack on `@minecraft/server` 2.8.0:
   here already carries it; a test pack built by hand must too.
 - **Running a custom command registered with `cheatsRequired: false` keeps
   achievements enabled.** The command ran with cheats off, and the pause menu
-  showed no "Achievements disabled" notice afterwards. Tested with
-  `permissionLevel: CommandPermissionLevel.Any`.
+  showed no "Achievements disabled" notice afterwards. Tested with both
+  `permissionLevel: CommandPermissionLevel.Any` and `GameDirectors`.
 
 ---
 
